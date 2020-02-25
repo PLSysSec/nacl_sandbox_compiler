@@ -9,11 +9,11 @@ vars = {
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
   # chrome_rev: 428228
-  "build_rev": "9c85c83678b37be4c31aa324f1206a19cb48040a", # from cr commit position 613723
+  "build_rev": "1c4d2b1930b54b35efbbb2fb575db9f5f94720ff", # from cr commit position
   "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "0dea619c94ca902c75dfaa3c0805f9b21a98793a", # from cr commit position 613723
+  "clang_rev": "eeaa53b76fa7c2e84f655a63a8e66c6db9d72fff", # from cr commit position
 
   # Rolls of build_overrides_rev should done at the same time as a roll
   # of build_rev as build_overrides/ is tightly coupled with build/.
@@ -33,13 +33,16 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': '04161ec8d7c781e4498c699254c69ba0dd959fde',
+  'buildtools_revision': 'afc5b798c72905e85f9991152be878714c579958',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
   'lss_revision': '3f6478ac95edf86cd3da300c2c0d34a438f5dbeb',
 
   "breakpad_rev": "54fa71efbe50fb2b58096d871575b59e12edba6d",
+
+  # GN CIPD package version.
+  'gn_version': 'git_revision:97cc440d84f050f99ff0161f9414bfa2ffa38f65',
 
   # Separately pinned repositories, update with roll-dep individually.
   "third_party_rev": "d4e38e5faf600b39649025e5605d6e7f94518ea7",
@@ -58,7 +61,7 @@ deps = {
     Var("chromium_git") + "/breakpad/breakpad.git@" +
     Var("breakpad_rev"),
   "buildtools":
-    Var("chromium_git") + "/chromium/buildtools.git@" +
+    Var("chromium_git") + "/chromium/src/buildtools.git@" +
      Var("buildtools_revision"),
   "build":
     Var("chromium_git") + "/chromium/src/build.git@" +
@@ -88,6 +91,37 @@ deps = {
     Var("chromium_git") + "/chromium/src/tools/clang.git@" + Var("clang_rev"),
   "tools/gyp":
     Var("chromium_git") + "/external/gyp.git@" + Var("gyp_rev"),
+
+  'src/buildtools/linux64': {
+    'packages': [
+      {
+        'package': 'gn/gn/linux-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'host_os == "linux"',
+  },
+  'buildtools/mac': {
+    'packages': [
+      {
+        'package': 'gn/gn/mac-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'host_os == "mac"',
+  },
+  'buildtools/win': {
+    'packages': [
+      {
+        'package': 'gn/gn/windows-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'host_os == "win"',
+  },
 }
 
 deps_os = {
@@ -165,38 +199,17 @@ hooks = [
     'action': ['python', 'build/util/lastchange.py',
                '-o', 'build/util/LASTCHANGE'],
   },
-  # Pull GN binaries. This needs to be before running GYP below.
   {
-    'name': 'gn_win',
+    # Verify that we have the right GN binary and force-install it if we
+    # don't, in order to work around crbug.com/944367.
+    # TODO(crbug.com/944667) Get rid of this when cipd is ensuring we
+    # have the right binary more carefully and we no longer need this.
+    'name': 'ensure_gn_version',
     'pattern': '.',
-    'action': [ 'download_from_google_storage',
-                '--no_resume',
-                '--platform=win32',
-                '--no_auth',
-                '--bucket', 'chromium-gn',
-                '-s', 'buildtools/win/gn.exe.sha1',
-    ],
-  },
-  {
-    'name': 'gn_mac',
-    'pattern': '.',
-    'action': [ 'download_from_google_storage',
-                '--no_resume',
-                '--platform=darwin',
-                '--no_auth',
-                '--bucket', 'chromium-gn',
-                '-s', 'buildtools/mac/gn.sha1',
-    ],
-  },
-  {
-    'name': 'gn_linux64',
-    'pattern': '.',
-    'action': [ 'download_from_google_storage',
-                '--no_resume',
-                '--platform=linux*',
-                '--no_auth',
-                '--bucket', 'chromium-gn',
-                '-s', 'buildtools/linux64/gn.sha1',
+    'action': [
+      'python',
+      'buildtools/ensure_gn_version.py',
+      Var('gn_version')
     ],
   },
   # Pull clang-format binaries using checked-in hashes.
