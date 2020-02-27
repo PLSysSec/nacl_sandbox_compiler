@@ -173,6 +173,8 @@ def DoGNBuild(status, context, force_clang=False, force_arch=None):
         # the problematic code.
         'ios_enable_code_signing=false',
         ]
+  if context.Mac():
+    gn_gen_args += ['use_system_xcode=false']
 
   gn_out_trusted = gn_out
   gn_out_irt = os.path.join(gn_out, 'irt_' + gn_arch_name)
@@ -394,7 +396,7 @@ def BuildScript(status, context):
       if context.Linux():
         cc = 'CC=../../third_party/llvm-build/Release+Asserts/bin/clang'
         cxx = 'CXX=../../third_party/llvm-build/Release+Asserts/bin/clang++'
-        flags = ''
+        flags = ' -Wno-non-c-typedef-for-linkage'
         if context['arch'] == '32':
           flags += ' -m32'
           sysroot_arch = 'i386'

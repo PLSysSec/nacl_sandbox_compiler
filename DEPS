@@ -8,12 +8,12 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 428228
-  "build_rev": "64097b6e76190d8106967715b4fbfd47e6a090f7", # from cr commit position
+  # chrome_rev: 745019
+  "build_rev": "716de5b7e1f94a1a7e056a02c3f48d99afb9145f", # from cr commit position 745019
   "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "eeaa53b76fa7c2e84f655a63a8e66c6db9d72fff", # from cr commit position
+  "clang_rev": "f5a394169f59ae2bb15966b2ef6388fe17b3e166", # from cr commit position 744792
 
   # Rolls of build_overrides_rev should done at the same time as a roll
   # of build_rev as build_overrides/ is tightly coupled with build/.
