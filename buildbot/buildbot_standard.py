@@ -157,22 +157,11 @@ def DoGNBuild(status, context, force_clang=False, force_arch=None):
 
   # Mac can build the untrusted code for machines Mac doesn't
   # support, but the GN files will get confused in a couple of ways.
+  # Just don't do the build, as there are no current Chrome configurations
+  # for non-CrOS ARM.
   if context.Mac() and arch not in ('32', '64'):
-    gn_gen_args += [
-        # Subtle GN issues mean that $host_toolchain context will
-        # wind up seeing current_cpu=="arm" when target_os is left
-        # to default to "mac", because host_toolchain matches
-        # _default_toolchain and toolchain_args() does not apply to
-        # the default toolchain.  Using target_os="ios" ensures that
-        # the default toolchain is something different from
-        # host_toolchain and thus that toolchain's toolchain_args()
-        # block will be applied and set current_cpu correctly.
-        'target_os="ios"',
-        # build/config/ios/ios_sdk.gni will try to find some
-        # XCode magic that won't exist.  This GN flag disables
-        # the problematic code.
-        'ios_enable_code_signing=false',
-        ]
+    return False
+
   if context.Mac():
     gn_gen_args += ['use_system_xcode=false']
 
