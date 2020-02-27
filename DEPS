@@ -9,7 +9,7 @@ vars = {
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
   # chrome_rev: 428228
-  "build_rev": "1c4d2b1930b54b35efbbb2fb575db9f5f94720ff", # from cr commit position
+  "build_rev": "64097b6e76190d8106967715b4fbfd47e6a090f7", # from cr commit position
   "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
