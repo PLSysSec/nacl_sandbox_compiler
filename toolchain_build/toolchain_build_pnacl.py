@@ -187,7 +187,8 @@ def MacSdkFlags():
       MAC_SDK_MIN,
       ]).splitlines()
   return ['-isysroot', mac_sdk_sysroot,
-          '-mmacosx-version-min=' + MAC_DEPLOYMENT_TARGET]
+          '-mmacosx-version-min=' + MAC_DEPLOYMENT_TARGET,
+          '-stdlib=libc++']
 
 MAC_SDK_FLAGS = MacSdkFlags()
 

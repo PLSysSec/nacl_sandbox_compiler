@@ -2424,8 +2424,9 @@ def MakeMacEnv(platform=None):
       # '-Wno-gnu' is required for the statement expression defining dirfd
       # for OSX -- otherwise, a warning is generated.
       CCFLAGS=[subarch_flag, '-fPIC', '-Wno-gnu'],
+      CXXFLAGS=['-stdlib=libc++'],
       ASFLAGS=[subarch_flag],
-      LINKFLAGS=[subarch_flag, '-fPIC'],
+      LINKFLAGS=[subarch_flag, '-fPIC', '-stdlib=libc++'],
       CPPDEFINES = [# defining _DARWIN_C_SOURCE breaks 10.4
                     #['_DARWIN_C_SOURCE', '1'],
                     #['__STDC_LIMIT_MACROS', '1']
