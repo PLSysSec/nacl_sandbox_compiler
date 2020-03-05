@@ -78,11 +78,9 @@ def ArchiveCoverage(context):
   print('@@@STEP_LINK@view@%s@@@' % link_url)
 
 
-def DoGNBuild(status, context, force_clang=False, force_arch=None):
+def DoGNBuild(status, context, force_arch=None):
   if context['no_gn']:
     return False
-
-  use_clang = force_clang or context['clang']
 
   # Linux builds (or cross-builds) for every target.  Mac builds for
   # x86-32 and x86-64, and can build untrusted code for others.
@@ -115,8 +113,6 @@ def DoGNBuild(status, context, force_clang=False, force_arch=None):
                             '--arch=' + sysroot_arch])
 
   out_suffix = '_' + arch
-  if force_clang:
-    out_suffix += '_clang'
   gn_out = '../out' + out_suffix
 
   def BoolFlag(cond):
@@ -136,12 +132,6 @@ def DoGNBuild(status, context, force_clang=False, force_arch=None):
       'use_gcc_glibc=' + gn_glibc,
       'use_clang_newlib=' + gn_newlib,
   ]
-
-  # is_clang is the GN default for Mac and Linux, so
-  # don't override that on "non-clang" bots, but do set
-  # it explicitly for an explicitly "clang" bot.
-  if use_clang:
-    gn_gen_args.append('is_clang=true')
 
   # The ASan runtime requires libstdc++, and the version on the bots is older
   # than the version in the sysroot, so ASan-built sel_ldr from the sysroot
@@ -327,21 +317,13 @@ def BuildScript(status, context):
 
   # Make sure our GN build is working.
   using_gn = DoGNBuild(status, context)
-  using_gn_clang = False
-  if (context.Windows() and
-      not context['clang'] and
-      context['arch'] in ('32', '64')):
-    # On Windows, do a second GN build with is_clang=true.
-    using_gn_clang = DoGNBuild(status, context, True)
 
   if context.Windows() and context['arch'] == '64':
-    # On Windows, do a second pair of GN builds for 32-bit.  The 32-bit
+    # On Windows, do a second GN build for 32-bit.  The 32-bit
     # bots can't do GN builds at all, because the toolchains GN uses don't
     # support 32-bit hosts.  The 32-bit binaries built here cannot be
     # tested on a 64-bit host, but compile time issues can be caught.
-    DoGNBuild(status, context, False, '32')
-    if not context['clang']:
-      DoGNBuild(status, context, True, '32')
+    DoGNBuild(status, context, '32')
 
   # Just build both bitages of validator and test for --validator mode.
   if context['validator']:
@@ -476,7 +458,6 @@ def BuildScript(status, context):
 
   ### BEGIN GN tests ###
   DoGNTest(status, context, using_gn, 'gn_', ' (GN)')
-  DoGNTest(status, context, using_gn_clang, 'gn_clang_', '(GN, Clang)')
   ### END GN tests ###
 
 
