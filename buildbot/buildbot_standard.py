@@ -213,6 +213,9 @@ def DoGNTest(status, context, using_gn, gn_perf_prefix, gn_step_suffix):
   if context.Linux():
     gn_extra.append('force_bootstrap=' +
                     os.path.join(gn_out_trusted, 'nacl_helper_bootstrap'))
+  elif context.Windows():
+    gn_extra.append('force_tls_edit=' +
+                    os.path.join(gn_out_trusted, 'tls_edit.exe'))
   def RunGNTests(step_suffix, extra_scons_modes, suite_suffix):
     for suite in ['small_tests', 'medium_tests', 'large_tests']:
       with Step(suite + step_suffix + gn_step_suffix, status,
@@ -419,8 +422,9 @@ def BuildScript(status, context):
               cwd='breakpad-out')
 
   # The main compile step.
-  with Step('scons_compile', status):
-    SCons(context, parallel=True, args=[])
+  if not context['no_scons']:
+    with Step('scons_compile', status):
+      SCons(context, parallel=True, args=[])
 
   if context['coverage']:
     with Step('collect_coverage', status, halt_on_fail=True):
@@ -438,7 +442,7 @@ def BuildScript(status, context):
     return
 
   ### BEGIN tests ###
-  if not context['use_glibc']:
+  if not context['use_glibc'] and not context['no_scons']:
     # Bypassing the IRT with glibc is not a supported case,
     # and in fact does not work at all with the new glibc.
     with Step('small_tests', status, halt_on_fail=False):
@@ -449,17 +453,25 @@ def BuildScript(status, context):
       SCons(context, args=['large_tests'])
 
   with Step('compile IRT tests', status):
-    SCons(context, parallel=True, mode=['nacl_irt_test'])
+    args = []
+    if context.Windows():
+      # Windows can't build trusted code. Using force_tls_edit prevents
+      # that and allows tls_edit.exe to be used to build the tests.
+      # See https://bugs.chromium.org/p/nativeclient/issues/detail?id=4408
+      tls_edit = os.path.join(using_gn[0], 'tls_edit.exe')
+      args=['force_tls_edit=' + tls_edit]
+    SCons(context, parallel=True, mode=['nacl,nacl_irt_test'], args=args)
 
-  with Step('small_tests under IRT', status, halt_on_fail=False):
-    SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
-          args=['small_tests_irt'])
-  with Step('medium_tests under IRT', status, halt_on_fail=False):
-    SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
-          args=['medium_tests_irt'])
-  with Step('large_tests under IRT', status, halt_on_fail=False):
-    SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
-          args=['large_tests_irt'])
+  if not context['no_scons']:
+    with Step('small_tests under IRT', status, halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['small_tests_irt'])
+    with Step('medium_tests under IRT', status, halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['medium_tests_irt'])
+    with Step('large_tests under IRT', status, halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['large_tests_irt'])
   ### END tests ###
 
   ### BEGIN GN tests ###
@@ -475,7 +487,8 @@ def Main():
   ParseStandardCommandLine(context)
   SetupContextVars(context)
   if context.Windows():
-    SetupWindowsEnvironment(context)
+    if not context['no_scons']:
+      SetupWindowsEnvironment(context)
   elif context.Linux():
     if not context['android']:
       SetupLinuxEnvironment(context)

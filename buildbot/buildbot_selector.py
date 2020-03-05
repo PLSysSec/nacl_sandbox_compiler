@@ -269,6 +269,8 @@ for platform in [
       arch_flags += ' --no-gn'
     if arch != 'arm' and not 'win' in platform:
       arch_flags += ' --clang'
+    if 'win' in platform:
+      arch_flags += ' --no-scons'
     for mode in ['dbg', 'opt']:
       for libc in ['newlib', 'glibc']:
         # Buildbots.

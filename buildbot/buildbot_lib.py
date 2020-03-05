@@ -171,6 +171,9 @@ def ParseStandardCommandLine(context):
                     help='Append SUFFIX to buildbot step names.')
   parser.add_option('--no-gn', dest='no_gn', default=False,
                     action='store_true', help='Do not run the GN build')
+  parser.add_option('--no-scons', dest='no_scons', default=False,
+                    action='store_true', help='Do not run the SCons build '
+                    '(SCons will still be used to run tests)')
   parser.add_option('--no-goma', dest='no_goma', default=False,
                     action='store_true', help='Do not run with goma')
   parser.add_option('--use-breakpad-tools', dest='use_breakpad_tools',
@@ -220,7 +223,10 @@ def ParseStandardCommandLine(context):
   context['default_scons_mode'] = ['nacl']
   # Only Linux can build trusted code on ARM.
   # TODO(mcgrathr): clean this up somehow
-  if arch != 'arm' or platform == 'linux':
+  # SCons on Windows doesn't know how to find the native SDK/compiler anymore
+  # See https://bugs.chromium.org/p/nativeclient/issues/detail?id=4408
+  # TODO(dschuff): list which tests no longer run on Windows because of this
+  if (arch != 'arm' or platform == 'linux') and platform != 'win':
     context['default_scons_mode'] += [mode + '-host']
   context['use_glibc'] = toolchain == 'glibc'
   context['pnacl'] = toolchain == 'pnacl'
@@ -230,6 +236,7 @@ def ParseStandardCommandLine(context):
   context['inside_toolchain'] = options.inside_toolchain
   context['step_suffix'] = options.step_suffix
   context['no_gn'] = options.no_gn
+  context['no_scons'] = options.no_scons
   context['no_goma'] = options.no_goma
   context['coverage'] = options.coverage
   context['use_breakpad_tools'] = options.use_breakpad_tools

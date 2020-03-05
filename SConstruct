@@ -128,6 +128,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'force_bootstrap',
     # force irt image used by tests
     'force_irt',
+    # force tls_edit binary used by tests
+    'force_tls_edit',
     # generate_ninja=FILE enables a Ninja backend for SCons.  This writes a
     # .ninja build file to FILE describing all of SCons' build targets.
     'generate_ninja',
@@ -276,6 +278,7 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'use_sz', default=False,
     desc='When using pnacl TC (bitcode=1) use Subzero for fast translation')
 
+  # Setting built_elsewhere means that no trusted or untrusted builds will run.
   BitFromArgument(env, 'built_elsewhere', default=False,
     desc='The programs have already been built by another system')
 
@@ -390,6 +393,12 @@ def SetUpArgumentBits(env):
 
   BitFromArgument(env, 'skip_nonstable_bitcode', default=False,
                   desc='Skip tests involving non-stable bitcode')
+
+  # Setting force_sel_ldr means that no trusted builds will run, but (unlike
+  # built_elsewhere), untrusted builds will run.
+  DeclareBit('force_no_trusted_build', 'Prevent use of trusted toolchain')
+  if 'force_sel_ldr' in ARGUMENTS or 'force_tls_edit' in ARGUMENTS:
+    env.SetBits('force_no_trusted_build')
 
   #########################################################################
   # EXPERIMENTAL
@@ -1283,7 +1292,11 @@ def ApplyTLSEdit(env, nexe_name, raw_nexe):
   if env.Bit('built_elsewhere'):
     return env.File(nexe_name)
 
-  tls_edit_exe = env['BUILD_ENV'].File('${STAGING_DIR}/tls_edit${PROGSUFFIX}')
+  tls_edit_forced = ARGUMENTS.get('force_tls_edit')
+  if tls_edit_forced:
+    tls_edit_exe = env.File(env.SConstructAbsPath(tls_edit_forced))
+  else:
+    tls_edit_exe = env['BUILD_ENV'].File('${STAGING_DIR}/tls_edit${PROGSUFFIX}')
   return env.Command(
       nexe_name,
       [tls_edit_exe, raw_nexe],

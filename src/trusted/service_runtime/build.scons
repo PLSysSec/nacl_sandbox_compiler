@@ -101,7 +101,12 @@ elif env.Bit('build_x86_64'):
     ldr_inputs += [
         'arch/x86_64/sel_addrspace_win_x86_64.c',
         'arch/x86_64/fnstcw.S',
-        'arch/x86_64/fxsaverstor.S',
+        'arch/x86_64/fxsaverstor.S']
+    if not env.Bit('force_no_trusted_build'):
+      # This use of win64_asm_env causes an invocation of MSVC, even if sel_ldr
+      # would not otherwise be actually built. So don't include it if we aren't
+      # actually building sel_ldr
+      ldr_inputs += [
         win64_asm_env.ComponentObject('arch/x86_64/nacl_switch_unwind_win.asm')]
   else:
     ldr_inputs += ['arch/x86_64/sel_addrspace_posix_x86_64.c']
