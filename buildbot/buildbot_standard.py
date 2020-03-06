@@ -84,7 +84,7 @@ def DoGNBuild(status, context, force_arch=None):
 
   # Linux builds (or cross-builds) for every target.  Mac builds for
   # x86-32 and x86-64, and can build untrusted code for others.
-  if context.Windows() and context['arch'] != '64':
+  if context.Windows() and context['arch'] != '64' and force_arch == None:
     # The GN scripts for MSVC barf for a target_cpu other than x86 or x64
     # even if we only try to build the untrusted code.  Windows does build
     # for both x86-32 and x86-64 targets, but the GN Windows MSVC toolchain
@@ -318,12 +318,18 @@ def BuildScript(status, context):
   # Make sure our GN build is working.
   using_gn = DoGNBuild(status, context)
 
-  if context.Windows() and context['arch'] == '64':
-    # On Windows, do a second GN build for 32-bit.  The 32-bit
-    # bots can't do GN builds at all, because the toolchains GN uses don't
-    # support 32-bit hosts.  The 32-bit binaries built here cannot be
-    # tested on a 64-bit host, but compile time issues can be caught.
-    DoGNBuild(status, context, '32')
+  if context.Windows():
+    if context['arch'] == '64':
+      # On Windows, do a second GN build for 32-bit.  The 32-bit
+      # bots can't do GN builds at all, because the toolchains GN uses don't
+      # support 32-bit hosts.  The 32-bit binaries built here cannot be
+      # tested on a 64-bit host, but compile time issues can be caught.
+      DoGNBuild(status, context, '32')
+    elif using_gn == False:
+      # The GN build we want is not supported (e.g. ARM), then force-substitute
+      # a host arch that will run on the buildbot, so we can at last use
+      # tls_edit.exe to test the Scons build
+      using_gn = DoGNBuild(status, context, '64')
 
   # Just build both bitages of validator and test for --validator mode.
   if context['validator']:
@@ -456,6 +462,10 @@ def BuildScript(status, context):
             args=['large_tests_irt'])
   ### END tests ###
 
+  if context.Windows() and context['arch'] != '64':
+    # Currently only the only Windows bots are 64-bit, and they can't run the
+    # 32-bit sandbox.
+    return
   ### BEGIN GN tests ###
   DoGNTest(status, context, using_gn, 'gn_', ' (GN)')
   ### END GN tests ###
