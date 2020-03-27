@@ -2459,9 +2459,6 @@ def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
 
 
 def SetUpLinuxEnvArm(env):
-  if env.Bit('clang'):
-    raise UserError('Clang build not supported with ARM '
-                    '(use --no-clang to disable)')
   jail = env.GetToolchainDir(toolchain_name='arm_trusted')
   if not platform.machine().startswith('arm'):
     # Allow emulation on non-ARM hosts.
@@ -2473,21 +2470,29 @@ def SetUpLinuxEnvArm(env):
     env.Replace(CC='true', CXX='true', LD='true',
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
   else:
-    env.Replace(CC='arm-linux-gnueabihf-gcc',
-                CXX='arm-linux-gnueabihf-g++',
-                LD='arm-linux-gnueabihf-ld',
+    sysroot=os.path.join('${SOURCE_ROOT}/build/linux/debian_sid_arm-sysroot')
+    env.Prepend(CCFLAGS=['--sysroot='+sysroot],
                 ASFLAGS=[],
                 # The -rpath-link argument is needed on Ubuntu/Precise to
                 # avoid linker warnings about missing ld.linux.so.3.
                 # TODO(sbc): remove this once we stop supporting Precise
                 # as a build environment.
-                LINKFLAGS=['-Wl,-rpath-link=' + jail +
-                           '/lib/arm-linux-gnueabihf']
+                LINKFLAGS=['-fuse-ld=lld',
+                           '--sysroot='+sysroot]
                 )
     # Note we let the compiler choose whether it's -marm or -mthumb by
     # default.  The hope is this will have the best chance of testing
     # the prevailing compilation mode used for Chromium et al.
-    env.Prepend(CCFLAGS=['-march=armv7-a'])
+    # TODO(dschuff): gn seems to use mthumb, try changing later
+    if env.Bit('clang'):
+      env.Prepend(CCFLAGS=['--target=arm-linux-gnueabihf'])
+      env.Prepend(LINKFLAGS=['--target=arm-linux-gnueabihf'])
+    else:
+      env.Replace(CC='arm-linux-gnueabihf-gcc',
+                  CXX='arm-linux-gnueabihf-g++',
+                  LD='arm-linux-gnueabihf-ld')
+    env.Prepend(CCFLAGS=['-march=armv7-a','-mfloat-abi=hard',
+                         '-mtune=generic-armv7-a', '-mfpu=neon'])
 
   # get_plugin_dirname.cc has a dependency on dladdr
   env.Append(LIBS=['dl'])

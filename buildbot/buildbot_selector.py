@@ -267,7 +267,7 @@ for platform in [
     if sys.platform.startswith('linux'):
       arch_flags += ' --use-breakpad-tools'
       arch_flags += ' --no-gn'
-    if arch != 'arm' and not 'win' in platform:
+    if not 'win' in platform:
       arch_flags += ' --clang'
     if 'win' in platform:
       arch_flags += ' --no-scons'
