@@ -485,7 +485,7 @@ if breakpad_tools_dir is not None:
 
 # CLANG
 DeclareBit('clang', 'Use clang to build trusted code')
-pre_base_env.SetBitFromOption('clang', False)
+pre_base_env.SetBitFromOption('clang', True)
 
 DeclareBit('asan',
            'Use AddressSanitizer to build trusted code (implies --clang)')
@@ -999,6 +999,8 @@ def MakeArchSpecificEnv(platform=None):
     env.SetBits('build_x86')
   if env.Bit('build_arm_arm'):
     env.SetBits('build_arm')
+  if env.Bit('build_mips32') and env.Bit('clang'):
+    raise UserError('Mips build not supported with clang')
 
   env.Replace(BUILD_ISA_NAME=platform)
 

@@ -65,7 +65,7 @@ BOT_ASSIGNMENT = {
     'mac-newlib-opt-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'win7-64-newlib-opt-pnacl':
-        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
+        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl --no-clang',
     # TODO: Use buildbot_pnacl.py instead of buildbot_pnacl.sh once
     # the gyp_build is moved to buildbot_pnacl.py.
     'linux_64-newlib-mips-pnacl':
@@ -124,7 +124,7 @@ BOT_ASSIGNMENT = {
     'nacl-mac_newlib_opt_pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'nacl-win7_64_newlib_opt_pnacl':
-        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
+        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl --no-clang',
     # Pnacl spec2k trybots
     'nacl-precise_64-newlib-x86_32-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-x8632',
@@ -268,10 +268,8 @@ for platform in [
     if sys.platform.startswith('linux'):
       arch_flags += ' --use-breakpad-tools'
       arch_flags += ' --no-gn'
-    if not 'win' in platform:
-      arch_flags += ' --clang'
     if 'win' in platform:
-      arch_flags += ' --no-scons'
+      arch_flags += ' --no-scons --no-clang'
     for mode in ['dbg', 'opt']:
       for libc in ['newlib', 'glibc']:
         # Buildbots.

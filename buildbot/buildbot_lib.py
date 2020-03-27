@@ -67,7 +67,7 @@ def SetDefaultContextAttributes(context):
   context['default_scons_platform'] = ('x86-64' if platform == 'win'
                                        else 'x86-32')
   context['android'] = False
-  context['clang'] = False
+  context['clang'] = True
   context['asan'] = False
   context['pnacl'] = False
   context['use_glibc'] = False
@@ -132,6 +132,8 @@ def SetupWindowsEnvironment(context):
 
 def SetupLinuxEnvironment(context):
   if context['arch'] == 'mips32':
+    # Override the trusted compiler for mips, clang does not support mips
+    context['clang'] = False
     # Ensure the trusted mips toolchain is installed.
     cmd = ['build/package_version/package_version.py', '--packages',
            'linux_x86/mips_trusted', 'sync', '-x']
@@ -155,8 +157,9 @@ def ParseStandardCommandLine(context):
                     action='store_true', help='Inside toolchain build.')
   parser.add_option('--android', dest='android', default=False,
                     action='store_true', help='Build for Android.')
-  parser.add_option('--clang', dest='clang', default=False,
-                    action='store_true', help='Build trusted code with Clang.')
+  parser.add_option('--no-clang', dest='clang', default=True,
+                    action='store_false',
+                    help="Don't build trusted code with clang.")
   parser.add_option('--coverage', dest='coverage', default=False,
                     action='store_true',
                     help='Build and test for code coverage.')
@@ -456,7 +459,7 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
       'platform='+platform,
       ])
   cmd.extend(context['scons_args'])
-  if context['clang']: cmd.append('--clang')
+  if not context['clang']: cmd.append('--no-clang')
   if context['asan']: cmd.append('--asan')
   if context['use_glibc']: cmd.append('--nacl_glibc')
   if context['pnacl']: cmd.append('bitcode=1')
