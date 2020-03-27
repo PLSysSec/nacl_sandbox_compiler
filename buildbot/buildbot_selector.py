@@ -233,7 +233,8 @@ BOT_ASSIGNMENT = {
         python +
         ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64 '
         ' --sanitize thread --skip-tests',
-    # TODO(kschimpf): Bot is currently broken: --sanitize undefined not understood.
+    # TODO(kschimpf): Bot is currently broken: --sanitize undefined not
+    # understood.
     'nacl-toolchain-ubsan':
         python +
         ' buildbot/buildbot_pnacl_toolchain.py --trybot --tests-arch x86-64 '
@@ -326,12 +327,6 @@ def Main():
   # This avoids the need for admin changes on the bots in this case.
   env['PYTHONDONTWRITEBYTECODE'] = '1'
 
-  # Use .boto file from home-dir instead of buildbot supplied one.
-  if 'AWS_CREDENTIAL_FILE' in env:
-    del env['AWS_CREDENTIAL_FILE']
-  alt_boto = os.path.expanduser('~/.boto')
-  if os.path.exists(alt_boto):
-    env['BOTO_CONFIG'] = alt_boto
   env['GSUTIL'] = pynacl.file_tools.Which('gsutil.py', require_executable=False)
 
   # When running from cygwin, we sometimes want to use a native python.
