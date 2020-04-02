@@ -936,6 +936,10 @@ def SDKLibs(arch, is_canonical, extra_flags=[]):
                         'platform=' + pynacl.platform.GetArch3264(arch)])
   else:
     raise ValueError('Should not be building SDK libs for', arch)
+
+  if arch == 'mipsel':
+    scons_flags.append('--no-clang')
+
   libs = {
       GSDJoin('core_sdk_libs', arch): {
           'type': TargetLibBuildType(is_canonical),
@@ -944,6 +948,7 @@ def SDKLibs(arch, is_canonical, extra_flags=[]):
               'src_untrusted': os.path.join(NACL_DIR, 'src', 'untrusted'),
               'src_include': os.path.join(NACL_DIR, 'src', 'include'),
               'scons.py': os.path.join(NACL_DIR, 'scons.py'),
+              'SConstruct': os.path.join(NACL_DIR, 'SConstruct'),
               'site_scons': os.path.join(NACL_DIR, 'site_scons'),
           },
           'commands': [
