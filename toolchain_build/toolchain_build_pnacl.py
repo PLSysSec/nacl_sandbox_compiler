@@ -115,7 +115,7 @@ except NotImplementedError:
 # Required SDK version and target version for Mac builds.
 # See MAC_SDK_FLAGS, below.
 MAC_SDK_MIN = '10.10'
-MAC_DEPLOYMENT_TARGET = '10.6'
+MAC_DEPLOYMENT_TARGET = '10.9'
 
 # Redirectors are small shims acting like sym links with optional arguments.
 # For mac/linux we simply use a shell script which create small redirector
