@@ -145,7 +145,7 @@ mode-trybot-qemu() {
 }
 
 mode-buildbot-arm-dbg() {
-  BUILD_MODE_HOST=DEDUG
+  BUILD_MODE_HOST=DEBUG
   mode-buildbot-arm
   archive-for-hw-bots $(NAME_ARM_UPLOAD) regular
 }
@@ -163,7 +163,7 @@ mode-buildbot-arm-try() {
 # NOTE: the hw bots are too slow to build stuff on so we just
 #       use pre-built executables
 mode-buildbot-arm-hw-dbg() {
-  BUILD_MODE_HOST=DEDUG
+  BUILD_MODE_HOST=DEBUG
   unarchive-for-hw-bots $(NAME_ARM_DOWNLOAD)  regular
   mode-buildbot-arm-hw
 }
