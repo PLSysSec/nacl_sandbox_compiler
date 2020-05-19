@@ -117,9 +117,9 @@ BOT_ASSIGNMENT = {
          python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'nacl-precise_64-newlib-mips-pnacl':
         bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu mips32',
-    'nacl-arm_opt_panda':
+    'nacl-arm_opt':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
-    'nacl-arm_hw_opt_panda':
+    'nacl-arm_hw_opt':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
     'nacl-mac_newlib_opt_pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
@@ -130,9 +130,9 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-x8632',
     'nacl-precise_64-newlib-x86_64-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-x8664',
-    'nacl-arm_perf_panda':
+    'nacl-arm_perf':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-arm-buildonly',
-    'nacl-arm_hw_perf_panda':
+    'nacl-arm_hw_perf':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-arm-hw',
     # Toolchain glibc.
     'precise64-glibc': bash + ' buildbot/buildbot_linux-glibc-makefile.sh',
