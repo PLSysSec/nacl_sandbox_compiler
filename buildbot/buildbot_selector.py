@@ -50,9 +50,9 @@ BOT_ASSIGNMENT = {
         ' --sanitize address --skip-tests',
 
     # PNaCl.
-    'oneiric_32-newlib-arm_hw-pnacl-panda-dbg':
+    'odroid_32-newlib-arm_hw-pnacl-dbg':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-dbg',
-    'oneiric_32-newlib-arm_hw-pnacl-panda-opt':
+    'odroid_32-newlib-arm_hw-pnacl-opt':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
     'linux_64-newlib-arm_qemu-pnacl-dbg':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',
@@ -73,7 +73,7 @@ BOT_ASSIGNMENT = {
     # PNaCl Spec
     'linux_64-newlib-arm_qemu-pnacl-buildonly-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-buildonly',
-    'oneiric_32-newlib-arm_hw-pnacl-panda-spec':
+    'odroid_32-newlib-arm_hw-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-hw',
     'linux_64-newlib-x86_32-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-x8632',
