@@ -52,17 +52,6 @@ NAME_ARM_DOWNLOAD() {
   echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/${BUILDBOT_GOT_REVISION}"
 }
 
-NAME_ARM_TRY_UPLOAD() {
-  echo -n "${BUILDBOT_BUILDERNAME}/"
-  echo -n "${BUILDBOT_SLAVENAME}/"
-  echo -n "${BUILDBOT_BUILDNUMBER}"
-}
-NAME_ARM_TRY_DOWNLOAD() {
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/"
-  echo -n "${BUILDBOT_TRIGGERED_BY_SLAVENAME}/"
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
-}
-
 # Remove unneeded intermediate object files from the output to reduce the size
 # of the tarball we copy between builders. The exception for the /lib directory
 # is because nacl-clang needs crt{1,i,n}.o
@@ -157,7 +146,7 @@ mode-buildbot-arm-opt() {
 
 mode-buildbot-arm-try() {
   mode-buildbot-arm
-  archive-for-hw-bots $(NAME_ARM_TRY_UPLOAD) try
+  archive-for-hw-bots $(NAME_ARM_UPLOAD) try
 }
 
 # NOTE: the hw bots are too slow to build stuff on so we just
@@ -174,7 +163,7 @@ mode-buildbot-arm-hw-opt() {
 }
 
 mode-buildbot-arm-hw-try() {
-  unarchive-for-hw-bots $(NAME_ARM_TRY_DOWNLOAD)  try
+  unarchive-for-hw-bots $(NAME_ARM_DOWNLOAD)  try
   mode-buildbot-arm-hw
 }
 

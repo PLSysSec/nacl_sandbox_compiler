@@ -25,8 +25,6 @@ readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly SPEC_BASE="tests/spec2k"
 readonly ARCHIVE_NAME=$(${SPEC_BASE}/run_all.sh GetTestArchiveName)
 
-readonly NAME_ARM_TRY_UPLOAD=$(${BUILDBOT_PNACL} NAME_ARM_TRY_UPLOAD)
-readonly NAME_ARM_TRY_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_TRY_DOWNLOAD)
 readonly NAME_ARM_UPLOAD=$(${BUILDBOT_PNACL} NAME_ARM_UPLOAD)
 readonly NAME_ARM_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_DOWNLOAD)
 
@@ -151,7 +149,7 @@ upload-test-binaries() {
   popd
   echo "@@@BUILD_STEP spec2k upload@@@"
   if [[ ${try} == "try" ]]; then
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${NAME_ARM_TRY_UPLOAD} \
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${NAME_ARM_UPLOAD} \
         ${ARCHIVE_NAME}
   else
     ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${NAME_ARM_UPLOAD} \
@@ -163,7 +161,7 @@ download-test-binaries() {
   local try="$1"
   echo "@@@BUILD_STEP spec2k download@@@"
   if [[ ${try} == "try" ]]; then
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${NAME_ARM_TRY_DOWNLOAD} \
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${NAME_ARM_DOWNLOAD} \
         ${ARCHIVE_NAME}
   else
     ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${NAME_ARM_DOWNLOAD} \
@@ -266,14 +264,14 @@ pnacl-trybot-arm-buildonly() {
   clobber
   download-spec2k-harness
   build-prerequisites "arm" "bitcode" "arm-ncval-core"
-  ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_TRY_UPLOAD}" try
+  ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_UPLOAD}" try
   build-tests SetupPnaclPexeOpt "${TRYBOT_TESTS}" 0 1
   upload-test-binaries "${TRYBOT_TESTS}" try
 }
 
 pnacl-trybot-arm-hw() {
   clobber
-  ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_TRY_DOWNLOAD}" try
+  ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_DOWNLOAD}" try
   download-test-binaries try
   build-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 1 1
