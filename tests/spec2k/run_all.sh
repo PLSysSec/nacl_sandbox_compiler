@@ -960,7 +960,7 @@ TimedBuildAndRunBenchmarks() {
 PackageArmBinaries() {
   local BENCH_LIST=$(GetBenchmarkList "$@")
 
-  local UNZIPPED_TAR=$(basename ${TESTS_ARCHIVE} .gz)
+  local UNZIPPED_TAR=${BETWEEN_BUILDERS}/$(basename ${TESTS_ARCHIVE} .gz)
 
   # Switch to native_client directory (from tests/spec2k) so that
   # when we extract, the builder will have a more natural directory layout.
@@ -983,7 +983,7 @@ PackageArmBinaries() {
 #@ located in the nacl root directory, but the script is run from the spec dir.
 UnpackArmBinaries() {
   (cd ${NACL_ROOT};
-    tar xvzf ${TESTS_ARCHIVE})
+    tar xvzf between_builders/${TESTS_ARCHIVE})
 }
 
 GetTestArchiveName() {

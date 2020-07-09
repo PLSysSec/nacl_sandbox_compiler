@@ -312,6 +312,7 @@ def Main():
   build_revision = os.environ.get('BUILDBOT_GOT_REVISION',
                                   os.environ.get('BUILDBOT_REVISION'))
   slave_type = os.environ.get('BUILDBOT_SLAVE_TYPE')
+  bot_type = os.environ.get('BOT_TYPE')
   cmd = BOT_ASSIGNMENT.get(builder)
   if not cmd:
     sys.stderr.write('ERROR - unset/invalid builder name\n')
@@ -324,7 +325,9 @@ def Main():
   # This avoids the need for admin changes on the bots in this case.
   env['PYTHONDONTWRITEBYTECODE'] = '1'
 
-  env['GSUTIL'] = pynacl.file_tools.Which('gsutil.py', require_executable=False)
+  if bot_type != 'arm_hw_bot':
+    env['GSUTIL'] = pynacl.file_tools.Which('gsutil.py',
+                                            require_executable=False)
 
   # When running from cygwin, we sometimes want to use a native python.
   # The native python will use the depot_tools version by invoking python.bat.
