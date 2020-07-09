@@ -27,8 +27,10 @@ readonly TESTS_ARCHIVE=arm-spec.tar.gz
 ######################################################################
 # TODO(robertm): make this configurable from the commandline
 
+# TODO(crbug.com/1101347): 253.perlbmk is disabled since it causes a timeout on
+# ARM bots.
 readonly LIST_INT_C="164.gzip 175.vpr 176.gcc 181.mcf 186.crafty 197.parser \
-253.perlbmk 254.gap 255.vortex 256.bzip2 300.twolf"
+254.gap 255.vortex 256.bzip2 300.twolf"
 
 readonly LIST_FP_C="177.mesa 179.art 183.equake 188.ammp"
 
