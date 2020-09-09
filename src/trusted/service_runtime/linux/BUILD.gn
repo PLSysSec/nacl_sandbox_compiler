@@ -157,7 +157,7 @@ if (current_toolchain == bootstrap_toolchain) {
     ]
     args = rebase_path(inputs + outputs, root_build_dir)
   }
-} else if (is_linux) {
+} else if (is_linux || is_chromeos) {
   copy("bootstrap") {
     bootstrap = ":munge_nacl_helper_bootstrap($bootstrap_toolchain)"
 
