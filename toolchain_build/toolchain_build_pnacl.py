@@ -1142,6 +1142,8 @@ def HostToolsSaigo(host, options):
                   '-DLLVM_LINK_LLVM_DYLIB=' + build_dylib,
                   '-DLLVM_CCACHE_BUILD=' + ('ON' if ProgramPath('ccache') and
                                             not options.goma else 'OFF'),
+                  '-DLLVM_ENABLE_TERMINFO=' + ('OFF' if TripleIsLinux(host)
+                                               else 'ON'),
                   '%(llvm_saigo_src)s/llvm'],
                   env=llvm_cmake_config_env,
                   path_dirs=GomaPathDirs(host, options))] +
