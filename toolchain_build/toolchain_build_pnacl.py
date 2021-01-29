@@ -960,8 +960,20 @@ def TargetLibCompiler(host, options):
           ]
       },
   }
+  # TODO(fabiansommer): Enable this on Windows bot.
+  if TripleIsLinux(host):
+    compiler['target_lib_compiler_saigo'] = {
+        'type': 'work',
+        'output_subdir': 'target_lib_compiler_saigo',
+        'dependencies': [H('llvm-saigo'), H('binutils_x86')],
+        'commands': [
+            command.CopyRecursive('%(' + t + ')s', '%(output)s')
+            for t in [H('llvm-saigo'), H('binutils_x86')]
+        ]
+    }
 
   if TripleIsWindows(host):
+    # Add libdl for use in the PNaCl bitcode toolchain.
     compiler['target_lib_compiler']['dependencies'].append('libdl')
     compiler['target_lib_compiler']['commands'].append(
         command.CopyRecursive('%(libdl)s', '%(output)s'))
@@ -1396,6 +1408,7 @@ def main():
     if not args.pnacl_in_pnacl:
       packages.update(HostLibs(host, args))
     packages.update(HostToolsDirectToNacl(host, args))
+    # TODO(fabiansommer): Enable building this on Windows bot.
     if TripleIsLinux(host):
       packages.update(HostToolsSaigo(host, args))
   if not args.pnacl_in_pnacl:
@@ -1414,9 +1427,11 @@ def main():
     packages.update(pnacl_targetlibs.TargetLibsSrc(
       GetGitSyncCmdsCallback(rev)))
     for bias in BITCODE_BIASES:
-      packages.update(pnacl_targetlibs.TargetLibs(bias, is_canonical))
+      packages.update(
+          pnacl_targetlibs.TargetLibs(bias, is_canonical, TripleIsLinux(host)))
     for arch in DIRECT_TO_NACL_ARCHES:
-      packages.update(pnacl_targetlibs.TargetLibs(arch, is_canonical))
+      packages.update(
+          pnacl_targetlibs.TargetLibs(arch, is_canonical, TripleIsLinux(host)))
       if not args.no_sdk_libs:
         packages.update(pnacl_targetlibs.SDKLibs(arch, is_canonical))
     for arch in TRANSLATOR_ARCHES:

@@ -27,7 +27,7 @@ def ToolName(name):
 # Return the path to a tool to build target libraries
 # msys should be false if the path will be called directly rather than passed to
 # an msys or cygwin tool such as sh or make.
-def PnaclTool(toolname, arch='le32', msys=True):
+def PnaclTool(toolname, arch='le32', msys=True, saigo=False):
   if not msys and pynacl.platform.IsWindows():
     ext = '.bat'
   else:
@@ -40,6 +40,10 @@ def PnaclTool(toolname, arch='le32', msys=True):
     base = ToolName(toolname)
   else:
     base = '-'.join([TargetArch(arch), 'nacl', toolname])
+  if saigo:
+    return command.path.join('%(abs_target_lib_compiler_saigo)s',
+                             'bin', base + ext)
+
   return command.path.join('%(abs_target_lib_compiler)s',
                            'bin', base + ext)
 
@@ -47,8 +51,9 @@ def PnaclTool(toolname, arch='le32', msys=True):
 TOOL_ENV_NAMES = { 'CC': 'clang', 'CXX': 'clang++', 'AR': 'ar', 'NM': 'nm',
                    'RANLIB': 'ranlib', 'READELF': 'readelf', 'AS': 'as' }
 
-def TargetTools(arch):
-  return [ tool + '_FOR_TARGET=' + PnaclTool(name, arch=arch, msys=True)
+def TargetTools(arch, saigo):
+  return [ tool + '_FOR_TARGET='
+           + PnaclTool(name, arch=arch, msys=True, saigo=saigo)
            for tool, name in TOOL_ENV_NAMES.iteritems() ]
 
 
@@ -451,7 +456,9 @@ def D2NLibsSupportCommands(bias_arch, clang_libdir):
 def TargetLibBuildType(is_canonical):
   return 'build' if is_canonical else 'build_noncanonical'
 
-def TargetLibs(bias_arch, is_canonical):
+# TODO(fabiansommer): Remove show_saigo argument once building saigo-newlib
+# works on Windows.
+def TargetLibs(bias_arch, is_canonical, show_saigo=True):
   def T(component_name):
     return GSDJoin(component_name, bias_arch)
   target_triple = TripleFromArch(bias_arch)
@@ -475,7 +482,7 @@ def TargetLibs(bias_arch, is_canonical):
           'commands' : [
               command.SkipForIncrementalCommand(
                   ['sh', '%(newlib_src)s/configure'] +
-                  TargetTools(bias_arch) +
+                  TargetTools(bias_arch, saigo=False) +
                   ['CFLAGS_FOR_TARGET=' +
                       TargetLibCflags(bias_arch) +
                       newlib_cpp_flags,
@@ -552,6 +559,39 @@ def TargetLibs(bias_arch, is_canonical):
           ] + LibcxxDirectoryCmds(bias_arch)
       },
   }
+  # TODO(fabiansommer): Enable saigo toolchain for more arches.
+  if (show_saigo and bias_arch == 'i686'):
+    libs.update({
+      T('newlib_saigo'): {
+          'type': TargetLibBuildType(is_canonical),
+          'dependencies': [ 'newlib_src', 'target_lib_compiler_saigo'],
+          'commands' : [
+              command.SkipForIncrementalCommand(
+                  ['sh', '%(newlib_src)s/configure'] +
+                  TargetTools(bias_arch, saigo=True) +
+                  ['CFLAGS_FOR_TARGET=' +
+                      TargetLibCflags(bias_arch) +
+                      newlib_cpp_flags,
+                  '--prefix=',
+                  '--disable-newlib-supplied-syscalls',
+                  '--disable-texinfo',
+                  '--disable-libgloss',
+                  '--enable-newlib-iconv',
+                  '--enable-newlib-iconv-from-encodings=' +
+                  'UTF-8,UTF-16LE,UCS-4LE,UTF-16,UCS-4',
+                  '--enable-newlib-iconv-to-encodings=' +
+                  'UTF-8,UTF-16LE,UCS-4LE,UTF-16,UCS-4',
+                  '--enable-newlib-io-long-long',
+                  '--enable-newlib-io-long-double',
+                  '--enable-newlib-io-c99-formats',
+                  '--enable-newlib-mb',
+                  '--target=le32-nacl'
+              ]),
+              command.Command(MakeCommand()),
+              command.Command(['make', 'DESTDIR=%(abs_output)s', 'install']),
+          ] + NewlibDirectoryCmds(bias_arch, 'le32-nacl')
+      }
+    })
   if IsBCArch(bias_arch):
     libs.update({
       T('compiler_rt_bc'): {
