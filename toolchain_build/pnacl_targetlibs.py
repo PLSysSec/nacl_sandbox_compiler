@@ -456,9 +456,7 @@ def D2NLibsSupportCommands(bias_arch, clang_libdir):
 def TargetLibBuildType(is_canonical):
   return 'build' if is_canonical else 'build_noncanonical'
 
-# TODO(fabiansommer): Remove show_saigo argument once building saigo-newlib
-# works on Windows.
-def TargetLibs(bias_arch, is_canonical, show_saigo=True):
+def TargetLibs(bias_arch, is_canonical):
   def T(component_name):
     return GSDJoin(component_name, bias_arch)
   target_triple = TripleFromArch(bias_arch)
@@ -560,7 +558,7 @@ def TargetLibs(bias_arch, is_canonical, show_saigo=True):
       },
   }
   # TODO(fabiansommer): Enable saigo toolchain for more arches.
-  if (show_saigo and bias_arch == 'i686'):
+  if (bias_arch == 'i686'):
     libs.update({
       T('newlib_saigo'): {
           'type': TargetLibBuildType(is_canonical),
