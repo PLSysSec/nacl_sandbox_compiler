@@ -20,6 +20,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 CLANG_VER = '3.7.0'
+SAIGO_CLANG_VER = '12.0.0'
 
 def ToolName(name):
   return 'pnacl-' + name
@@ -155,6 +156,14 @@ def NewlibIsystemCflags(bias_arch):
     command.path.join('%(' + GSDJoin('abs_newlib', include_arch) +')s',
                       TripleFromArch(include_arch), 'include')])
 
+def NewlibSaigoIsystemCflags(bias_arch):
+  # TODO(fabiansommer): Replace the next line with MultilibArch(bias_arch)
+  # once x86_64 works. Probably merge this function with the above function.
+  include_arch = bias_arch
+  return ' '.join([
+    '-isystem',
+    command.path.join('%(' + GSDJoin('abs_newlib_saigo', include_arch) +')s',
+                      TripleFromArch(include_arch), 'include')])
 
 def LibCxxCflags(bias_arch):
   # HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
@@ -163,6 +172,10 @@ def LibCxxCflags(bias_arch):
                    '-fexceptions', '-DHAS_THREAD_LOCAL=1',
                    '-D__ARM_DWARF_EH__'])
 
+def LibCxxSaigoCflags(bias_arch):
+  return ' '.join([TargetLibCflags(bias_arch),
+                   NewlibSaigoIsystemCflags(bias_arch),
+                   '-DHAS_THREAD_LOCAL=1'])
 
 def NativeTargetFlag(bias_arch):
   arch = TargetArch(bias_arch)
@@ -190,13 +203,16 @@ def NonSFITargetLibCflags(bias_arch):
 
 # Build a single object file for the target.
 def BuildTargetObjectCmd(source, output, bias_arch, output_dir='%(cwd)s',
-                         extra_flags=[]):
+                         extra_flags=[], saigo=False):
   flags = ['-Wall', '-Werror', '-O2', '-c'] + extra_flags
   if IsBiasedBCArch(bias_arch):
     flags.extend(BiasedBitcodeTargetFlag(bias_arch))
-  flags.extend(NewlibIsystemCflags(bias_arch).split())
+  if saigo:
+    flags.extend(NewlibSaigoIsystemCflags(bias_arch).split())
+  else:
+    flags.extend(NewlibIsystemCflags(bias_arch).split())
   return command.Command(
-      [PnaclTool('clang', arch=bias_arch, msys=False)] + flags + [
+      [PnaclTool('clang', arch=bias_arch, msys=False, saigo=saigo)] + flags + [
           command.path.join('%(src)s', source),
      '-o', command.path.join(output_dir, output)])
 
@@ -351,7 +367,7 @@ GROUP ( libnacl.a libcrt_common.a )
   return template % ', '.join(['"' + fmt + '"' for fmt in format_list])
 
 
-def NewlibDirectoryCmds(bias_arch, newlib_triple):
+def NewlibDirectoryCmds(bias_arch, newlib_triple, saigo=False):
   commands = []
   def NewlibLib(name):
     return os.path.join('%(output)s', newlib_triple, 'lib', name)
@@ -361,7 +377,9 @@ def NewlibDirectoryCmds(bias_arch, newlib_triple):
       command.WriteData(NewlibLibcScript(bias_arch, 'elf64'),
                         NewlibLib('libc.a'))])
   target_triple = TripleFromArch(bias_arch)
-  if bias_arch != 'i686':
+  # TODO(fabiansommer): The saigo parameter should be unnecessary once newlib
+  # can be compiled for x86_64.
+  if bias_arch != 'i686' or saigo:
     commands.extend([
         # For biased bitcode builds, we configured newlib with target=le32-nacl
         # to get its pure C implementation, so rename its output dir (which
@@ -409,21 +427,27 @@ def LibcxxDirectoryCmds(bias_arch):
       command.RemoveDirectory(os.path.join('%(output)s', 'i686-nacl')),
   ]
 
-def D2NLibsSupportCommands(bias_arch, clang_libdir):
+def D2NLibsSupportCommands(bias_arch, clang_libdir, saigo=False):
   def TL(lib):
     return GSDJoin(lib, pynacl.platform.GetArch3264(bias_arch))
   def TranslatorFile(lib, filename):
     return os.path.join('%(' + TL(lib) + ')s', filename)
+  extra_cflags = ''
+  if saigo:
+    extra_cflags = NewlibSaigoIsystemCflags(bias_arch)
+  else:
+    extra_cflags = NewlibIsystemCflags(bias_arch)
   commands = [
               # Build compiler_rt which is now also used for the PNaCl
               # translator.
               command.Command(MakeCommand() + [
                   '-C', '%(abs_compiler_rt_src)s', 'ProjObjRoot=%(cwd)s',
                   'VERBOSE=1',
-                  'AR=' + PnaclTool('ar', arch=bias_arch),
-                  'RANLIB=' + PnaclTool('ranlib', arch=bias_arch),
-                  'CC=' + PnaclTool('clang', arch=bias_arch), 'clang_nacl',
-                  'EXTRA_CFLAGS=' + NewlibIsystemCflags(bias_arch)]),
+                  'AR=' + PnaclTool('ar', arch=bias_arch, saigo=saigo),
+                  'RANLIB=' + PnaclTool('ranlib', arch=bias_arch, saigo=saigo),
+                  'CC=' + PnaclTool('clang', arch=bias_arch, saigo=saigo),
+                  'clang_nacl',
+                  'EXTRA_CFLAGS=' + extra_cflags]),
               command.Mkdir(clang_libdir, parents=True),
               command.Copy(os.path.join(
                 'clang_nacl',
@@ -432,14 +456,18 @@ def D2NLibsSupportCommands(bias_arch, clang_libdir):
                 'libcompiler_rt.a'),
                  os.path.join('%(output)s', clang_libdir,
                               'libgcc.a')),
-              command.Copy(
-                  TranslatorFile('libgcc_eh', 'libgcc_eh.a'),
-                  os.path.join('%(output)s', clang_libdir, 'libgcc_eh.a')),
               BuildTargetObjectCmd('clang_direct/crtbegin.c', 'crtbeginT.o',
-                                   bias_arch, output_dir=clang_libdir),
+                                   bias_arch, output_dir=clang_libdir,
+                                   saigo=saigo),
               BuildTargetObjectCmd('crtend.c', 'crtend.o',
-                                   bias_arch, output_dir=clang_libdir),
+                                   bias_arch, output_dir=clang_libdir,
+                                   saigo=saigo),
   ]
+  if not saigo:
+      commands.extend([
+          command.Copy(TranslatorFile('libgcc_eh', 'libgcc_eh.a'),
+                       os.path.join('%(output)s', clang_libdir, 'libgcc_eh.a')),
+      ])
   if bias_arch == "mipsel":
        commands.extend([
            BuildTargetObjectCmd('bitcode/pnaclmm.c', 'pnaclmm.o', bias_arch),
@@ -472,6 +500,8 @@ def TargetLibs(bias_arch, is_canonical):
 
   clang_libdir = os.path.join(
       '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', target_triple)
+  saigo_clang_libdir = os.path.join(
+      '%(output)s', 'lib', 'clang', SAIGO_CLANG_VER, 'lib', target_triple)
   libc_libdir = os.path.join('%(output)s', MultilibLibDir(bias_arch))
   libs = {
       T('newlib'): {
@@ -587,8 +617,69 @@ def TargetLibs(bias_arch, is_canonical):
               ]),
               command.Command(MakeCommand()),
               command.Command(['make', 'DESTDIR=%(abs_output)s', 'install']),
-          ] + NewlibDirectoryCmds(bias_arch, 'le32-nacl')
-      }
+          ] + NewlibDirectoryCmds(bias_arch, 'le32-nacl', saigo=True)
+      },
+      T('libs_support_saigo'): {
+          'type': TargetLibBuildType(is_canonical),
+          # TODO(fabiansommer): Change bias_arch to MultilibArch(bias_arch) once
+          # newlib_saigo_x86_64 works - see old libcxx target.
+          'dependencies': [ 'compiler_rt_src',
+                            GSDJoin('newlib_saigo', bias_arch),
+                            'target_lib_compiler_saigo'],
+          'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
+                      'tls_params': os.path.join(NACL_DIR, 'src', 'untrusted',
+                                                 'nacl', 'tls_params.h')},
+          'commands': D2NLibsSupportCommands(bias_arch,
+                                             saigo_clang_libdir,
+                                             saigo=True)
+      },
+      T('libcxx_saigo'): {
+          'type': TargetLibBuildType(is_canonical),
+          # TODO(fabiansommer): Change bias_arch to MultilibArch(bias_arch) once
+          # newlib_saigo_x86_64 works - see old libcxx target.
+          'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
+                           'target_lib_compiler_saigo', T('newlib_saigo'),
+                           GSDJoin('newlib_saigo', bias_arch),
+                           T('libs_support_saigo')],
+          'commands' :
+              [command.SkipForIncrementalCommand(
+                  [pnacl_commands.PrebuiltCMakeBin(), '-G', 'Unix Makefiles',
+                   '-DCMAKE_C_COMPILER_WORKS=1',
+                   '-DCMAKE_CXX_COMPILER_WORKS=1',
+                   '-DCMAKE_INSTALL_PREFIX=',
+                   '-DCMAKE_BUILD_TYPE=Release',
+                   '-DCMAKE_C_COMPILER=' +
+                       PnaclTool('clang', bias_arch, saigo=True),
+                   '-DCMAKE_CXX_COMPILER=' +
+                       PnaclTool('clang++', bias_arch, saigo=True),
+                   '-DCMAKE_SYSTEM_NAME=nacl',
+                   '-DCMAKE_NM=' + PnaclTool('nm', bias_arch, saigo=True),
+                   '-DCMAKE_RANLIB=' +
+                       PnaclTool('ranlib', bias_arch, saigo=True),
+                   '-DCMAKE_LD=' + PnaclTool('illegal', bias_arch, saigo=True),
+                   '-DCMAKE_AS=' + PnaclTool('as', bias_arch, saigo=True),
+                   '-DCMAKE_OBJDUMP=' +
+                       PnaclTool('illegal', bias_arch, saigo=True),
+                   '-DCMAKE_C_FLAGS=-std=gnu11 ' + LibCxxSaigoCflags(bias_arch),
+                   '-DCMAKE_CXX_FLAGS=-std=gnu++11 ' +
+                       LibCxxSaigoCflags(bias_arch),
+                   '-DLIBCXX_ENABLE_CXX0X=0',
+                   '-DLIBCXX_ENABLE_SHARED=0',
+                   '-DLIBCXX_CXX_ABI=libcxxabi',
+                   '-DLIBCXX_LIBCXXABI_INCLUDE_PATHS=' + command.path.join(
+                       '%(abs_libcxxabi_src)s', 'include'),
+                   '%(libcxx_src)s']),
+              command.Copy(os.path.join('%(gcc_src)s', 'gcc',
+                                        'unwind-generic.h'),
+                           os.path.join('include', 'unwind.h')),
+              command.Command(MakeCommand() + ['VERBOSE=1']),
+              command.Command([
+                  'make',
+                  'DESTDIR=' + os.path.join('%(abs_output)s', target_triple),
+                  'VERBOSE=1',
+                  'install']),
+          ] + LibcxxDirectoryCmds(bias_arch)
+      },
     })
   if IsBCArch(bias_arch):
     libs.update({
