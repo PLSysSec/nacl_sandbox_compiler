@@ -3,6 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #if !defined(__clang__)
     /*
      * The .init section contains one symbol, _init, which is the entry
@@ -43,12 +44,20 @@ _fini:
     .p2align NACLENTRYALIGN
     .global _init
 _init:
+#if !defined(__saigo__)
      naclret
+#else
+     ret
+#endif
 
      .p2align NACLENTRYALIGN
      .global _fini
 _fini:
+#if !defined(__saigo__)
      naclret
+#else
+     ret
+#endif
 #endif
     /*
      * The code that follows will be appended by the linker, and will not

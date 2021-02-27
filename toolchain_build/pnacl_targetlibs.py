@@ -414,10 +414,23 @@ def NewlibDirectoryCmds(bias_arch, newlib_triple, saigo=False):
   return commands
 
 
-def LibcxxDirectoryCmds(bias_arch):
+def LibcxxDirectoryCmds(bias_arch, saigo=False):
   if bias_arch != 'i686':
     return []
   lib_dir = os.path.join('%(output)s', MultilibLibDir(bias_arch))
+  # TODO(fabiansommer): Remove the special treatment for saigo once x86-64
+  # libcxx works.
+  if saigo:
+    return [
+      # Use the multlib-style lib dir and shared headers for i686
+      command.Mkdir(os.path.dirname(lib_dir)),
+      command.Rename(os.path.join('%(output)s', 'i686-nacl', 'lib'),
+                     lib_dir),
+      # For saigo, we need the headers since we don't have them from x86-64.
+      command.Rename(os.path.join('%(output)s', 'i686-nacl', 'include'),
+                     os.path.join('%(output)s', 'x86_64-nacl', 'include')),
+      command.RemoveDirectory(os.path.join('%(output)s', 'i686-nacl')),
+    ]
   return [
       # Use the multlib-style lib dir and shared headers for i686
       command.Mkdir(os.path.dirname(lib_dir)),
@@ -678,7 +691,7 @@ def TargetLibs(bias_arch, is_canonical):
                   'DESTDIR=' + os.path.join('%(abs_output)s', target_triple),
                   'VERBOSE=1',
                   'install']),
-          ] + LibcxxDirectoryCmds(bias_arch)
+          ] + LibcxxDirectoryCmds(bias_arch, saigo=True)
       },
     })
   if IsBCArch(bias_arch):
@@ -1050,6 +1063,9 @@ def UnsandboxedRuntime(arch, is_canonical):
 def SDKCompiler(arches):
   arch_packages = ([GSDJoin('newlib', arch) for arch in arches] +
                    [GSDJoin('libcxx', arch) for arch in arches])
+  # TODO(fabiansommer): Use more arches
+  saigo_packages = [GSDJoin('newlib_saigo', 'i686'),
+                    GSDJoin('libcxx_saigo', 'i686')]
   compiler = {
       'sdk_compiler': {
           'type': 'work',
@@ -1059,13 +1075,32 @@ def SDKCompiler(arches):
               command.CopyRecursive('%(' + t + ')s', '%(output)s')
               for t in ['target_lib_compiler'] + arch_packages],
       },
+      'sdk_compiler_saigo': {
+          'type': 'work',
+          'output_subdir': 'sdk_compiler_saigo',
+          'dependencies': ['target_lib_compiler_saigo'] + saigo_packages,
+          'commands': [
+              command.CopyRecursive('%(' + t + ')s', '%(output)s')
+              for t in ['target_lib_compiler_saigo'] + saigo_packages] +
+          [
+              # TODO(fabiansommer): The following commands can be deleted once
+              # x86-64 works.
+              # Headers are the same for 32 bits and 64 bits.
+              command.CopyRecursive(
+                     os.path.join('%(output)s', 'i686-nacl', 'include'),
+                     os.path.join('%(output)s', 'x86_64-nacl', 'include')),
+              # 32 bit libs should be in lib32.
+              command.CopyRecursive(
+                     os.path.join('%(output)s', 'i686-nacl', 'lib'),
+                     os.path.join('%(output)s', 'x86_64-nacl', 'lib32')),
+          ],
+      },
   }
   return compiler
 
 
 def SDKLibs(arch, is_canonical, extra_flags=[]):
   scons_flags = ['--verbose', 'MODE=nacl', '-j%(cores)s', 'naclsdk_validate=0',
-                 'pnacl_newlib_dir=%(abs_sdk_compiler)s',
                  'DESTINATION_ROOT=%(work_dir)s']
   scons_flags.extend(extra_flags)
   if arch == 'le32':
@@ -1078,6 +1113,9 @@ def SDKLibs(arch, is_canonical, extra_flags=[]):
 
   if arch == 'mipsel':
     scons_flags.append('--no-clang')
+
+  scons_flags_pnacl = ['pnacl_newlib_dir=%(abs_sdk_compiler)s']
+  scons_flags_saigo = ['pnacl_newlib_dir=%(abs_sdk_compiler_saigo)s']
 
   libs = {
       GSDJoin('core_sdk_libs', arch): {
@@ -1097,9 +1135,31 @@ def SDKLibs(arch, is_canonical, extra_flags=[]):
                                              TripleFromArch(MultilibArch(arch)),
                                              'include'),
                  'libdir=' + os.path.join('%(output)s', MultilibLibDir(arch)),
-                 'install'] + scons_flags,
+                 'install'] + scons_flags + scons_flags_pnacl,
                 cwd=NACL_DIR),
           ],
       }
   }
+  if arch == 'i686':
+    libs[GSDJoin('core_sdk_libs_saigo', arch)] = {
+        'type': TargetLibBuildType(is_canonical),
+        'dependencies': ['sdk_compiler_saigo', 'target_lib_compiler_saigo'],
+        'inputs': {
+            'src_untrusted': os.path.join(NACL_DIR, 'src', 'untrusted'),
+            'src_include': os.path.join(NACL_DIR, 'src', 'include'),
+            'scons.py': os.path.join(NACL_DIR, 'scons.py'),
+            'SConstruct': os.path.join(NACL_DIR, 'SConstruct'),
+            'site_scons': os.path.join(NACL_DIR, 'site_scons'),
+        },
+        'commands': [
+          command.Command(
+              [sys.executable, '%(scons.py)s',
+                'includedir=' +os.path.join('%(output)s',
+                                            TripleFromArch(MultilibArch(arch)),
+                                            'include'),
+                'libdir=' + os.path.join('%(output)s', MultilibLibDir(arch)),
+                'install'] + scons_flags + scons_flags_saigo,
+              cwd=NACL_DIR),
+        ],
+    }
   return libs
