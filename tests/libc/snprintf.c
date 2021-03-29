@@ -13,7 +13,7 @@
     char buf[SZ + 1];                                           \
     int res;                                                    \
     /* Make sure null-termination occurs. */                    \
-    memset(buf, '@', SZ);                                       \
+    memset(buf, '@', (SZ));                                     \
     printf("snprintf(buf, " #SZ ", \"%s\", ...) => ", FMT);     \
     /* Pass NULL as a buffer if SZ is 0, which is allowed. */   \
     res = snprintf(SZ ? buf : NULL, SZ, FMT, __VA_ARGS__);      \
