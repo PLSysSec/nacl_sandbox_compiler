@@ -15,6 +15,11 @@ if env.Bit('nacl_clang'):
   # Use the integrated assembler; this code can end up in the Chrome IRT, so we
   # want it to avoid revealing the sandbox base address.
   env.Append(CCFLAGS=['-integrated-as'])
+  # malloc.c makes use of some side effects when calling malloc() in its
+  # implementation of calloc(). Clang sees this as undefined behavior, leading
+  # to an incorrect calloc(). Use -fno-builtin so that clang does not make
+  # assumptions about the behavior of malloc() to avoid this.
+  env.Append(CCFLAGS=['-fno-builtin'])
 # Sources are split into essentially one function per file to be in
 # alignment with the linker, which resolves symbols by including entire
 # object files.  Placing multiple definitions in one file may result in
