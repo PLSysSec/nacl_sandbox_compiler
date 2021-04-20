@@ -6,7 +6,7 @@
 
 #include "nacl_x86_defs.h"
 
-#if defined(__native_client_nonsfi__)
+#if defined(__native_client_nonsfi__) || defined(__saigo__)
 # define NACLJMP(reg) jmp *reg
 #else
 # define NACLJMP(reg) nacljmp reg
@@ -61,4 +61,3 @@ longjmp:
     movl    20(%ecx), %ecx
     NACLJMP(%ecx)
     .p2align NACL_BLOCK_SHIFT
-

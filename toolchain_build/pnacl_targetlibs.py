@@ -234,7 +234,7 @@ def BuildTargetTranslatorCmd(sourcefile, output, arch, extra_flags=[],
      '-o', command.path.join(output_dir, output)])
 
 
-def BuildLibgccEhCmd(sourcefile, output, arch, no_nacl_gcc):
+def BuildLibgccEhCmd(sourcefile, output, arch, no_nacl_gcc, saigo):
   # Return a command to compile a file from libgcc_eh (see comments in at the
   # rule definition below).
   flags_common = ['-DENABLE_RUNTIME_CHECKING', '-g', '-O2', '-W', '-Wall',
@@ -255,7 +255,8 @@ def BuildLibgccEhCmd(sourcefile, output, arch, no_nacl_gcc):
   # For ARM, LLVM does work and we use it to avoid dealing with the fact that
   # arm-nacl-gcc uses different libgcc support functions than PNaCl.
   if arch in ('arm', 'mips32'):
-    cc = PnaclTool('clang', arch=TranslatorArchToBiasArch(arch), msys=False)
+    cc = PnaclTool('clang', arch=TranslatorArchToBiasArch(arch),
+                   msys=False, saigo=saigo)
     flags_naclcc = []
   else:
     if no_nacl_gcc:
@@ -407,11 +408,35 @@ def NewlibDirectoryCmds(bias_arch, newlib_triple, saigo=False):
             os.path.join('%(output)s', multilib_triple, 'lib'),
             os.path.join('%(output)s', multilib_triple, 'lib32')),
     ])
+  if saigo:
+    commands.extend([
+              # Headers are the same for 32 bits and 64 bits.
+              command.CopyRecursive(
+                     os.path.join('%(output)s', 'i686-nacl'),
+                     os.path.join('%(output)s', 'x86_64-nacl')),
+              # 32 bit libs should be in lib32.
+              command.Rename(
+                     os.path.join('%(output)s', 'x86_64-nacl', 'lib'),
+                     os.path.join('%(output)s', 'x86_64-nacl', 'lib32')),
+    ])
   # Remove the 'share' directory from the biased builds; the data is
   # duplicated exactly and takes up 2MB per package.
   if bias_arch != 'le32':
     commands.append(command.RemoveDirectory(os.path.join('%(output)s','share')))
   return commands
+
+# For saigo, we build newlib with le32-nacl as a target, which does not compile
+# setjmp.S. Instead, we pull in setjmp from the native_client repo.
+def NewlibSaigoCmds(bias_arch):
+  archive_path = command.path.join('%(output)s', '%s-nacl' % bias_arch, 'lib')
+  return [
+     command.Command([PnaclTool('clang', arch=bias_arch, saigo=True),
+                      '-Wall', '-Werror', '-O2', '-c', '%(setjmp)s',
+                      '-o', command.path.join('%(cwd)s', 'lib_a-setjmp.o')]),
+     command.Command([PnaclTool('ar', arch=bias_arch, saigo=True), 'r',
+         command.path.join(archive_path, 'libcrt_common.a'),
+         command.path.join('%(cwd)s', 'lib_a-setjmp.o')])
+  ]
 
 
 def LibcxxDirectoryCmds(bias_arch, saigo=False):
@@ -446,8 +471,10 @@ def D2NLibsSupportCommands(bias_arch, clang_libdir, saigo=False):
   def TranslatorFile(lib, filename):
     return os.path.join('%(' + TL(lib) + ')s', filename)
   extra_cflags = ''
+  libname = 'libgcc_eh'
   if saigo:
     extra_cflags = NewlibSaigoIsystemCflags(bias_arch)
+    libname = 'libgcc_eh_saigo'
   else:
     extra_cflags = NewlibIsystemCflags(bias_arch)
   commands = [
@@ -469,6 +496,8 @@ def D2NLibsSupportCommands(bias_arch, clang_libdir, saigo=False):
                 'libcompiler_rt.a'),
                  os.path.join('%(output)s', clang_libdir,
                               'libgcc.a')),
+              command.Copy(TranslatorFile(libname, 'libgcc_eh.a'),
+                       os.path.join('%(output)s', clang_libdir, 'libgcc_eh.a')),
               BuildTargetObjectCmd('clang_direct/crtbegin.c', 'crtbeginT.o',
                                    bias_arch, output_dir=clang_libdir,
                                    saigo=saigo),
@@ -476,11 +505,6 @@ def D2NLibsSupportCommands(bias_arch, clang_libdir, saigo=False):
                                    bias_arch, output_dir=clang_libdir,
                                    saigo=saigo),
   ]
-  if not saigo:
-      commands.extend([
-          command.Copy(TranslatorFile('libgcc_eh', 'libgcc_eh.a'),
-                       os.path.join('%(output)s', clang_libdir, 'libgcc_eh.a')),
-      ])
   if bias_arch == "mipsel":
        commands.extend([
            BuildTargetObjectCmd('bitcode/pnaclmm.c', 'pnaclmm.o', bias_arch),
@@ -500,6 +524,13 @@ def TargetLibBuildType(is_canonical):
 def TargetLibs(bias_arch, is_canonical):
   def T(component_name):
     return GSDJoin(component_name, bias_arch)
+  if not IsBCArch(bias_arch):
+    # Translate from bias_arch's triple-style (i686) names to the translator's
+    # style (x86-32). We don't change the translator's naming scheme to avoid
+    # churning the in-browser translator.
+    arch = pynacl.platform.GetArch3264(bias_arch)
+    def TL(lib):
+      return GSDJoin(lib, arch)
   target_triple = TripleFromArch(bias_arch)
   newlib_triple = target_triple if not IsBCArch(bias_arch) else 'le32-nacl'
   newlib_cpp_flags = ''
@@ -606,6 +637,10 @@ def TargetLibs(bias_arch, is_canonical):
       T('newlib_saigo'): {
           'type': TargetLibBuildType(is_canonical),
           'dependencies': [ 'newlib_src', 'target_lib_compiler_saigo'],
+          'inputs': {
+              'setjmp': os.path.join(NACL_DIR, 'pnacl', 'support',
+                                     'setjmp_%s.S' % arch.replace('-', '_'))
+          },
           'commands' : [
               command.SkipForIncrementalCommand(
                   ['sh', '%(newlib_src)s/configure'] +
@@ -630,7 +665,9 @@ def TargetLibs(bias_arch, is_canonical):
               ]),
               command.Command(MakeCommand()),
               command.Command(['make', 'DESTDIR=%(abs_output)s', 'install']),
-          ] + NewlibDirectoryCmds(bias_arch, 'le32-nacl', saigo=True)
+          ]
+          + NewlibDirectoryCmds(bias_arch, 'le32-nacl', saigo=True)
+          + NewlibSaigoCmds(bias_arch)
       },
       T('libs_support_saigo'): {
           'type': TargetLibBuildType(is_canonical),
@@ -638,6 +675,7 @@ def TargetLibs(bias_arch, is_canonical):
           # newlib_saigo_x86_64 works - see old libcxx target.
           'dependencies': [ 'compiler_rt_src',
                             GSDJoin('newlib_saigo', bias_arch),
+                            TL('libgcc_eh_saigo'),
                             'target_lib_compiler_saigo'],
           'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
                       'tls_params': os.path.join(NACL_DIR, 'src', 'untrusted',
@@ -756,12 +794,6 @@ def TargetLibs(bias_arch, is_canonical):
     # For now some of the D2N support libs currently come from our native
     # translator libs (libgcc_eh). crti/crtn and crt1
     # come from libnacl, built by scons/gyp.  TODO(dschuff): Do D2N libgcc_eh.
-
-    # Translate from bias_arch's triple-style (i686) names to the translator's
-    # style (x86-32). We don't change the translator's naming scheme to avoid
-    # churning the in-browser translator.
-    def TL(lib):
-      return GSDJoin(lib, pynacl.platform.GetArch3264(bias_arch))
     libs.update({
       T('libs_support'): {
           'type': TargetLibBuildType(is_canonical),
@@ -851,6 +883,32 @@ def SubzeroRuntimeCommands(arch, out_dir):
         '-o', os.path.join(out_dir, AsmSourceBase + '.o'),
         command.path.join('%(subzero_src)s', 'runtime', AsmSourceBase + '.s')])
     ] if IsNonSFIArch(arch) else [])
+
+def LibgccEhCommands(arch, no_nacl_gcc, saigo=False):
+  pnacl_tool_arch = 'le32'
+  if saigo:
+    pnacl_tool_arch = TranslatorArchToBiasArch(arch)
+  return [
+            # Instead of trying to use gcc's build system to build only
+            # libgcc_eh, we just build the C files and archive them manually.
+            command.RemoveDirectory('include'),
+            command.Mkdir('include'),
+            command.Copy(os.path.join('%(gcc_src)s', 'gcc',
+                         'unwind-generic.h'),
+                         os.path.join('include', 'unwind.h')),
+            command.Copy(os.path.join('%(scripts)s', 'libgcc-tconfig.h'),
+                         'tconfig.h'),
+            command.WriteData('', 'tm.h'),
+            BuildLibgccEhCmd('unwind-dw2.c', 'unwind-dw2.o', arch,
+                              no_nacl_gcc, saigo),
+            BuildLibgccEhCmd('unwind-dw2-fde-glibc.c',
+                             'unwind-dw2-fde-glibc.o',
+                             arch, no_nacl_gcc, saigo),
+            command.Command([PnaclTool('ar', arch=pnacl_tool_arch, saigo=saigo),
+                             'rc',
+                             command.path.join('%(output)s', 'libgcc_eh.a'),
+                             'unwind-dw2.o', 'unwind-dw2-fde-glibc.o']),
+         ]
 
 def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
   setjmp_arch = arch
@@ -980,25 +1038,18 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
           'output_subdir': translator_lib_dir,
           'dependencies': [ 'gcc_src', 'target_lib_compiler'],
           'inputs': { 'scripts': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
-          'commands': [
-              # Instead of trying to use gcc's build system to build only
-              # libgcc_eh, we just build the C files and archive them manually.
-              command.RemoveDirectory('include'),
-              command.Mkdir('include'),
-              command.Copy(os.path.join('%(gcc_src)s', 'gcc',
-                           'unwind-generic.h'),
-                           os.path.join('include', 'unwind.h')),
-              command.Copy(os.path.join('%(scripts)s', 'libgcc-tconfig.h'),
-                           'tconfig.h'),
-              command.WriteData('', 'tm.h'),
-              BuildLibgccEhCmd('unwind-dw2.c', 'unwind-dw2.o', arch,
-                               no_nacl_gcc),
-              BuildLibgccEhCmd('unwind-dw2-fde-glibc.c',
-                               'unwind-dw2-fde-glibc.o', arch, no_nacl_gcc),
-              command.Command([PnaclTool('ar'), 'rc',
-                               command.path.join('%(output)s', 'libgcc_eh.a'),
-                               'unwind-dw2.o', 'unwind-dw2-fde-glibc.o']),
-          ],
+          'commands': LibgccEhCommands(arch, no_nacl_gcc),
+      },
+    })
+  # TODO(fabiansommer): Enable saigo toolchain for more arches.
+  if arch == 'x86-32':
+   libs.update({
+      GSDJoin('libgcc_eh_saigo', arch): {
+          'type': TargetLibBuildType(is_canonical),
+          'output_subdir': translator_lib_dir,
+          'dependencies': [ 'gcc_src', 'target_lib_compiler_saigo'],
+          'inputs': { 'scripts': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
+          'commands': LibgccEhCommands(arch, no_nacl_gcc, saigo=True),
       },
     })
   return libs
