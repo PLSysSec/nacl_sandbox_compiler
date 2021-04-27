@@ -273,11 +273,11 @@ if supports_cxx11 and not env.Bit('bitcode') and not env.Bit('nacl_clang'):
   # least when using libstdc++.
   base_eh_env.Append(CXXFLAGS=['-std=gnu++11'])
 
-if env.Bit('bitcode'):
+if env.Bit('bitcode') and not env.Bit('saigo'):
   sjlj_eh_env = base_eh_env.Clone()
   sjlj_eh_env.Append(LINKFLAGS=['--pnacl-exceptions=sjlj'])
   EH_ENVIRONMENTS_TO_TRY.append(('sjlj_libc++', sjlj_eh_env))
-else:
+elif not env.Bit('saigo'):
   EH_ENVIRONMENTS_TO_TRY.extend(
       [('noopt_frame', MakeEnv(base_eh_env, False, True)),
        ('noopt_noframe', MakeEnv(base_eh_env, False, False)),

@@ -1166,7 +1166,7 @@ def SDKLibs(arch, is_canonical, extra_flags=[]):
     scons_flags.append('--no-clang')
 
   scons_flags_pnacl = ['pnacl_newlib_dir=%(abs_sdk_compiler)s']
-  scons_flags_saigo = ['pnacl_newlib_dir=%(abs_sdk_compiler_saigo)s']
+  scons_flags_saigo = ['saigo_newlib_dir=%(abs_sdk_compiler_saigo)s', 'saigo=1']
 
   libs = {
       GSDJoin('core_sdk_libs', arch): {

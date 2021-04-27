@@ -694,7 +694,7 @@ def generate(env):
     # will not be necessary.
     # See http://code.google.com/p/nativeclient/issues/detail?id=2773
     temp_env = env.Clone()
-    temp_env.ClearBits('bitcode', 'nacl_clang')
+    temp_env.ClearBits('bitcode', 'nacl_clang', 'saigo')
     temp_env.SetBits('nacl_glibc')
     temp_root = temp_env.GetToolchainDir()
     _SetEnvForNativeSdk(temp_env, temp_root)

@@ -195,6 +195,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'nacl_glibc_dir',
     # Allows override of the pnacl newlib toolchain directory.
     'pnacl_newlib_dir',
+    # Allows override of the pnacl newlib toolchain directory.
+    'saigo_newlib_dir',
     # Allows overriding the version number in the toolchain's
     # FEATURE_VERSION file.  This is used for PNaCl ABI compatibility
     # testing.
@@ -271,6 +273,8 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'nacl_clang', default=(not env.Bit('bitcode') and
                                               not env.Bit('nacl_glibc')),
     desc='Use the native nacl-clang newlib compiler instead of nacl-gcc')
+
+  BitFromArgument(env, 'saigo', default=False, desc='Use the saigo toolchain')
 
   BitFromArgument(env, 'translate_fast', default=False,
     desc='When using pnacl TC (bitcode=1) use accelerated translation step')
@@ -425,11 +429,18 @@ def SetUpArgumentBits(env):
                         % flag_name)
   else:
     pnacl_incompatible_flags = ('nacl_clang',
-                                'nacl_glibc')
+                                'nacl_glibc',
+                                'saigo')
     for flag_name in pnacl_incompatible_flags:
       if env.Bit(flag_name):
         raise UserError('The option %r cannot be used when building with '
                         'PNaCl (i.e. with bitcode=1)' % flag_name)
+
+  if env.Bit('saigo') and not env.Bit('nacl_clang'):
+    raise UserError('To use the saigo toolchain, set both saigo and nacl_clang '
+                    'to 1. You can specify the toolchain location with the '
+                    'saigo_newlib_dir argument (default: '
+                    'toolchain/<os>_<arch>/saigo_newlib_raw )')
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -1134,16 +1145,15 @@ def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None,
         else:
           lib_name = 'glibc'
 
+    is_saigo = env.Bit('saigo')
+
     if target_arch is None:
       target_arch = pynacl.platform.GetArch(GetTargetPlatform())
 
-    if is_pnacl:
-      target_env = 'pnacl'
-    else:
-      target_env = 'nacl_%s' % target_arch
-
     # See if we have a custom toolchain directory set.
-    if is_pnacl:
+    if is_saigo:
+      toolchain_arg = 'saigo_%s_dir' % lib_name
+    elif is_pnacl:
       toolchain_arg = 'pnacl_%s_dir' % lib_name
     else:
       assert lib_name == 'glibc'
@@ -1154,7 +1164,9 @@ def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None,
       return env.SConstructAbsPath(custom_toolchain_dir)
 
     # Get the standard toolchain name since no directory custom was found.
-    if is_pnacl:
+    if is_saigo:
+      target_env = 'saigo_%s' % target_arch
+    elif is_pnacl:
       target_env = 'pnacl'
     else:
       target_env = 'nacl_%s' % target_arch
