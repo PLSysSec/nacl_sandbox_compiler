@@ -1224,9 +1224,13 @@ def HostToolsSaigo(host, options):
               [command.Command(NinjaCommand(host, options) + ['-v'],
                                path_dirs=GomaPathDirs(host, options),
                                env=AflFuzzEnvMap(host, options)),
-               command.Command(NinjaCommand(host, options) + ['install'])
-              ] +
-              CreateSymLinksToDirectToNaClTools(host)
+               command.Command(NinjaCommand(host, options) + ['install']),
+               # The FileCheck binary is needed by some tests.
+               command.Copy(os.path.join('bin', Exe('FileCheck', host)),
+                   os.path.join('%(output)s', 'bin', Exe('FileCheck', host)),
+                   permissions=True)
+              ]
+              + CreateSymLinksToDirectToNaClTools(host)
       },
   })
   return tools
