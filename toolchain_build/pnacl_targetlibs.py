@@ -264,7 +264,7 @@ def BuildLibgccEhCmd(sourcefile, output, arch, no_nacl_gcc, saigo):
     os_name = pynacl.platform.GetOS()
     arch_name = pynacl.platform.GetArch()
     platform_dir = '%s_%s' % (os_name, arch_name)
-    newlib_dir = 'nacl_x86_newlib_raw'
+    newlib_dir = 'nacl_x86_glibc'
 
     nnacl_dir = os.path.join(NACL_DIR, 'toolchain', platform_dir,
                              newlib_dir, 'bin')
