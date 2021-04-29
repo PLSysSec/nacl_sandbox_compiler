@@ -110,11 +110,14 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
   # Also test the math functions with -ffast-math, so we are a tiny bit more
   # confident that sin() or __builtin_sin() doesn't get turned into
   # something like llvm.sin.f64.
-  fastmath_env = env.Clone()
-  fastmath_env.Append(CCFLAGS=['-ffast-math'])
-  AddIntrinsicTest(fastmath_env, 'llvm_math_intrinsics.cc', '0',
-                   golden_file=env.File('llvm_math_intrinsics.stdout'),
-                   test_suffix='_fast_math')
+  if not env.Bit('saigo'):
+    # The test uses inf, but newer versions of clang assume that in
+    # -ffast-math mode, infinities do not occur, thus producing wrong results.
+    fastmath_env = env.Clone()
+    fastmath_env.Append(CCFLAGS=['-ffast-math'])
+    AddIntrinsicTest(fastmath_env, 'llvm_math_intrinsics.cc', '0',
+                     golden_file=env.File('llvm_math_intrinsics.stdout'),
+                     test_suffix='_fast_math')
 
 # Some of the intrinsic tests cover intrinsics that we do not want to
 # support. For example, llvm.frameaddress. If that is the case, we will
