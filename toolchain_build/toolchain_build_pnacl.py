@@ -457,14 +457,17 @@ def CmakeHostArchFlags(host, options):
   # undefined.
   cmake_flags.append('-DHAVE_SANITIZER_MSAN_INTERFACE_H=FALSE')
   tool_flags, tool_deps = HostArchToolFlags(host, [], options)
-  cflags = tool_flags['CFLAGS'] + ['--sysroot=%s' % CHROME_SYSROOT_DIR]
-  cxxflags = tool_flags['CXXFLAGS'] + ['--sysroot=%s' % CHROME_SYSROOT_DIR]
-  if TripleIsMac(host):
+  cflags = []
+  cxxflags = []
+  if TripleIsLinux(host):
+    cflags = tool_flags['CFLAGS'] + ['--sysroot=%s' % CHROME_SYSROOT_DIR]
+    cxxflags = tool_flags['CXXFLAGS'] + ['--sysroot=%s' % CHROME_SYSROOT_DIR]
+  elif TripleIsMac(host):
     cflags = MAC_SDK_FLAGS + cflags
     cxxflags = MAC_SDK_FLAGS + cxxflags
-  if TripleIsMSVC(host):
+  elif TripleIsMSVC(host):
     cmake_flags.append('-DCMAKE_LINKER=' + CHROME_LLD_LINK_EXE)
-  else:
+  if cflags:
     cmake_flags.append('-DCMAKE_C_FLAGS=' + ' '.join(cflags))
     cmake_flags.append('-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags))
   for linker_type in ['EXE', 'SHARED', 'MODULE']:
@@ -1187,6 +1190,7 @@ def HostToolsSaigo(host, options):
     PrepareVSEnv()
 
   build_dylib = 'OFF' if TripleIsWindows(host) else 'ON'
+  rpath_origin = '@executable_path' if TripleIsMac(host) else '$ORIGIN'
   tools.update({
       H('llvm-saigo'): {
           'dependencies': ['llvm_saigo_src'] + llvm_deps,
@@ -1200,7 +1204,7 @@ def HostToolsSaigo(host, options):
                   '-DCMAKE_BUILD_TYPE=' + ('Debug' if HostIsDebug(options)
                                            else 'Release'),
                   '-DCMAKE_INSTALL_PREFIX=%(output)s',
-                  '-DCMAKE_INSTALL_RPATH=$ORIGIN/../lib',
+                  '-DCMAKE_INSTALL_RPATH=%s/../lib' % rpath_origin,
                   '-DLLVM_INSTALL_TOOLCHAIN_ONLY=ON', # TODO(crbug.com/1134798)
                   '-DLLVM_APPEND_VC_REV=ON',
                   '-DLLVM_BUILD_TESTS=ON',
