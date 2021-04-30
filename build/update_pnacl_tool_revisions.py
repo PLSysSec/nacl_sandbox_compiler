@@ -85,7 +85,7 @@ There is further complication when toolchain builds are merged.
                       "don't actually send anything to review.")
   parser.add_argument('--ignore-branch', default=False, action='store_true',
                       help='Allow script to run from branches other than '
-                      'master')
+                      'master or main')
   # TODO(jfb) The following options come from download_toolchain.py and
   #           should be shared in some way.
   parser.add_argument('--filter_out_predicates', default=[],
@@ -201,7 +201,7 @@ def GitCheckout(branch, force=False):
 
 def GitCheckoutNewBranch(branch):
   """Create and checkout a new git branch."""
-  ExecCommand(['git', 'checkout', '-b', branch, 'origin/master'])
+  ExecCommand(['git', 'checkout', '-b', branch, 'origin/main'])
 
 
 def GitDeleteBranch(branch, force=False):
@@ -370,8 +370,9 @@ def Main(args):
 
   orig_branch = GitCurrentBranch()
   if not args.dry_run and not args.ignore_branch:
-    if orig_branch != 'master':
-      raise Exception('Must be on branch master, currently on %s' % orig_branch)
+    if orig_branch != 'master' and orig_branch != 'main':
+      raise Exception('Must be on branch master or main, currently on %s'
+                      % orig_branch)
 
   if not args.dry_run:
     status = GitStatus()

@@ -54,12 +54,12 @@ def CheckGitBranch():
     toks = line.split()
     if '*' not in toks[0]:
       continue
-    if not ('origin/master' in toks[3] or
-            'origin/refs/heads/master' in toks[3]):
+    if not ('origin/main' in toks[3] or
+            'origin/refs/heads/main' in toks[3]):
       warning = 'Warning: your current branch:\n' + line
-      warning += '\nis not tracking origin/master. git cl push may silently '
+      warning += '\nis not tracking origin/main. git cl push may silently '
       warning += 'fail to push your change. To fix this, do\n'
-      warning += 'git branch -u origin/master'
+      warning += 'git branch -u origin/main'
       return warning
     return None
   print('Warning: presubmit check could not determine local git branch')
