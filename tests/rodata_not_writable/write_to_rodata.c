@@ -15,7 +15,7 @@ const char buf[] = "x";
 int main(void) {
   fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
   /* This should fault. */
-  *(char *) buf = 'y';
+  *(volatile char *) buf = 'y';
   fprintf(stderr, "We're still running. This is not good.\n");
   return 1;
 }
