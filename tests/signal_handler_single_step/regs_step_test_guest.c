@@ -25,12 +25,22 @@
 jmp_buf g_jmp_buf;
 uint32_t g_regs_should_match;
 
+#if defined(__i386__) && defined(__saigo__)
+# define NACLCALL(REG) "calll *" REG "\n"
+#elif defined(__i386__)
+# define NACLCALL(REG) "naclcall " REG "\n"
+#elif defined(__saigo__) && defined(__x86_64__)
+# define NACLCALL(REG) "calll *" REG "\n"
+#elif defined(__x86_64__)
+# define NACLCALL(REG) "naclcall " REG ", %r15\n"
+#endif
+
 #if defined(__i386__)
 # define SYSCALL_CALLER(suffix) \
     __asm__(".pushsection .text, \"ax\", @progbits\n" \
             "SyscallCaller" suffix ":\n" \
             "movl $1, g_regs_should_match\n" \
-            "naclcall %esi\n" \
+            NACLCALL("%esi") \
             "SyscallReturnAddress" suffix ":\n" \
             "movl $0, g_regs_should_match\n" \
             "jmp ReturnFromSyscall\n" \
@@ -42,7 +52,7 @@ uint32_t g_regs_should_match;
             "movl $1, g_regs_should_match(%rip)\n" \
             /* Call via a temporary register so as not to modify %r12. */ \
             "movl %r12d, %eax\n" \
-            "naclcall %eax, %r15\n" \
+            NACLCALL("%eax") \
             "SyscallReturnAddress" suffix ":\n" \
             "movl $0, g_regs_should_match(%rip)\n" \
             "jmp ReturnFromSyscall\n" \

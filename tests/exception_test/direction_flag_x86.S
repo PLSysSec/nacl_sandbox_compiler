@@ -12,6 +12,10 @@
          * string instruction changes its operand register.
          */
 
+#if defined(__saigo__)
+#define naclret ret
+#endif
+
 #if defined(__x86_64__)
 
         .global get_x86_direction_flag

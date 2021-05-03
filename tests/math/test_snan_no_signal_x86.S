@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+#if defined(__saigo__)
+#define naclret ret
+#endif
+
         .p2align 5
         .global try_operations_with_snans
 try_operations_with_snans:

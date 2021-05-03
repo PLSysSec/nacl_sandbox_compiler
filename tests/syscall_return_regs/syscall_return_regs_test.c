@@ -14,6 +14,15 @@
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 #include "native_client/tests/common/register_set.h"
 
+#if defined(__saigo__) && defined(__i386__)
+#define NACLJMP(REG) "jmpl *" REG "\n"
+#elif defined(__i386__)
+#define NACLJMP(REG) "nacljmp " REG "\n"
+#elif defined(__saigo__) && defined(__x86_64__)
+#define NACLJMP(REG) "jmpl *" REG "\n"
+#elif defined(__x86_64__)
+#define NACLJMP(REG) "nacljmp " REG ", %%r15\n"
+#endif
 
 struct NaClSignalContext g_expected_regs;
 jmp_buf g_return_jmp_buf;
@@ -119,7 +128,7 @@ void TestSyscall(uintptr_t syscall_addr) {
     ASM_WITH_REGS(
         &call_regs,
         "push $ContinueAfterSyscall\n"  /* Push return address */
-        "nacljmp %%eax\n");
+        NACLJMP("%%eax"));
 #elif defined(__x86_64__)
     /*
      * This fast path syscall happens to preserve various registers,
@@ -144,7 +153,7 @@ void TestSyscall(uintptr_t syscall_addr) {
     ASM_WITH_REGS(
         &call_regs,
         "push $ContinueAfterSyscall\n"  /* Push return address */
-        "nacljmp %%eax, %%r15\n");
+        NACLJMP("%%eax"));
 #elif defined(__arm__)
     call_regs.r1 = syscall_addr;  /* Scratch register */
     call_regs.lr = (uintptr_t) ContinueAfterSyscall;  /* Return address */

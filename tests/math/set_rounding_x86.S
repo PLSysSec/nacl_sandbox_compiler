@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+#if defined(__saigo__)
+#define naclret ret
+#endif
+
 /*
  * Rounding mode control field is bits [11:10] in the x87
  * control word, and bits [14:13] in the SSE control word.
