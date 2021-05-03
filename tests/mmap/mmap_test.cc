@@ -170,7 +170,7 @@ bool test1() {
   printf("test1\n");
 
   res = mmap(res, size, PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
-  if (0 >= res) /* define MAP_FAILED */
+  if (res == MAP_FAILED)
     return false;
   printf("mmap done\n");
   zeroes = malloc(size);
