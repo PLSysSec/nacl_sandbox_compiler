@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2013 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,6 +7,7 @@ import argparse
 import collections
 import datetime
 import email.mime.text
+import functools
 import getpass
 import os
 import re
@@ -95,7 +96,7 @@ There is further complication when toolchain builds are merged.
 
 def ExecCommand(command):
   try:
-    return subprocess.check_output(command, stderr=subprocess.STDOUT)
+    return subprocess.check_output(command, stderr=subprocess.STDOUT, text=True)
   except subprocess.CalledProcessError as e:
     sys.stderr.write('\nRunning `%s` returned %i, got:\n%s\n' %
                      (' '.join(e.cmd), e.returncode, e.output))
@@ -412,7 +413,7 @@ def Main(args):
     # Find the commits changing PNaCl files that follow the previous PNaCl
     # revision pointer.
     pnacl_pathes = ['pnacl/', 'toolchain_build/']
-    pnacl_hashes = list(set(reduce(
+    pnacl_hashes = list(set(functools.reduce(
         lambda acc, lst: acc + lst,
         [[cl for cl in recent_commits[:-1] if
           GitChangesPath(cl, path)] for
@@ -423,7 +424,7 @@ def Main(args):
       for i in ['author email', 'date', 'subject']:
         cl[i] = GitCommitInfo(info=i, obj=hash, num=1)
       for k,v in CommitMessageToCleanDict(
-          GitCommitInfo(info='body', obj=hash, num=1)).iteritems():
+          GitCommitInfo(info='body', obj=hash, num=1)).items():
         cl[k] = v
       pnacl_changes.append(cl)
 
