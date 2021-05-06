@@ -5,6 +5,10 @@
 
 Import('env')
 
+# saigo does not support gotos.
+if env.Bit('saigo'):
+  Return()
+
 # We are testing a GNU C extension which is disallowed by "-pedantic" mode.
 env.FilterOut(CCFLAGS=['-pedantic'])
 
