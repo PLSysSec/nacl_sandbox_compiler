@@ -140,7 +140,7 @@ class RevisionInfo(object):
     self._ValidateRevisionComplete()
 
     package_targets = {}
-    for package_target, package_desc in self._package_targets.iteritems():
+    for package_target, package_desc in self._package_targets.items():
       package_targets[package_target] = package_desc.DumpPackageJson()
 
     revision_json = {

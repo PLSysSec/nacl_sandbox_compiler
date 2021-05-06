@@ -105,7 +105,7 @@ class TestPackagesInfo(unittest.TestCase):
       for package in self._packages.GetPackages(package_target):
         package_targets_dict[package].add(package_target)
 
-    for package, expected_package_targets in package_targets_dict.iteritems():
+    for package, expected_package_targets in package_targets_dict.items():
       package_targets = self._packages.GetPackageTargetsForPackage(package)
       self.assertEqual(expected_package_targets, set(package_targets))
 

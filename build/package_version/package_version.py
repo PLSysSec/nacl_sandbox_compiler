@@ -480,7 +480,7 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
             combined_archives[archive_desc.name] = archive_obj
 
         package_desc = package_info.PackageInfo()
-        for archive_name, archive_obj in combined_archives.iteritems():
+        for archive_name, archive_obj in combined_archives.items():
           package_desc.AppendArchive(archive_obj)
 
     # Only do the extraction if the extract packages do not match.
@@ -660,7 +660,7 @@ def _DoListCmd(arguments):
     print('No Package Modes Found.')
   else:
     print('Listing Modes:')
-    for mode, package_list in modes_dict.iteritems():
+    for mode, package_list in modes_dict.items():
       print(' [%s]' % mode)
       for package in package_list:
         print('  ', package)
@@ -671,7 +671,7 @@ def _DoListCmd(arguments):
 
   print()
   print('Listing Package Targets and Packages:')
-  for package_target, packages in package_targets.iteritems():
+  for package_target, packages in package_targets.items():
     print(' [%s]:' % package_target)
     for package in sorted(packages):
       print('  ', package)
