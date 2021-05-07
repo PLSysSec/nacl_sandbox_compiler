@@ -5,6 +5,11 @@
 
 Import('env')
 
+# Saigo does not support these tests - intentionally unsafe asm code gets
+# autosandboxed and is safe again.
+if env.Bit('saigo'):
+  Return()
+
 # Do not run these tests with pexes, assuming they are portable.
 if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
   Return()
