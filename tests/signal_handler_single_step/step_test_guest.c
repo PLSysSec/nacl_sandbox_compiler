@@ -8,7 +8,7 @@
 #include "native_client/tests/signal_handler_single_step/step_test_syscalls.h"
 
 
-#define UNTYPED_SYSCALL(s) ((int (*)()) NACL_SYSCALL_ADDR(s))
+#define UNTYPED_SYSCALL(s) ((int (*)(void)) NACL_SYSCALL_ADDR(s))
 
 
 void _start(void) {
