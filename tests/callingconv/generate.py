@@ -70,6 +70,10 @@ def GenerateTypeInfo(settings):
 
   settings.all_types = [ CType(*args) for args in type_info
                          if args[0] not in all_exclude]
+  # The last argument must not be of type char, short, or float, as they are
+  # incompatible with va_start().
+  settings.last_arg_types =  [ t for t in settings.all_types
+                               if t.id not in ['t_char', 't_short', 't_float'] ]
   settings.va_arg_types = [ t for t in settings.all_types
                             if t.id not in va_arg_exclude ]
   # See also the generated comments in the generated .c files for the settings.
@@ -428,7 +432,8 @@ class TestFunction(object):
     self.fixed_arg_types = range(self.num_fixed_args)
     for i in xrange(len(self.fixed_arg_types)):
       self.fixed_arg_types[i] = random.choice(settings.all_types)
-
+    if self.num_fixed_args:
+      self.fixed_arg_types[-1] = random.choice(settings.last_arg_types)
 
   def emit_prototype(self, out, is_def = False):
     fixed_arg_str = ''
