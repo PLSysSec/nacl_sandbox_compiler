@@ -677,7 +677,7 @@ static int do_utimes_test(struct file_desc_environment *file_desc_env) {
   }
 
   struct timeval times[2];
-  memset(times, sizeof(times), 0);
+  memset(times, 0, sizeof(times));
   times[0].tv_sec = file_desc_env->current_time;
   times[1].tv_sec = file_desc_env->current_time;
 
