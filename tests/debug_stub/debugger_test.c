@@ -13,6 +13,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/tests/common/register_set.h"
+#include "native_client/tests/common/superinstructions.h"
 
 
 /* This variable is used for testing memory accesses. */
@@ -260,11 +261,11 @@ void test_super_instruction(void) {
 #if defined(__i386__)
   __asm__(".p2align 5\n" /* Ensures nacljmp doesn't cross a bundle boundary */
           "hlt\n"
-          "nacljmp %ecx\n");
+          NACLJMP("%ecx"));
 #elif defined(__x86_64__)
   __asm__(".p2align 5\n" /* Ensures nacljmp doesn't cross a bundle boundary */
           "hlt\n"
-          "nacljmp %ecx, %r15");
+          NACLJMP("%ecx", "%r15"));
 #elif defined(__arm__)
   __asm__(".p2align 4\n" /* Ensures branch doesn't cross a bundle boundary */
           /*

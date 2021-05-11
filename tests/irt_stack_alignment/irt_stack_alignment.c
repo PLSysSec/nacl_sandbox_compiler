@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include "native_client/src/untrusted/irt/irt.h"
-
+#include "native_client/tests/common/superinstructions.h"
 
 static bool g_enable_block_hook;
 static int g_block_hook_calls;
@@ -80,7 +80,7 @@ static int misaligned_call(int (*func)(void)) {
       "andl $-16, %%esp\n"
       "dec %%esp\n"
       "mov %%esp, %[sp]\n"
-      "naclcall %[func]\n"
+      NACLCALL("%[func]")
       "mov %%ebx, %%esp\n"
       : "=a" (result),
         [sp] "=m" (g_sp_before_call)

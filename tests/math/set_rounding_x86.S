@@ -4,9 +4,8 @@
  * found in the LICENSE file.
  */
 
-#if defined(__saigo__)
-#define naclret ret
-#endif
+#include "native_client/tests/common/superinstructions.h"
+
 
 /*
  * Rounding mode control field is bits [11:10] in the x87

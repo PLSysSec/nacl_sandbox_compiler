@@ -15,6 +15,7 @@
 #include <unistd.h>
 
 #include "native_client/src/include/nacl_assert.h"
+#include "native_client/tests/common/superinstructions.h"
 
 int global_var;
 volatile void *global_ptr;
@@ -111,7 +112,7 @@ void ret_sequence(void) {
       ".globl ret_end\n"
       ".align 32\n"
       "ret_start:\n"
-      "naclret\n"
+      NACLRET
       "ret_end:\n");
 #elif defined(__x86_64__)
   __asm__(
@@ -119,7 +120,7 @@ void ret_sequence(void) {
       ".globl ret_end\n"
       ".align 32\n"
       "ret_start:\n"
-      "naclret\n"
+      NACLRET
       "ret_end:\n");
 #endif
 }

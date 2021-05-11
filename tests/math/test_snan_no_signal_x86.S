@@ -4,9 +4,8 @@
  * found in the LICENSE file.
  */
 
-#if defined(__saigo__)
-#define naclret ret
-#endif
+#include "native_client/tests/common/superinstructions.h"
+
 
         .p2align 5
         .global try_operations_with_snans

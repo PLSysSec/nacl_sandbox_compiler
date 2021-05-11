@@ -12,9 +12,7 @@
          * string instruction changes its operand register.
          */
 
-#if defined(__saigo__)
-#define naclret ret
-#endif
+#include "native_client/tests/common/superinstructions.h"
 
 #if defined(__x86_64__)
 

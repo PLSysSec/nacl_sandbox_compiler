@@ -17,20 +17,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "native_client/tests/common/register_set.h"
-
-#if defined(__saigo__) && defined(__i386__)
-#define NACLCALL(REG) "calll *" REG "\n"
-#define NACLJMP(REG) "jmpl *" REG "\n"
-#elif defined(__i386__)
-#define NACLCALL(REG) "naclcall " REG "\n"
-#define NACLJMP(REG) "nacljmp " REG "\n"
-#elif defined(__saigo__) && defined(__x86_64__)
-#define NACLCALL(REG) "calll *" REG "\n"
-#define NACLJMP(REG) "jmpl *" REG "\n"
-#elif defined(__x86_64__)
-#define NACLCALL(REG) "naclcall " REG ", %r15\n"
-#define NACLJMP(REG) "nacljmp " REG ", %%r15\n"
-#endif
+#include "native_client/tests/common/superinstructions.h"
 
 typedef int (*TYPE_nacl_test_syscall_1)(struct SuspendTestShm *test_shm);
 
@@ -178,7 +165,7 @@ static void SyscallRegisterSetterThread(struct SuspendTestShm *test_shm) {
     ASM_WITH_REGS(
         &call_regs,
         "push $ContinueAfterSyscall\n"  /* Push return address */
-        NACLJMP("%%eax"));
+        NACLJMP("%%eax", "%%r15"));
 #elif defined(__arm__)
     call_regs.r0 = (uintptr_t) test_shm;  /* Set syscall argument */
     call_regs.r1 = syscall_addr;  /* Scratch register */
@@ -207,7 +194,7 @@ void SyscallReturnAddress(void);
 #if defined(__i386__)
 __asm__(".pushsection .text, \"ax\", @progbits\n"
         "SyscallLoop:\n"
-        NACLCALL("%esi")
+        NACLCALL_REG("%esi")
         "SyscallReturnAddress:\n"
         "jmp SyscallLoop\n"
         ".popsection\n");
@@ -216,7 +203,7 @@ __asm__(".pushsection .text, \"ax\", @progbits\n"
         "SyscallLoop:\n"
         /* Call via a temporary register so as not to modify %r12. */
         "mov %r12d, %eax\n"
-        NACLCALL("%eax")
+        NACLCALL_REG("%eax", "%r15")
         "SyscallReturnAddress:\n"
         "jmp SyscallLoop\n"
         ".popsection\n");

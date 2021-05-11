@@ -12,6 +12,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "native_client/tests/common/register_set.h"
+#include "native_client/tests/common/superinstructions.h"
 #include "native_client/tests/signal_handler_single_step/step_test_common.h"
 
 
@@ -25,22 +26,12 @@
 jmp_buf g_jmp_buf;
 uint32_t g_regs_should_match;
 
-#if defined(__i386__) && defined(__saigo__)
-# define NACLCALL(REG) "calll *" REG "\n"
-#elif defined(__i386__)
-# define NACLCALL(REG) "naclcall " REG "\n"
-#elif defined(__saigo__) && defined(__x86_64__)
-# define NACLCALL(REG) "calll *" REG "\n"
-#elif defined(__x86_64__)
-# define NACLCALL(REG) "naclcall " REG ", %r15\n"
-#endif
-
 #if defined(__i386__)
 # define SYSCALL_CALLER(suffix) \
     __asm__(".pushsection .text, \"ax\", @progbits\n" \
             "SyscallCaller" suffix ":\n" \
             "movl $1, g_regs_should_match\n" \
-            NACLCALL("%esi") \
+            NACLCALL_REG("%esi") \
             "SyscallReturnAddress" suffix ":\n" \
             "movl $0, g_regs_should_match\n" \
             "jmp ReturnFromSyscall\n" \
@@ -52,7 +43,7 @@ uint32_t g_regs_should_match;
             "movl $1, g_regs_should_match(%rip)\n" \
             /* Call via a temporary register so as not to modify %r12. */ \
             "movl %r12d, %eax\n" \
-            NACLCALL("%eax") \
+            NACLCALL_REG("%eax", "%r15") \
             "SyscallReturnAddress" suffix ":\n" \
             "movl $0, g_regs_should_match(%rip)\n" \
             "jmp ReturnFromSyscall\n" \
