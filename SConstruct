@@ -1165,7 +1165,7 @@ def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None,
 
     # Get the standard toolchain name since no directory custom was found.
     if is_saigo:
-      target_env = 'saigo_%s' % target_arch
+      target_env = 'saigo'
     elif is_pnacl:
       target_env = 'pnacl'
     else:

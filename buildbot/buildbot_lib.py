@@ -202,7 +202,7 @@ def ParseStandardCommandLine(context):
   if arch not in ARCH_MAP:
     parser.error('Invalid arch %r' % arch)
 
-  if toolchain not in ('newlib', 'glibc', 'pnacl', 'nacl_clang'):
+  if toolchain not in ('newlib', 'glibc', 'pnacl', 'nacl_clang', 'saigo'):
     parser.error('Invalid toolchain %r' % toolchain)
 
   # TODO(ncbray) allow a command-line override
@@ -234,6 +234,7 @@ def ParseStandardCommandLine(context):
   context['use_glibc'] = toolchain == 'glibc'
   context['pnacl'] = toolchain == 'pnacl'
   context['nacl_clang'] = toolchain == 'nacl_clang'
+  context['saigo'] = toolchain == 'saigo'
   context['max_jobs'] = 8
   context['dry_run'] = options.dry_run
   context['inside_toolchain'] = options.inside_toolchain
@@ -464,6 +465,7 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
   if context['use_glibc']: cmd.append('--nacl_glibc')
   if context['pnacl']: cmd.append('bitcode=1')
   if context['nacl_clang']: cmd.append('nacl_clang=1')
+  if context['saigo']: cmd.extend(['saigo=1', 'nacl_clang=1'])
   if context['use_breakpad_tools']:
     cmd.append('breakpad_tools_dir=breakpad-out')
   if context['android']:

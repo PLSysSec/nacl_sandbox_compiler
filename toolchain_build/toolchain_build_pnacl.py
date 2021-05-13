@@ -151,6 +151,8 @@ BITCODE_BIASES = tuple(
 
 DIRECT_TO_NACL_ARCHES = ['x86_64', 'i686', 'arm', 'mipsel']
 
+SAIGO_ARCHES = ['i686']
+
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
 def TripleIsWindows(t):
@@ -1310,6 +1312,9 @@ def GetUploadPackageTargets():
 
   common_raw_packages = ['metadata']
   common_complete_packages = []
+  saigo_common_packages = []
+  saigo_complete_packages = []
+  saigo_os_packages = {}
 
   # Target translator libraries
   for arch in TRANSLATOR_ARCHES:
@@ -1336,6 +1341,14 @@ def GetUploadPackageTargets():
     common_raw_packages.append('libs_support_%s' % arch)
     common_complete_packages.append('core_sdk_libs_%s' % arch)
 
+  for arch in SAIGO_ARCHES:
+    libgcc_eh_arch = 'x86_32' if arch is 'i686' else arch
+    saigo_common_packages.append('libgcc_eh_saigo_%s' % libgcc_eh_arch)
+    saigo_common_packages.append('newlib_saigo_%s' % arch)
+    saigo_common_packages.append('libcxx_saigo_%s' % arch)
+    saigo_common_packages.append('libs_support_saigo_%s' % arch)
+    saigo_complete_packages.append('core_sdk_libs_saigo_%s' % arch)
+
   # Host components
   host_packages = {}
   for os_name, arch in (('win', 'x86-32'),
@@ -1353,6 +1366,9 @@ def GetUploadPackageTargets():
          'binutils_x86_%s' % legal_triple,
          'llvm_%s' % legal_triple,
          'driver_%s' % legal_triple])
+    saigo_os_packages.setdefault(os_name, []).extend(
+        ['binutils_x86_%s' % legal_triple,
+         'llvm_saigo_%s' % legal_triple])
 
   # Unsandboxed target IRT libraries
   for os_name in ['linux', 'mac']:
@@ -1374,6 +1390,12 @@ def GetUploadPackageTargets():
 
     complete_packages = raw_packages + common_complete_packages
     package_targets[package_target]['pnacl_newlib'] = complete_packages
+
+    saigo_raw_packages = saigo_common_packages + saigo_os_packages[os_name]
+    package_targets[package_target]['saigo_newlib_raw'] = saigo_raw_packages
+
+    saigo_packages = saigo_raw_packages + saigo_complete_packages
+    package_targets[package_target]['saigo_newlib'] = saigo_packages
 
   package_targets['linux_x86']['pnacl_translator'] = ['sandboxed_translators']
 
