@@ -1366,9 +1366,14 @@ def GetUploadPackageTargets():
          'binutils_x86_%s' % legal_triple,
          'llvm_%s' % legal_triple,
          'driver_%s' % legal_triple])
+    # For saigo, on Windows llvm has a different triple from pnacl_newlib since
+    # it uses MSVC instead of MinGW. Binutils on the other hand is shared
+    # and uses the same triple.
+    saigo_triple = pynacl.platform.PlatformTripleSaigo(os_name, arch)
+    legal_saigo_triple = pynacl.gsd_storage.LegalizeName(saigo_triple)
     saigo_os_packages.setdefault(os_name, []).extend(
         ['binutils_x86_%s' % legal_triple,
-         'llvm_saigo_%s' % legal_triple])
+         'llvm_saigo_%s' % legal_saigo_triple])
 
   # Unsandboxed target IRT libraries
   for os_name in ['linux', 'mac']:
