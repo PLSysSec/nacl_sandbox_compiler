@@ -59,7 +59,9 @@
       "nacl_x86_newlib_raw",
       "pnacl_newlib",
       "pnacl_newlib_raw",
-      "pnacl_translator"
+      "pnacl_translator",
+      "saigo_newlib",
+      "saigo_newlib_raw"
     ],
 
     "mac_x86": [
@@ -71,7 +73,9 @@
       "nacl_x86_newlib_raw",
       "pnacl_newlib",
       "pnacl_newlib_raw",
-      "pnacl_translator"
+      "pnacl_translator",
+      "saigo_newlib",
+      "saigo_newlib_raw"
     ],
 
     "linux_x86": [
@@ -84,7 +88,9 @@
       "nacl_x86_newlib_raw",
       "pnacl_newlib",
       "pnacl_newlib_raw",
-      "pnacl_translator"
+      "pnacl_translator",
+      "saigo_newlib",
+      "saigo_newlib_raw"
     ],
 
     "linux_arm": [
@@ -115,6 +121,10 @@
       "pnacl_newlib",
       "pnacl_newlib_raw",
       "pnacl_translator"
+    ],
+    "saigo_newlib": [
+      "saigo_newlib",
+      "saigo_newlib_raw"
     ]
   },
 

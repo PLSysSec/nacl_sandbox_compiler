@@ -121,6 +121,18 @@ def RunSconsTests(status, context):
   context['pnacl'] = True
   context['nacl_clang'] = False
 
+  # Run tests for saigo.
+  # TODO(fabiansommer): Enable for more arches.
+  if arch == 'x86-32':
+    context['pnacl'] = False
+    context['saigo'] = True
+    # TODO(fabiansommer): Enable more test suites.
+    with Step('toolchain_tests_saigo ' + arch, status, halt_on_fail=False):
+      SCons(context, parallel=True,
+            args=flags_run + ['toolchain_tests'])
+    context['saigo'] = False
+    context['pnacl'] = True
+
   # Test sandboxed translation
   # TODO(dschuff): The standalone sandboxed translator driver does not have
   # the batch script wrappers, so it can't run on Windows. Either add them to
