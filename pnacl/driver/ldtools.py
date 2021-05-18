@@ -19,7 +19,7 @@ class LibraryTypes(object):
 
 
 def FindFirstLinkerScriptInput(inputs):
-  for i in xrange(len(inputs)):
+  for i in range(len(inputs)):
     f = inputs[i]
     if IsFlag(f):
       continue
@@ -45,7 +45,7 @@ def ExpandLinkerScripts(inputs, searchdirs, static_only):
 def ExpandLibFlags(inputs, searchdirs, static_only, acceptable_types):
   """ Given an input list, expand -lfoo or -l:foo.so
       into a full filename. Returns the new input list """
-  for i in xrange(len(inputs)):
+  for i in range(len(inputs)):
     f = inputs[i]
     if IsFlag(f):
       continue

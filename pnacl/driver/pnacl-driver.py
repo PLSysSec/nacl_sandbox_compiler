@@ -598,7 +598,7 @@ def main(argv):
   namegen = TempNameGen(flags_and_inputs, output)
 
   # Compile all source files (c/c++/ll) to .po
-  for i in xrange(0, len(flags_and_inputs)):
+  for i in range(0, len(flags_and_inputs)):
     if IsFlag(flags_and_inputs[i]):
       continue
     intype = filetype.FileType(flags_and_inputs[i])
@@ -607,7 +607,7 @@ def main(argv):
 
   # Compile all .s/.S to .o
   if env.getbool('ALLOW_NATIVE'):
-    for i in xrange(0, len(flags_and_inputs)):
+    for i in range(0, len(flags_and_inputs)):
       if IsFlag(flags_and_inputs[i]):
         continue
       intype = filetype.FileType(flags_and_inputs[i])

@@ -42,7 +42,7 @@ def AssertEquals(x, y):
 def DecodeHex(data):
   assert len(data) % 2 == 0, data
   return ''.join([chr(int(data[index * 2 : (index + 1) * 2], 16))
-                  for index in xrange(len(data) / 2)])
+                  for index in range(len(data) / 2)])
 
 
 def EncodeHex(data):
@@ -124,7 +124,7 @@ X86_64_REG_DEFS = [
 ]
 
 
-ARM_REG_DEFS = ([('r%d' % regno, 'I') for regno in xrange(16)]
+ARM_REG_DEFS = ([('r%d' % regno, 'I') for regno in range(16)]
                 + [('cpsr', 'I')])
 
 
@@ -905,7 +905,7 @@ class DebugStubTest(unittest.TestCase):
 
       # Next instruction is a super instruction.
       # Therefore cannot jump anywhere in the middle.
-      for i in xrange(1, super_inst_len):
+      for i in range(1, super_inst_len):
         self.assertEquals(ChangeReg(connection, IP_REG[ARCH],
           lambda x: x + i), 'E03')
 
@@ -960,7 +960,7 @@ class DebugStubBreakpointTest(unittest.TestCase):
       # we continue, we should hit the breakpoint again because it has
       # not been removed: the debug stub does not step through
       # breakpoints automatically.
-      for i in xrange(2):
+      for i in range(2):
         reply = connection.RspRequest('c')
         AssertReplySignal(reply, NACL_SIGTRAP)
         self.CheckInstructionPtr(connection, func_addr)

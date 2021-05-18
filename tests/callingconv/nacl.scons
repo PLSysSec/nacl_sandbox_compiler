@@ -65,7 +65,7 @@ def AddTest(env, test_variant, envlist, settings):
   num_modules = len(envlist)
   settings['num_modules'] = num_modules
   module_filenames = [ 'module%d_%s.c' % (i, test_variant)
-                       for i in xrange(num_modules) ]
+                       for i in range(num_modules) ]
 
   # Generate the module source files (module0.c, module1.c, ...).
   settings_args = ['--%s=%s' % (k,str(v)) for k,v in settings.iteritems()]
@@ -83,11 +83,11 @@ def AddTest(env, test_variant, envlist, settings):
     nodes = []
     nodes.append(base_env.File(test_variant + '.golden'))
     nodes.extend([ base_env.File(module_filenames[i])
-                   for i in xrange(num_modules) ])
+                   for i in range(num_modules) ])
 
   # Create the module objects
   modules = []
-  for i in xrange(num_modules):
+  for i in range(num_modules):
     obj = envlist[i].ComponentObject(nodes[i+1])
     envlist[i].Depends(obj, callingconv_h)
     modules.append(obj)

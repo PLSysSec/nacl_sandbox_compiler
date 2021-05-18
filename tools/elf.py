@@ -310,7 +310,7 @@ shdr_flags = {
 
 def _struct_pos(struct_definition, member):
   # return [ elt for elt, elt_type in struct_definition ].index(member)
-  for i in xrange(len(struct_definition)):
+  for i in range(len(struct_definition)):
     if struct_definition[i][0] == member:
       return i
   return -1

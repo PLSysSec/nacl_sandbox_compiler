@@ -172,7 +172,7 @@ def main(argv):
   functions_for_module = randsplit(functions, settings.num_modules)
   calls_for_module = randsplit(calls, settings.num_modules)
 
-  for m in xrange(settings.num_modules):
+  for m in range(settings.num_modules):
     fp = WriteBuffer(open(output_module_files[m], 'w'))
     m = Module(settings, m, functions_for_module[m], calls_for_module[m],
                functions)
@@ -215,7 +215,7 @@ def randsplit(inlist, n):
   inlist = list(inlist)
   random.shuffle(inlist)
   selections = [ (random.randint(0, n-1), m) for m in inlist ]
-  sublists = [ [] for i in xrange(n) ]
+  sublists = [ [] for i in range(n) ]
   for (i, m) in selections:
     sublists[i].append(m)
   return sublists
@@ -272,7 +272,7 @@ class Module(object):
     out.write("\n")
 
     # Emit prototypes of the vcheck functions
-    for module_id in xrange(self.settings.num_modules):
+    for module_id in range(self.settings.num_modules):
       out.write("void vcheck%d(va_list ap, int i, char type);\n" % module_id)
     out.write("\n")
 
@@ -325,12 +325,12 @@ def GenerateTest(settings):
   random.seed(settings.seed)
 
   functions = [ TestFunction(settings, i)
-                for i in xrange(settings.num_functions) ]
+                for i in range(settings.num_functions) ]
 
   calls = [ ]
   callcount = 0
   for f in functions:
-    for i in xrange(settings.calls_per_func):
+    for i in range(settings.calls_per_func):
       calls.append(TestCall(settings, callcount, f))
       callcount += 1
 
@@ -351,7 +351,7 @@ class TestCall(object):
     self.num_args = self.f.num_fixed_args + self.num_var_args
     args = []
     fmtstr = ''
-    for i in xrange(self.num_args):
+    for i in range(self.num_args):
       if i < self.f.num_fixed_args:
         t = self.f.fixed_arg_types[i]
       else:
@@ -430,7 +430,7 @@ class TestFunction(object):
     self.id = id
     self.num_fixed_args = random.randint(0, self.settings.max_args_per_func)
     self.fixed_arg_types = range(self.num_fixed_args)
-    for i in xrange(len(self.fixed_arg_types)):
+    for i in range(len(self.fixed_arg_types)):
       self.fixed_arg_types[i] = random.choice(settings.all_types)
     if self.num_fixed_args:
       self.fixed_arg_types[-1] = random.choice(settings.last_arg_types)
@@ -487,7 +487,7 @@ class TestFunction(object):
       check_val = "v_%s[i]" % t.id
       comp_expr = t.compare_expr % (arg_val, check_val)
       out.write("    case '%s':\n" % t.format)
-      for module_id in xrange(self.settings.num_modules):
+      for module_id in range(self.settings.num_modules):
         out.write("      va_copy(ap2, ap);\n")
         out.write("      vcheck%d(ap2, i, fmt[i]);\n" % module_id)
         out.write("      va_end(ap2);\n")
@@ -506,7 +506,7 @@ alphabet = string.letters + string.digits
 
 def make_string():
   global alphabet
-  randstr = [random.choice(alphabet) for i in xrange(random.randint(0,16))]
+  randstr = [random.choice(alphabet) for i in range(random.randint(0,16))]
   randstr = ''.join(randstr)
   return '"%s"' % randstr
 

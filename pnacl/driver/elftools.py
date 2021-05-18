@@ -160,7 +160,7 @@ def GetELFAndProgramHeaders(filename):
   phdrs = []
   fp = open(filename, 'rb')
   fp.seek(ehdr.phoff)
-  for i in xrange(ehdr.phnum):
+  for i in range(ehdr.phnum):
     phdrs.append(ProgramHeader(fp.read(ehdr.phentsize), filename))
   return (ehdr, phdrs)
 

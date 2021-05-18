@@ -548,7 +548,7 @@ def GetObjectFiles(use_sz):
   base_filename = env.getone('output')
   return ([base_filename] +
           ['%s.module%d' % (base_filename, number)
-           for number in xrange(1, obj_file_count)])
+           for number in range(1, obj_file_count)])
 
 def RunSandboxedCompiler(use_sz):
   driver_tools.CheckTranslatorPrerequisites()

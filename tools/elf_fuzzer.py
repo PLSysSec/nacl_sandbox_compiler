@@ -35,7 +35,7 @@ def uniform_fuzz(input_string, nbytes_max):
 
   # pick n distinct values from [0... len(input_string)) uniformly and
   # without replacement.
-  targets = random.sample(xrange(len(input_string)), nbytes)
+  targets = random.sample(range(len(input_string)), nbytes)
   targets.sort()
 
   # each entry of keepsies is a tuple (a-1,b) of indices indicating

@@ -45,7 +45,7 @@ def MakeSelfTestEnv(base_env, extra_flags):
   base_env = base_env.Clone()
   base_env.Append(CCFLAGS=extra_flags)
   # Same CC for all, but assign different module defines later.
-  envlist = [base_env.Clone() for dummy_count in xrange(4)]
+  envlist = [base_env.Clone() for dummy_count in range(4)]
   AddCommonFlags(envlist)
   link_env = base_env
   return (envlist, link_env)

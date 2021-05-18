@@ -43,7 +43,7 @@ class GdbRspConnection(object):
     # sel_ldr's debug stub.
     timeout_in_seconds = 10
     poll_time_in_seconds = 0.1
-    for i in xrange(int(timeout_in_seconds / poll_time_in_seconds)):
+    for i in range(int(timeout_in_seconds / poll_time_in_seconds)):
       # On Mac OS X, we have to create a new socket FD for each retry.
       sock = socket.socket()
       # Do not delay sending small packets.  This significantly speeds up

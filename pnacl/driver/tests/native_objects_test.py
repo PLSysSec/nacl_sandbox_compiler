@@ -112,7 +112,7 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
         phdr_type_nums[phdr.type] = phdr_type_nums.get(phdr.type, 0) + 1
         if phdr.type == elftools.ProgramHeader.PT_LOAD:
           self.assertEqual(phdr.align, 0x10000)
-          self.assertIn(phdr.flags, xrange(8))
+          self.assertIn(phdr.flags, range(8))
       self.assertTrue(phdr_type_nums[elftools.ProgramHeader.PT_LOAD] >= 2)
 
   def test_compile_nonsfi_executables(self):
@@ -130,7 +130,7 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
       for phdr in phdrs:
         phdr_type_nums[phdr.type] = phdr_type_nums.get(phdr.type, 0) + 1
         if phdr.type == elftools.ProgramHeader.PT_LOAD:
-          self.assertIn(phdr.flags, xrange(8))
+          self.assertIn(phdr.flags, range(8))
       self.assertTrue(phdr_type_nums[elftools.ProgramHeader.PT_LOAD] >= 2)
       # Check that PT_INTERP was replaced by PT_NULL.
       self.assertNotIn(elftools.ProgramHeader.PT_INTERP, phdr_type_nums)

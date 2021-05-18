@@ -372,7 +372,7 @@ def ParseArgsBase(argv, patternlist):
     matched += argv[i:i+num_matched]
     if isinstance(action, str):
       # Perform $N substitution
-      for g in xrange(0, len(groups)):
+      for g in range(0, len(groups)):
         action = action.replace('$%d' % g, 'groups[%d]' % g)
     try:
       if isinstance(action, str):

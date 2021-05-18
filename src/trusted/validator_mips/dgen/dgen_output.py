@@ -132,7 +132,7 @@ def _generate_table(table, out):
     if len(exprs) == 1:
       out.enter_block('if (%s)' % exprs[0])
     else:
-      for ln in xrange(len(exprs)):
+      for ln in range(len(exprs)):
         if ln == 0:
           out.line('if (%s' % exprs[ln])
         elif ln < len(exprs) - 1:

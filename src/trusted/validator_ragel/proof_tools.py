@@ -77,14 +77,14 @@ def AllXMMOperands(bitness):
   """Returns the set of all XMM registers as individual Operands objects."""
   assert bitness in (32, 64), bitness
   return set([Operands(disasms=('%xmm{}'.format(i),))
-              for i in xrange(8 if bitness == 32 else 16)])
+              for i in range(8 if bitness == 32 else 16)])
 
 
 def AllYMMOperands(bitness):
   """Returns the set of all YMM registers as individual Operands objects."""
   assert bitness in (32, 64), bitness
   return set([Operands(disasms=('%ymm{}'.format(i),))
-              for i in xrange(8 if bitness == 32 else 16)])
+              for i in range(8 if bitness == 32 else 16)])
 
 
 def GprOperands(bitness, operand_size, is_write_for_64_bit=True,
