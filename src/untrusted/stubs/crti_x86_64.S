@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+#if defined(__saigo__)
+#define naclret ret
+#endif
+
 #if !defined(__clang__)
     /*
      * The .init section contains one symbol, _init, which is the entry
