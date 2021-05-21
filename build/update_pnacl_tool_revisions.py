@@ -30,8 +30,6 @@ TOOLCHAIN_REV_DIR = os.path.join(NACL_DIR, 'toolchain_revisions')
 PKG_VER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
 
 DEFAULT_HASH='0000000000000000000000000000000000000000'
-PNACL_PACKAGE = 'pnacl_newlib'
-
 
 def ParseArgs(args):
   parser = argparse.ArgumentParser(
@@ -87,6 +85,8 @@ There is further complication when toolchain builds are merged.
   parser.add_argument('--ignore-branch', default=False, action='store_true',
                       help='Allow script to run from branches other than '
                       'master or main')
+  parser.add_argument('--saigo', default=False, action='store_true',
+                      help='Update the Saigo toolchain instead of PNaCl.')
   # TODO(jfb) The following options come from download_toolchain.py and
   #           should be shared in some way.
   parser.add_argument('--filter_out_predicates', default=[],
@@ -103,23 +103,23 @@ def ExecCommand(command):
     raise
 
 
-def GetCurrentRevision():
+def GetCurrentRevision(package):
   return ExecCommand([sys.executable, PKG_VER,
                       'getrevision',
-                      '--revision-package', PNACL_PACKAGE]).strip()
+                      '--revision-package', package]).strip()
 
 
-def SetCurrentRevision(hash):
+def SetCurrentRevision(hash, package):
   ExecCommand([sys.executable, PKG_VER,
                'setrevision',
-               '--revision-set', PNACL_PACKAGE,
+               '--revision-set', package,
                '--revision', hash])
 
 
-def GetRevisionPackageFiles():
+def GetRevisionPackageFiles(package):
   out = ExecCommand([sys.executable, PKG_VER,
                      'revpackages',
-                     '--revision-set', PNACL_PACKAGE])
+                     '--revision-set', package])
   package_list = [package.strip() for package in out.strip().split('\n')]
   return [os.path.join(TOOLCHAIN_REV_DIR, '%s.json' % package)
           for package in package_list]
@@ -216,7 +216,7 @@ def GitAdd(file):
 
 def GitCommit(message):
   with tempfile.NamedTemporaryFile() as tmp:
-    tmp.write(message)
+    tmp.write(message.encode('utf-8'))
     tmp.flush()
     ExecCommand(['git', 'commit', '--file=%s' % tmp.name])
 
@@ -326,7 +326,12 @@ class CLInfo:
     return desc
 
 
-def FmtOut(tr_points_at, pnacl_changes, new_git_hash, err=[], msg=[]):
+def FmtOut(tr_points_at,
+           pnacl_changes,
+           new_git_hash,
+           err=[],
+           msg=[],
+           saigo=False):
   assert isinstance(err, list)
   assert isinstance(msg, list)
   old_git_hash = tr_points_at['hash']
@@ -343,22 +348,27 @@ def FmtOut(tr_points_at, pnacl_changes, new_git_hash, err=[], msg=[]):
             cl['reviewers']
             for cl in pnacl_changes])).split(',')]
        if r != '']))))
+  toolchain_name = 'Saigo' if saigo else 'PNaCl'
   return (('*** ERROR ***\n' if err else '') +
           '\n\n'.join(err) +
           '\n\n'.join(msg) +
           ('\n\n' if err or msg else '') +
-          ('Update revision for PNaCl\n\n'
+          ('Update revision for %s\n\n'
            'Update %s -> %s\n\n'
-           'Pull the following PNaCl changes into NaCl:\n%s\n\n'
+           'Pull the following %s changes into NaCl:\n%s\n\n'
            '%s\n'
            'R= %s\n'
            'TEST=git cl try\n'
            '(Please LGTM this change and tick the "commit" box)\n' %
-           (old_git_hash, new_git_hash, changes, bugs, reviewers)))
+           (toolchain_name, old_git_hash, new_git_hash, toolchain_name, changes,
+            bugs, reviewers)))
 
 
 def Main(args):
   args = ParseArgs(args)
+  package = 'pnacl_newlib'
+  if args.saigo:
+    package = 'saigo_newlib'
 
   new_pnacl_revision = args.hash
   user_provided_hash = args.hash is not None
@@ -387,7 +397,7 @@ def Main(args):
     # The current revision file points at a specific PNaCl LLVM version. LLVM is
     # checked-in to the NaCl repository, but its head isn't necessarily the one
     # that we currently use in PNaCl.
-    tr_points_at['hash'] = GetCurrentRevision()
+    tr_points_at['hash'] = GetCurrentRevision(package)
     tr_points_at['date'] = GitCommitInfo(
         info='date', obj=tr_points_at['hash'], num=1)
     recent_commits = GitCommitsSince(tr_points_at['date'])
@@ -405,10 +415,11 @@ def Main(args):
       if new_date <= old_date:
         Done(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision,
                     err=["Can't update to git hash %s committed on %s: "
-                         "the current PNaCl revision's current hash %s "
+                         "the current revision's hash %s "
                          "committed on %s is more recent." %
                          (new_pnacl_revision, new_pnacl_revision_date,
-                          tr_points_at['hash'], tr_points_at['date'])]))
+                          tr_points_at['hash'], tr_points_at['date'])],
+                    saigo=args.saigo))
 
     # Find the commits changing PNaCl files that follow the previous PNaCl
     # revision pointer.
@@ -439,14 +450,17 @@ def Main(args):
 
     if len(pnacl_changes) == 0:
       Done(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision,
-                  msg=['No PNaCl change since %s on %s.' %
-                       (tr_points_at['hash'], tr_points_at['date'])]))
+                  msg=['No change since %s on %s.' %
+                       (tr_points_at['hash'], tr_points_at['date'])],
+                  saigo=args.saigo))
 
     if not user_provided_hash:
       # Take the latest commit that touched PNaCl.
       new_pnacl_revision = pnacl_changes[-1]['hash']
 
     new_branch_name = 'pnacl-revision-update-to-%s' % new_pnacl_revision
+    if args.saigo:
+      new_branch_name = 'saigo-revision-update-to-%s' % new_pnacl_revision
     if GitBranchExists(new_branch_name):
       # TODO(jfb) Figure out if tryjobs succeeded, checkout the branch and land.
       raise Exception("Branch %s already exists, the change hasn't "
@@ -455,14 +469,17 @@ def Main(args):
 
     if args.dry_run:
       DryRun("Would check out branch: " + new_branch_name)
-      DryRun("Would update PNaCl revision to: %s" % new_pnacl_revision)
+      DryRun("Would update toolchain revision to: %s" % new_pnacl_revision)
     else:
       GitCheckoutNewBranch(new_branch_name)
       try:
-        SetCurrentRevision(new_pnacl_revision)
-        for f in GetRevisionPackageFiles():
+        SetCurrentRevision(new_pnacl_revision, package)
+        for f in GetRevisionPackageFiles(package):
           GitAdd(f)
-        GitCommit(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision))
+        GitCommit(FmtOut(tr_points_at,
+                         pnacl_changes,
+                         new_pnacl_revision,
+                         saigo=args.saigo))
 
         upload_res = UploadChanges()
         msg += ['Upload result:\n%s' % upload_res]
@@ -474,7 +491,11 @@ def Main(args):
         GitCheckout(orig_branch, force=True)
         raise
 
-    Done(FmtOut(tr_points_at, pnacl_changes, new_pnacl_revision, msg=msg))
+    Done(FmtOut(tr_points_at,
+                pnacl_changes,
+                new_pnacl_revision,
+                msg=msg,
+                saigo=args.saigo))
 
   except SystemExit as e:
     # Normal exit.
