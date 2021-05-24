@@ -47,10 +47,10 @@ class ElfFormatError(Error):
     super(ElfFormatError, self).__init__(message)
 
 
-class ElfStructMixIn:
+class ElfStructMixIn(object):
 
   def GetBytes(self):
-    return buffer(self)[:]
+    return memoryview(self).tobytes()
 
   @classmethod
   def FromString(cls, bytes):
@@ -139,7 +139,7 @@ def HexDump(value):
 
 class Elf(object):
 
-  ELF_MAGIC = '\x7FELF'
+  ELF_MAGIC = b'\x7FELF'
 
   PT_LOAD = 1
 
