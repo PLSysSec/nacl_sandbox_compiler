@@ -11,7 +11,7 @@ static_library("platform_qual_lib") {
   }
 
   if (current_cpu != "arm") {
-    sources += [ "arch/x86/nacl_cpuwhitelist.c" ]
+    sources += [ "arch/x86/nacl_cpuallowlist.c" ]
   }
 
   if (current_cpu == "x86") {

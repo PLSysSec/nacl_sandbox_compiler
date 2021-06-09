@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
-#include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
+#include "native_client/src/trusted/platform_qualify/nacl_cpuallowlist.h"
 
 
 static int idcmp(const void *s1, const void *s2) {

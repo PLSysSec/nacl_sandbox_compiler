@@ -21,7 +21,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
-#include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
+#include "native_client/src/trusted/platform_qualify/nacl_cpuallowlist.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/arch/x86/vcpuid.h"

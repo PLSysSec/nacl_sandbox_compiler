@@ -7,7 +7,7 @@
 #include "native_client/src/include/build_config.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 
-#include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
+#include "native_client/src/trusted/platform_qualify/nacl_cpuallowlist.h"
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm

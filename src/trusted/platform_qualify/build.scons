@@ -34,7 +34,7 @@ def TargetLib(env, name):
 # Architecture-specific qualification routines
 #
 if env.Bit('build_x86') and env.Bit('build_x86'):
-  pql_inputs += ['arch/x86/nacl_cpuwhitelist.c']
+  pql_inputs += ['arch/x86/nacl_cpuallowlist.c']
 
   # Make sure CPUID is present and truthful
   vcpuid_env = env.Clone()
@@ -64,11 +64,11 @@ if env.Bit('build_x86') and env.Bit('build_x86'):
       node, ['small_tests'], 'run_platform_qual_test',
       is_broken=env.IsRunningUnderValgrind())
 
-  cpuwhitelist_test = env.ComponentProgram(
-      'cpuwhitelist_test', 'arch/x86/nacl_cpuwhitelist_test.c',
+  cpuallowlist_test = env.ComponentProgram(
+      'cpuallowlist_test', 'arch/x86/nacl_cpuallowlist_test.c',
       EXTRA_LIBS=extra_libs)
-  node = env.CommandTest('cpuwhitelist_test.out', [cpuwhitelist_test])
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_cpuwhitelist_test')
+  node = env.CommandTest('cpuallowlist_test.out', [cpuallowlist_test])
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_cpuallowlist_test')
 
 
 if env.Bit('build_arm'):

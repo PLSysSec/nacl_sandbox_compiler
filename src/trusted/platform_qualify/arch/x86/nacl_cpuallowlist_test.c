@@ -5,7 +5,7 @@
  */
 
 /*
- * nacl_cpuwhitelist_test.c
+ * nacl_cpuallowlist_test.c
  */
 #include "native_client/src/include/portability.h"
 #include <stdio.h>
@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
-#include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
+#include "native_client/src/trusted/platform_qualify/nacl_cpuallowlist.h"
 
 static void CPUIDWhitelistUnitTests(void) {
   /* blacklist tests */
