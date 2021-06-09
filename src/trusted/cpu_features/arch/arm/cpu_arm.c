@@ -26,7 +26,7 @@ void NaClGetCurrentCPUFeaturesArm(NaClCPUFeatures *f) {
   /* TODO(jfb) Use a safe cast in this interface. */
   NaClCPUFeaturesArm *features = (NaClCPUFeaturesArm *) f;
   /*
-   * TODO(jfb) Create a whitelist of CPUs that don't leak information when
+   * TODO(jfb) Create a allowlist of CPUs that don't leak information when
    *           TST+LDR and TST+STR are used. Disallow all for now.
    */
   NaClSetCPUFeatureArm(features, NaClCPUFeatureArm_CanUseTstMem, 0);

@@ -22,8 +22,8 @@
 #define NACL_ENV_PREFIX_LENGTH 8
 
 void NaClEnvCleanserCtor(struct NaClEnvCleanser *self,
-                         int with_whitelist, int with_passthrough) {
-  self->with_whitelist = with_whitelist;
+                         int with_allowlist, int with_passthrough) {
+  self->with_allowlist = with_allowlist;
   self->with_passthrough = with_passthrough;
   self->cleansed_environ = (char const **) NULL;
 }
@@ -34,7 +34,7 @@ void NaClEnvCleanserCtor(struct NaClEnvCleanser *self,
  * must be sorted, in ASCII order, for the bsearch to run correctly.
  */
 /* static -- not static for testing */
-char const *const kNaClEnvWhitelist[] = {
+char const *const kNaClEnvAllowlist[] = {
   "LANG",
   "LC_ADDRESS",
   "LC_ALL",
@@ -78,11 +78,11 @@ int NaClEnvIsPassThroughVar(char const *env_entry) {
           NACL_ENV_PREFIX_LENGTH);
 }
 
-int NaClEnvInWhitelist(char const *env_entry) {
+int NaClEnvInAllowlist(char const *env_entry) {
   return NULL != bsearch((void const *) &env_entry,
-                         (void const *) kNaClEnvWhitelist,
-                         NACL_ARRAY_SIZE(kNaClEnvWhitelist) - 1,  /* NULL */
-                         sizeof kNaClEnvWhitelist[0],
+                         (void const *) kNaClEnvAllowlist,
+                         NACL_ARRAY_SIZE(kNaClEnvAllowlist) - 1,  /* NULL */
+                         sizeof kNaClEnvAllowlist[0],
                          EnvCmp);
 }
 
@@ -147,7 +147,7 @@ int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp,
     for (p = envp; NULL != *p; ++p) {
       if (VarIsInExtraEnv(*p, extra_env) ||
           (!self->with_passthrough &&
-           !(self->with_whitelist && NaClEnvInWhitelist(*p)) &&
+           !(self->with_allowlist && NaClEnvInAllowlist(*p)) &&
            !NaClEnvIsPassThroughVar(*p))) {
         continue;
       }
@@ -186,7 +186,7 @@ int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp,
       } else if (NaClEnvIsPassThroughVar(*p)) {
         ptr_tbl[env] = *p + NACL_ENV_PREFIX_LENGTH;
       } else if (self->with_passthrough ||
-                 (self->with_whitelist && NaClEnvInWhitelist(*p))) {
+                 (self->with_allowlist && NaClEnvInAllowlist(*p))) {
         ptr_tbl[env] = *p;
       } else {
         continue;

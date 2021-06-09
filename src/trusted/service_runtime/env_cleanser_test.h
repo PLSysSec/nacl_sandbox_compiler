@@ -9,7 +9,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ENV_CLEANSER_TEST_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ENV_CLEANSER_TEST_H_
 
-extern char const *const kNaClEnvWhitelist[];
-extern int NaClEnvInWhitelist(char const *);
+extern char const *const kNaClEnvAllowlist[];
+extern int NaClEnvInAllowlist(char const *);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ENV_CLEANSER_TEST_H_ */

@@ -57,31 +57,31 @@ take some time because our 32-bit Windows solution depends on APIs that aren't
 in some 64-bit versions. For the long answer, see the [discussion group post]
 (http://groups.google.com/group/native-client-discuss/browse_thread/thread/3683b35e9ec74f02).
 
-### Why does Native Client use a whitelist for the URLs of untrusted modules?
+### Why does Native Client use an allowlist for the URLs of untrusted modules?
 
-The whitelist is a precaution while we work on hardening the system and on
+The allowlist is a precaution while we work on hardening the system and on
 features that are required for defense in depth. Eventually, you should be able
 to load Native Client modules from any http URL.
 
 ### How can I make Native Client load modules from non-localhost URLs?
 
-Edit the whitelist in npapi\_plugin/origin.cc. For example, if you want to load
+Edit the allowlist in npapi\_plugin/origin.cc. For example, if you want to load
 modules from a Google Code project named kw-test, add
 `http://kw-test.googlecode.com` like this:
 
 ```
-bool OriginIsInWhitelist(std::string origin) {
+bool OriginIsInAllowlist(std::string origin) {
   static char const *allowed_origin[] = {
     "http://localhost",
     "http://localhost:80",
     "http://localhost:5103",
-    "http://kw-test.googlecode.com",  // NEW: WHITELIST MY PROJECT'S WEBSITE
+    "http://kw-test.googlecode.com",  // NEW: ALLOWLIST MY PROJECT'S WEBSITE
   };
   ...
 }
 ```
 
-After modifying the whitelist, rebuild as described in [Building Native Client]
+After modifying the allowlist, rebuild as described in [Building Native Client]
 (http://nativeclient.googlecode.com/svn/trunk/src/native_client/documentation/building.html),
 and then reinstall as described in [Getting Started]
 (http://nativeclient.googlecode.com/svn/trunk/src/native_client/documentation/getting_started.html).

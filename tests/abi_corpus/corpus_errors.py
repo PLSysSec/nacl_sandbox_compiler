@@ -99,7 +99,7 @@ BAD_CRXS = {
 
 
 def NexeShouldValidate(path):
-  """Checks a blacklist to decide if a nexe should validate.
+  """Checks a blocklist to decide if a nexe should validate.
 
   Args:
     path: path to the nexe.

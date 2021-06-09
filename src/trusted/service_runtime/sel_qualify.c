@@ -29,7 +29,7 @@ NaClErrorCode NaClRunSelQualificationTests(void) {
 #endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
-  if (NaCl_ThisCPUIsBlacklisted()) {
+  if (NaCl_ThisCPUIsBlocklisted()) {
     return LOAD_UNSUPPORTED_CPU;
   }
 #endif

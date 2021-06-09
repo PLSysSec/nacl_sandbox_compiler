@@ -76,7 +76,7 @@ int main(void) {
    * that we have seen before on known versions of x86-64 Windows?  If
    * not, there is probably no problem, but we might want to
    * investigate.  It should be OK to add new instructions to the
-   * whitelist here if this test fails.
+   * allowlist here if this test fails.
    *
    * Check for the instructions:
    *   fc                     cld

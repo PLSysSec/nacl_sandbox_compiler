@@ -816,7 +816,7 @@ def SubzeroRuntimeCommands(arch, out_dir):
 
   When the commands are executed, temporary files are created in the current
   directory, and .o files are created in the out_dir directory.  If arch isn't
-  among a whitelist, an empty list of commands is returned.
+  among a allowlist, an empty list of commands is returned.
   """
   AsmSourceBase = None
   # LlcArchArgs contains arguments extracted from pnacl-translate.py.

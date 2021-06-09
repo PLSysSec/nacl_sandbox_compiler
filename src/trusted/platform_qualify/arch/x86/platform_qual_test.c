@@ -51,8 +51,8 @@ int main(void) {
   if (NaClOsIsSupported() != 1) return -1;
   printf("OS is supported\n");
 
-  if (NaCl_ThisCPUIsBlacklisted()) return -1;
-  printf("CPU is not blacklisted\n");
+  if (NaCl_ThisCPUIsBlocklisted()) return -1;
+  printf("CPU is not blocklisted\n");
 
   TestDEPCheckFailurePath();
 
@@ -63,9 +63,9 @@ int main(void) {
   printf("CPUID implementation looks okay\n");
 
   /*
-   * don't use the white list for now
-   * if (NaCl_CPUIsWhitelisted() == 0) return -1;
-   * printf("CPU is whitelisted\n");
+   * don't use the allowlist for now
+   * if (NaCl_CPUIsAllowlisted() == 0) return -1;
+   * printf("CPU is allowlisted\n");
    */
 
   printf("platform_qual_test: PASS\n");

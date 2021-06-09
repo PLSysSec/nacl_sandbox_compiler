@@ -20,7 +20,7 @@
  *
  *  * We have peculiar requirements such as needing to execute syscalls
  *    from specific program counter addresses in memory, in order to
- *    whitelist these addresses in a seccomp-bpf filter.  LSS's
+ *    allowlist these addresses in a seccomp-bpf filter.  LSS's
  *    SYS_SYSCALL_ENTRYPOINT is more complex than what we need, and also
  *    won't work with clone().
  *

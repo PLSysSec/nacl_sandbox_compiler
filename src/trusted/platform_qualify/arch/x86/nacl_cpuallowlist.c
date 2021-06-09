@@ -5,7 +5,7 @@
  */
 
 /*
- * An implementation of CPU whitelisting for x86's CPUID identification scheme.
+ * An implementation of CPU allowlisting for x86's CPUID identification scheme.
  */
 
 #include "native_client/src/include/portability.h"
@@ -22,18 +22,18 @@ static int idcmp(const void *s1, const void *s2) {
   return strncmp((char *)s1, *(char **)s2, kCPUIDStringLength);
 }
 
-/* NOTE: The blacklist must be in alphabetical order. */
-static const char* const kNaClCpuBlacklist[] = {
+/* NOTE: The blocklist must be in alphabetical order. */
+static const char* const kNaClCpuBlocklist[] = {
 /*          1         2        */
 /* 12345678901234567890 + '\0' */
   " FakeEntry0000000000",
   " FakeEntry0000000001",
-  NACL_BLACKLIST_TEST_ENTRY,
+  NACL_BLOCKLIST_TEST_ENTRY,
   "zFakeEntry0000000000",
 };
 
-/* NOTE: The whitelist must be in alphabetical order. */
-static const char* const kNaClCpuWhitelist[] = {
+/* NOTE: The allowlist must be in alphabetical order. */
+static const char* const kNaClCpuAllowlist[] = {
 /*          1         2        */
 /* 12345678901234567890 + '\0' */
   " FakeEntry0000000000",
@@ -68,13 +68,13 @@ static int VerifyCpuList(const char* const cpulist[], int n) {
 }
 
 
-int NaCl_VerifyBlacklist(void) {
-  return VerifyCpuList(kNaClCpuBlacklist, NACL_ARRAY_SIZE(kNaClCpuBlacklist));
+int NaCl_VerifyBlocklist(void) {
+  return VerifyCpuList(kNaClCpuBlocklist, NACL_ARRAY_SIZE(kNaClCpuBlocklist));
 }
 
 
-int NaCl_VerifyWhitelist(void) {
-  return VerifyCpuList(kNaClCpuWhitelist, NACL_ARRAY_SIZE(kNaClCpuWhitelist));
+int NaCl_VerifyAllowlist(void) {
+  return VerifyCpuList(kNaClCpuAllowlist, NACL_ARRAY_SIZE(kNaClCpuAllowlist));
 }
 
 
@@ -84,36 +84,36 @@ static int IsCpuInList(const char *myid, const char* const cpulist[], int n) {
 
 
 /* for testing */
-int NaCl_CPUIsWhitelisted(const char *myid) {
+int NaCl_CPUIsAllowlisted(const char *myid) {
   return IsCpuInList(myid,
-                     kNaClCpuWhitelist,
-                     NACL_ARRAY_SIZE(kNaClCpuWhitelist));
+                     kNaClCpuAllowlist,
+                     NACL_ARRAY_SIZE(kNaClCpuAllowlist));
 }
 
 /* for testing */
-int NaCl_CPUIsBlacklisted(const char *myid) {
+int NaCl_CPUIsBlocklisted(const char *myid) {
   return IsCpuInList(myid,
-                     kNaClCpuBlacklist,
-                     NACL_ARRAY_SIZE(kNaClCpuBlacklist));
+                     kNaClCpuBlocklist,
+                     NACL_ARRAY_SIZE(kNaClCpuBlocklist));
 }
 
 
-int NaCl_ThisCPUIsWhitelisted(void) {
+int NaCl_ThisCPUIsAllowlisted(void) {
   NaClCPUData data;
   const char* myid;
   NaClCPUDataGet(&data);
   myid = GetCPUIDString(&data);
   return IsCpuInList(myid,
-                     kNaClCpuWhitelist,
-                     NACL_ARRAY_SIZE(kNaClCpuWhitelist));
+                     kNaClCpuAllowlist,
+                     NACL_ARRAY_SIZE(kNaClCpuAllowlist));
 }
 
-int NaCl_ThisCPUIsBlacklisted(void) {
+int NaCl_ThisCPUIsBlocklisted(void) {
   NaClCPUData data;
   const char* myid;
   NaClCPUDataGet(&data);
   myid = GetCPUIDString(&data);
   return IsCpuInList(myid,
-                     kNaClCpuBlacklist,
-                     NACL_ARRAY_SIZE(kNaClCpuBlacklist));
+                     kNaClCpuBlocklist,
+                     NACL_ARRAY_SIZE(kNaClCpuBlocklist));
 }

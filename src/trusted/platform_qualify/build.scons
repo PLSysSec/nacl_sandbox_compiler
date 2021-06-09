@@ -5,7 +5,7 @@
 #
 # TODO(bradchen):
 # - update plaform_qualify.gyp to be consistent with build.scons
-# - update sel_ldr to include blacklist check
+# - update sel_ldr to include blocklist check
 
 Import('env')
 

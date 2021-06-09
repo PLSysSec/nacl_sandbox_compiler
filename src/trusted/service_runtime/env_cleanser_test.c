@@ -57,7 +57,7 @@ static char const *const kFilteredEnv[] = {
   NULL,
 };
 
-static char const *const kFilteredEnvWithoutWhitelist[] = {
+static char const *const kFilteredEnvWithoutAllowlist[] = {
   "LD_PRELOAD=libvalgrind.so",
   "SHELL=/bin/sh",
   NULL,
@@ -164,10 +164,10 @@ int main(void) {
   struct NaClEnvCleanser nec;
 
   printf("Environment Cleanser Test\n\n");
-  printf("\nWhitelist self-check\n\n");
-  for (i = 0; NULL != kNaClEnvWhitelist[i]; ++i) {
-    printf("Checking %s\n", kNaClEnvWhitelist[i]);
-    if (0 == NaClEnvInWhitelist(kNaClEnvWhitelist[i])) {
+  printf("\nAllowlist self-check\n\n");
+  for (i = 0; NULL != kNaClEnvAllowlist[i]; ++i) {
+    printf("Checking %s\n", kNaClEnvAllowlist[i]);
+    if (0 == NaClEnvInAllowlist(kNaClEnvAllowlist[i])) {
       ++errors;
       printf("ERROR\n");
     } else {
@@ -175,11 +175,11 @@ int main(void) {
     }
   }
 
-  printf("\nNon-whitelisted entries\n\n");
+  printf("\nNon-allowlisted entries\n\n");
 
   for (i = 0; NULL != kBogusEnvs[i]; ++i) {
     printf("Checking %s\n", kBogusEnvs[i]);
-    if (0 != NaClEnvInWhitelist(kBogusEnvs[i])) {
+    if (0 != NaClEnvInAllowlist(kBogusEnvs[i])) {
       ++errors;
       printf("ERROR\n");
     } else {
@@ -191,7 +191,7 @@ int main(void) {
 
   for (i = 0; NULL != kValidEnvs[i]; ++i) {
     printf("Checking %s\n", kValidEnvs[i]);
-    if (0 == NaClEnvInWhitelist(kValidEnvs[i])) {
+    if (0 == NaClEnvInAllowlist(kValidEnvs[i])) {
       ++errors;
       printf("ERROR\n");
     } else {
@@ -219,20 +219,20 @@ int main(void) {
   }
   NaClEnvCleanserDtor(&nec);
 
-  printf("\nEnvironment Filtering (without whitelist)\n");
+  printf("\nEnvironment Filtering (without allowlist)\n");
   NaClEnvCleanserCtor(&nec, 0, 0);
   if (!NaClEnvCleanserInit(&nec, kMurkyEnv, NULL)) {
     printf("FAILED: NaClEnvCleanser Init failed\n");
     ++errors;
   } else {
     if (!StrTblsHaveSameEntries(NaClEnvCleanserEnvironment(&nec),
-                                kFilteredEnvWithoutWhitelist)) {
+                                kFilteredEnvWithoutAllowlist)) {
       printf("ERROR: filtered env wrong\n");
       ++errors;
 
       PrintStrTbl("Original environment", kMurkyEnv);
       PrintStrTbl("Filtered environment", NaClEnvCleanserEnvironment(&nec));
-      PrintStrTbl("Expected environment", kFilteredEnvWithoutWhitelist);
+      PrintStrTbl("Expected environment", kFilteredEnvWithoutAllowlist);
     } else {
       printf("OK\n");
     }

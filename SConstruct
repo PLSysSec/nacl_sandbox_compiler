@@ -648,11 +648,11 @@ nacl_glibc_skiplist = set([
     ])
 nacl_glibc_skiplist.update(['%s_irt' % test for test in nacl_glibc_skiplist])
 
-# Whitelist of tests to run for Non-SFI Mode.  Note that typos here will
+# Allowlist of tests to run for Non-SFI Mode.  Note that typos here will
 # not be caught automatically!
 # TODO(mseaborn): Eventually we should run all of small_tests instead of
-# this whitelist.
-nonsfi_test_whitelist = set([
+# this allowlist.
+nonsfi_test_allowlist = set([
     'run_arm_float_abi_test',
     'run_clock_get_test',
     'run_clone_test',
@@ -861,7 +861,7 @@ pre_base_env.AddMethod(ShouldSkipTest)
 
 
 def AddImplicitTestSuites(suite_list, node_name):
-  if node_name in nonsfi_test_whitelist:
+  if node_name in nonsfi_test_allowlist:
     suite_list = suite_list + ['nonsfi_tests']
   return suite_list
 

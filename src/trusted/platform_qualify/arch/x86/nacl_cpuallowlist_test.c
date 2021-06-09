@@ -15,73 +15,73 @@
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuallowlist.h"
 
-static void CPUIDWhitelistUnitTests(void) {
-  /* blacklist tests */
-  if (!NaCl_VerifyBlacklist()) {
-    fprintf(stderr, "ERROR: blacklist malformed\n");
+static void CPUIDAllowlistUnitTests(void) {
+  /* blocklist tests */
+  if (!NaCl_VerifyBlocklist()) {
+    fprintf(stderr, "ERROR: blocklist malformed\n");
     exit(-1);
   }
-  if (!NaCl_CPUIsBlacklisted(NACL_BLACKLIST_TEST_ENTRY)) {
-    fprintf(stderr, "ERROR: blacklist test 1 failed\n");
+  if (!NaCl_CPUIsBlocklisted(NACL_BLOCKLIST_TEST_ENTRY)) {
+    fprintf(stderr, "ERROR: blocklist test 1 failed\n");
     exit(-1);
   }
-  if (NaCl_CPUIsBlacklisted("GenuineFooFooCPU")) {
-    fprintf(stderr, "ERROR: blacklist test 2 failed\n");
+  if (NaCl_CPUIsBlocklisted("GenuineFooFooCPU")) {
+    fprintf(stderr, "ERROR: blocklist test 2 failed\n");
     exit(-1);
   }
-  printf("All blacklist unit tests passed\n");
-  /* whitelist tests */
-  /* NOTE: whitelist is not currently used */
-  if (!NaCl_VerifyWhitelist()) {
-    fprintf(stderr, "ERROR: whitelist malformed\n");
+  printf("All blocklist unit tests passed\n");
+  /* allowlist tests */
+  /* NOTE: allowlist is not currently used */
+  if (!NaCl_VerifyAllowlist()) {
+    fprintf(stderr, "ERROR: allowlist malformed\n");
     exit(-1);
   }
-  if (!NaCl_CPUIsWhitelisted(" FakeEntry0000000000")) {
-    fprintf(stderr, "ERROR: whitelist search 1 failed\n");
+  if (!NaCl_CPUIsAllowlisted(" FakeEntry0000000000")) {
+    fprintf(stderr, "ERROR: allowlist search 1 failed\n");
     exit(-1);
   }
-  if (!NaCl_CPUIsWhitelisted("GenuineIntel00000f43")) {
-    fprintf(stderr, "ERROR: whitelist search 2 failed\n");
+  if (!NaCl_CPUIsAllowlisted("GenuineIntel00000f43")) {
+    fprintf(stderr, "ERROR: allowlist search 2 failed\n");
     exit(-1);
   }
-  if (!NaCl_CPUIsWhitelisted("zFakeEntry0000000000")) {
-    fprintf(stderr, "ERROR: whitelist search 3 failed\n");
+  if (!NaCl_CPUIsAllowlisted("zFakeEntry0000000000")) {
+    fprintf(stderr, "ERROR: allowlist search 3 failed\n");
     exit(-1);
   }
-  if (NaCl_CPUIsWhitelisted("a")) {
-    fprintf(stderr, "ERROR: whitelist search 4 didn't fail\n");
+  if (NaCl_CPUIsAllowlisted("a")) {
+    fprintf(stderr, "ERROR: allowlist search 4 didn't fail\n");
     exit(-1);
   }
-  if (NaCl_CPUIsWhitelisted("")) {
-    fprintf(stderr, "ERROR: whitelist search 5 didn't fail\n");
+  if (NaCl_CPUIsAllowlisted("")) {
+    fprintf(stderr, "ERROR: allowlist search 5 didn't fail\n");
     exit(-1);
   }
-  if (NaCl_CPUIsWhitelisted("zFakeEntry0000000001")) {
-    fprintf(stderr, "ERROR: whitelist search 6 didn't fail\n");
+  if (NaCl_CPUIsAllowlisted("zFakeEntry0000000001")) {
+    fprintf(stderr, "ERROR: allowlist search 6 didn't fail\n");
     exit(-1);
   }
-  if (NaCl_CPUIsWhitelisted("zFakeEntry00000000000")) {
-    fprintf(stderr, "ERROR: whitelist search 7 didn't fail\n");
+  if (NaCl_CPUIsAllowlisted("zFakeEntry00000000000")) {
+    fprintf(stderr, "ERROR: allowlist search 7 didn't fail\n");
     exit(-1);
   }
-  printf("All whitelist unit tests passed\n");
+  printf("All allowlist unit tests passed\n");
 }
 
 int main(void) {
   NaClCPUData data;
   NaClCPUDataGet(&data);
-  printf("white list ID: %s\n", GetCPUIDString(&data));
-  if (NaCl_ThisCPUIsWhitelisted()) {
-    printf("this CPU is on the whitelist\n");
+  printf("allow list ID: %s\n", GetCPUIDString(&data));
+  if (NaCl_ThisCPUIsAllowlisted()) {
+    printf("this CPU is on the allowlist\n");
   } else {
-    printf("this CPU is NOT on the whitelist\n");
+    printf("this CPU is NOT on the allowlist\n");
   }
-  if (NaCl_ThisCPUIsBlacklisted()) {
-    printf("this CPU is on the blacklist\n");
+  if (NaCl_ThisCPUIsBlocklisted()) {
+    printf("this CPU is on the blocklist\n");
   } else {
-    printf("this CPU is NOT on the blacklist\n");
+    printf("this CPU is NOT on the blocklist\n");
   }
 
-  CPUIDWhitelistUnitTests();
+  CPUIDAllowlistUnitTests();
   return 0;
 }

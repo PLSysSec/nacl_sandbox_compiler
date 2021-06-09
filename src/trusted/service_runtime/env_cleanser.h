@@ -5,7 +5,7 @@
  */
 
 /*
- * Simple environment cleanser to remove all but a whitelisted set of
+ * Simple environment cleanser to remove all but a allowlisted set of
  * environment variables deemed safe/appropriate to export to NaCl
  * modules.
  */
@@ -19,13 +19,13 @@ EXTERN_C_BEGIN
 
 struct NaClEnvCleanser {
   /* private */
-  int with_whitelist;
+  int with_allowlist;
   int with_passthrough;
   char const **cleansed_environ;
 };
 
 void NaClEnvCleanserCtor(struct NaClEnvCleanser *self,
-                         int with_whitelist, int with_passthrough);
+                         int with_allowlist, int with_passthrough);
 
 /*
  * Initializes the NaClEnvCleanser.  Filters the environment at envp
