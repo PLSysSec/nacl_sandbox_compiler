@@ -83,7 +83,9 @@ elif env.Bit('build_x86'):
   if trusted_env:
     platform_limits_known = True
     if trusted_env.Bit('linux'):
-      high_thread_count_nthreads = 8180
+      # A value of 8180 worked on Ubuntu 16.04 (Xenial).
+      # This had to be reduced to 4200 on Ubuntu 18.04 (Bionic).
+      high_thread_count_nthreads = 4200
     elif trusted_env.Bit('mac'):
       # A value of 2558 worked on OS X 10.5 (Leopard).
       # This had to be reduced to 2556 to pass on OS X 10.6 (Snow Leopard).
