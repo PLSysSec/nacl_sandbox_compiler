@@ -122,16 +122,33 @@ def RunSconsTests(status, context):
   context['nacl_clang'] = False
 
   # Run tests for saigo.
+  context['pnacl'] = False
+  context['saigo'] = True
   # TODO(fabiansommer): Enable for more arches.
   if arch == 'x86-32':
-    context['pnacl'] = False
-    context['saigo'] = True
-    # TODO(fabiansommer): Enable more test suites.
-    with Step('toolchain_tests_saigo ' + arch, status, halt_on_fail=False):
+    # Build for non-IRT mode.
+    if not context['skip_build']:
+      with Step('build_saigo ' + arch, status, halt_on_fail=False):
+        SCons(context, parallel=True, args=flags_build)
+    # Non-IRT tests.
+    with Step('smoke_tests_saigo ' + arch, status, halt_on_fail=False):
       SCons(context, parallel=True,
-            args=flags_run + ['toolchain_tests'])
-    context['saigo'] = False
-    context['pnacl'] = True
+            args=flags_run + ['small_tests', 'medium_tests'])
+    with Step('large_tests_saigo ' + arch, status, halt_on_fail=False):
+      SCons(context, parallel=True, args=flags_run + ['large_tests'])
+    # Build for IRT mode.
+    if not context['skip_build']:
+      with Step('build_all_irt_saigo ' + arch, status):
+        SCons(context, parallel=True, mode=irt_mode, args=flags_build)
+    # Run tests with the IRT.
+    with Step('smoke_tests_irt_saigo ' + arch, status, halt_on_fail=False):
+      SCons(context, parallel=True, mode=irt_mode,
+            args=flags_run + ['small_tests_irt', 'medium_tests_irt'])
+    with Step('large_tests_irt_saigo ' + arch, status, halt_on_fail=False):
+      SCons(context, parallel=False, mode=irt_mode,
+            args=flags_run + ['large_tests_irt'])
+  context['saigo'] = False
+  context['pnacl'] = True
 
   # Test sandboxed translation
   # TODO(dschuff): The standalone sandboxed translator driver does not have

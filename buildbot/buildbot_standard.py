@@ -181,6 +181,41 @@ def DoGNBuild(status, context, force_arch=None):
 
   return (gn_out_trusted, gn_out_irt)
 
+def RunSconsTests(status, context, using_gn, step_suffix = ''):
+  if not context['use_glibc'] and not context['no_scons']:
+    # Bypassing the IRT with glibc is not a supported case,
+    # and in fact does not work at all with the new glibc.
+    with Step('small_tests' + step_suffix, status, halt_on_fail=False):
+      SCons(context, args=['small_tests'])
+    with Step('medium_tests' + step_suffix, status, halt_on_fail=False):
+      SCons(context, args=['medium_tests'])
+    with Step('large_tests' + step_suffix, status, halt_on_fail=False):
+      SCons(context, args=['large_tests'])
+
+  with Step('compile IRT tests' + step_suffix, status):
+    args = []
+    if context.Windows():
+      # Windows can't build trusted code. Using force_tls_edit prevents
+      # that and allows tls_edit.exe to be used to build the tests.
+      # See https://bugs.chromium.org/p/nativeclient/issues/detail?id=4408
+      tls_edit = os.path.join(using_gn[0], 'tls_edit.exe')
+      args=['force_tls_edit=' + tls_edit]
+    SCons(context, parallel=True, mode=['nacl,nacl_irt_test'], args=args)
+
+  if not context['no_scons']:
+    with Step('small_tests under IRT' + step_suffix, status,
+              halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['small_tests_irt'])
+    with Step('medium_tests under IRT' + step_suffix, status,
+              halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['medium_tests_irt'])
+    with Step('large_tests under IRT' + step_suffix, status,
+              halt_on_fail=False):
+      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
+            args=['large_tests_irt'])
+
 def DoGNTest(status, context, using_gn, gn_perf_prefix, gn_step_suffix):
   if not using_gn:
     return
@@ -429,38 +464,18 @@ def BuildScript(status, context):
   if context['android']:
     return
 
-  ### BEGIN tests ###
-  if not context['use_glibc'] and not context['no_scons']:
-    # Bypassing the IRT with glibc is not a supported case,
-    # and in fact does not work at all with the new glibc.
-    with Step('small_tests', status, halt_on_fail=False):
-      SCons(context, args=['small_tests'])
-    with Step('medium_tests', status, halt_on_fail=False):
-      SCons(context, args=['medium_tests'])
-    with Step('large_tests', status, halt_on_fail=False):
-      SCons(context, args=['large_tests'])
+  RunSconsTests(status, context, using_gn)
 
-  with Step('compile IRT tests', status):
-    args = []
-    if context.Windows():
-      # Windows can't build trusted code. Using force_tls_edit prevents
-      # that and allows tls_edit.exe to be used to build the tests.
-      # See https://bugs.chromium.org/p/nativeclient/issues/detail?id=4408
-      tls_edit = os.path.join(using_gn[0], 'tls_edit.exe')
-      args=['force_tls_edit=' + tls_edit]
-    SCons(context, parallel=True, mode=['nacl,nacl_irt_test'], args=args)
-
-  if not context['no_scons']:
-    with Step('small_tests under IRT', status, halt_on_fail=False):
-      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
-            args=['small_tests_irt'])
-    with Step('medium_tests under IRT', status, halt_on_fail=False):
-      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
-            args=['medium_tests_irt'])
-    with Step('large_tests under IRT', status, halt_on_fail=False):
-      SCons(context, mode=context['default_scons_mode'] + ['nacl_irt_test'],
-            args=['large_tests_irt'])
-  ### END tests ###
+  # Tests for saigo.
+  context['saigo'] = True
+  # TODO(fabiansommer): Enable for more arches.
+  if (context['arch'] == '32'
+      and not context['use_glibc']
+      and not context['no_scons']):
+    with Step('scons_compile for Saigo', status):
+      SCons(context, parallel=True, args=[])
+    RunSconsTests(status, context, using_gn, step_suffix=' for Saigo')
+  context['saigo'] = False
 
   if context.Windows() and context['arch'] != '64':
     # Currently only the only Windows bots are 64-bit, and they can't run the
