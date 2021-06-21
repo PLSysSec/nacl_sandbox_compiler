@@ -33,7 +33,10 @@ source_set("env_cleanser") {
 }
 
 source_set("nacl_error_code") {
-  sources = [ "nacl_error_code.c" ]
+  sources = [
+    "nacl_error_code.c",
+    "nacl_error_code.h",
+  ]
   deps = [ "//build/config/nacl:nacl_base" ]
 }
 
