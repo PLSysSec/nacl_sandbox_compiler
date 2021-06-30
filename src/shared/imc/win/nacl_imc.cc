@@ -419,7 +419,6 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
         case kEchoResponse:
           SkipFile(handle, sizeof header);
           goto Repeat;
-          break;
         case kMessage:
           if (header.message_length + sizeof header <= total) {
             if (flags & NACL_DONT_WAIT) {
@@ -451,10 +450,8 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
       header.pid = GetCurrentProcessId();
       WriteAll(handle, &header, sizeof header);
       goto Repeat;
-      break;
     case kEchoResponse:
       goto Repeat;
-      break;
     case kMessage: {
       uint32_t total_message_bytes = header.message_length;
       size_t count = 0;
@@ -504,7 +501,6 @@ static int ReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
     case kCancel:
       SkipHandles(handle, header.handle_count);
       goto Repeat;
-      break;
     default:
       break;
     }
@@ -576,7 +572,6 @@ int NaClReceiveDatagram(NaClHandle handle, NaClMessageHeader* message,
     }
     default:
       return -1;
-      break;
     }
   }
 }

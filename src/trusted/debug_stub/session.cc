@@ -212,15 +212,12 @@ bool Session::GetPacket(Packet *pkt) {
       return io_->Write(out, 3);
     }
     return io_->Write(out, 1);
-  } else {
-    // Resend a bad XSUM and look for retransmit
-    io_->Write("-", 1);
-
-    NaClLog(LOG_INFO, "RX Bad XSUM, retry\n");
-    goto retry;
   }
+  // Resend a bad XSUM and look for retransmit
+  io_->Write("-", 1);
 
-  return true;
+  NaClLog(LOG_INFO, "RX Bad XSUM, retry\n");
+  goto retry;
 }
 
 }  // End of namespace gdb_rsp
