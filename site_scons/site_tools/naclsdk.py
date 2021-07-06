@@ -354,6 +354,20 @@ def PNaClGetNNaClEnv(env):
   return native_env
 
 
+# Get a PNaCl environment.
+def GetPNaClEnv(env):
+  assert(not env.Bit('bitcode'))
+  pnacl_env = env.Clone()
+  pnacl_env.ClearBits('nacl_clang')
+  pnacl_env.ClearBits('saigo')
+  pnacl_env.SetBits('bitcode')
+  if env.Bit('built_elsewhere'):
+    _StubOutEnvToolsForBuiltElsewhere(pnacl_env)
+  else:
+    pnacl_env = pnacl_env.Clone(tools=['naclsdk'])
+  return pnacl_env
+
+
 # This adds architecture specific defines for the target architecture.
 # These are normally omitted by PNaCl.
 # For example: __i686__, __arm__, __mips__, __x86_64__
@@ -604,6 +618,7 @@ def generate(env):
   env.AddMethod(AddBiasForPNaCl)
   env.AddMethod(PNaClForceNative)
   env.AddMethod(PNaClGetNNaClEnv)
+  env.AddMethod(GetPNaClEnv)
 
   # Invoke the various unix tools that the NativeClient SDK resembles.
   env.Tool('g++')

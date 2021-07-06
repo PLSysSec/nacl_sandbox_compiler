@@ -50,18 +50,24 @@ def MakeSelfTestEnv(base_env, extra_flags):
   link_env = base_env
   return (envlist, link_env)
 
-def MakeCrossEnvs(base_env, gcc_flags, clang_flags):
+def MakeCrossEnvs(base_env, gcc_flags, pnacl_flags):
   """ Make a list of four (nearly identical) envs, some of which use nacl-clang
-  and some use pnacl, for compiling the four modules to test consistency.
-  """
+  or saigo, and some use pnacl, for compiling the four modules to test
+  consistency.  """
   envlist = []
-  # For module0
-  cc1_env = base_env.Clone()
+  # Use PNaCl for module0
+  if env.Bit('bitcode'):
+    cc1_env = base_env.Clone()
+  else:
+    cc1_env = base_env.GetPNaClEnv()
   cc1_env.PNaClForceNative()
-  cc1_env.Append(CCFLAGS=clang_flags)
+  cc1_env.Append(CCFLAGS=pnacl_flags)
   envlist.append(cc1_env)
-  # For module1
-  cc2_env = base_env.PNaClGetNNaClEnv()
+  # Use nacl-clang or saigo for module1
+  if env.Bit('bitcode'):
+    cc2_env = base_env.PNaClGetNNaClEnv()
+  else:
+    cc2_env = base_env.Clone()
   cc2_env.Append(CCFLAGS=gcc_flags)
   # GCC's C++ EH support requires GCC's runtime, which we don't link with.
   cc2_env.Append(CXXFLAGS=['-fno-exceptions'])
@@ -76,7 +82,7 @@ def MakeCrossEnvs(base_env, gcc_flags, clang_flags):
   return (envlist, link_env)
 
 
-if not env.Bit('bitcode'):
+if not env.Bit('bitcode') and not env.Bit('saigo'):
   # For gcc, only do a self-consistency test.
   if env.Bit('build_x86'):
     # Assume for nacl-gcc the bots have at least SSE2.
@@ -86,31 +92,31 @@ if not env.Bit('bitcode'):
   envlist, link_env = MakeSelfTestEnv(env, extra_flags)
   test_configurations.append((envlist, link_env, ''))
 else:
-  # For PNaCl, do a self-consistency + a cross toolchain check.
+  # For PNaCl or Saigo, do a self-consistency + a cross toolchain check.
   envlist, link_env = MakeSelfTestEnv(env, [])
   test_configurations.append((envlist, link_env, '_self'))
   if env.Bit('build_arm'):
-    pnacl_flags=['--target=armv7a-unknown-nacl-gnueabi','-mfloat-abi=hard']
+    pnacl_flags = ['--target=armv7a-unknown-nacl-gnueabi','-mfloat-abi=hard']
     envlist, link_env = MakeCrossEnvs(
         env,
-        gcc_flags=[],
-        clang_flags = pnacl_flags if env.Bit('bitcode') else [])
+        gcc_flags = [],
+        pnacl_flags = pnacl_flags)
     test_configurations.append((envlist, link_env, ''))
   elif env.Bit('build_x86_32'):
-    native_flags=['-msse2']
-    pnacl_flags=['--target=i686-unknown-nacl']
+    native_flags = ['-msse2']
+    pnacl_flags = ['--target=i686-unknown-nacl']
     envlist, link_env = MakeCrossEnvs(
         env,
-        gcc_flags=native_flags,
-        clang_flags = pnacl_flags if env.Bit('bitcode') else native_flags)
+        gcc_flags = native_flags,
+        pnacl_flags = pnacl_flags)
     test_configurations.append((envlist, link_env, ''))
   elif env.Bit('build_x86_64'):
     native_flags = ['-msse2']
     pnacl_flags = ['--target=x86_64-unknown-nacl']
     envlist, link_env = MakeCrossEnvs(
         env,
-        gcc_flags=native_flags,
-        clang_flags=pnacl_flags if env.Bit('bitcode') else native_flags)
+        gcc_flags = native_flags,
+        pnacl_flags = pnacl_flags)
     test_configurations.append((envlist, link_env, ''))
   else:
     raise Exception("Unknown target architecture!")
