@@ -30,6 +30,7 @@ GDB_EBADF = 9
 
 # These are set up by Main().
 ARCH = None
+IS_SAIGO = None
 NM_TOOL = None
 SEL_LDR_COMMAND = None
 
@@ -903,15 +904,23 @@ class DebugStubTest(unittest.TestCase):
         # PC must be on inst boundary (insts are 4 bytes)
         self.assertEquals(ChangeReg(connection, 'r15', lambda x: x + 3), 'E03')
 
+      super_inst_start = 1
+      if IS_SAIGO and ARCH == 'x86-64':
+        # saigo emits a 3 byte move instruction before the actual
+        # superinstruction begins. The superinstruction itself is also a bit
+        # longer.
+        super_inst_start = 4
+        super_inst_len = 10
+
       # Next instruction is a super instruction.
       # Therefore cannot jump anywhere in the middle.
-      for i in range(1, super_inst_len):
+      for i in range(super_inst_start, super_inst_start + super_inst_len - 1):
         self.assertEquals(ChangeReg(connection, IP_REG[ARCH],
           lambda x: x + i), 'E03')
 
       # Allowed to jump over the entire super instruction.
       self.assertEquals(ChangeReg(connection, IP_REG[ARCH],
-        lambda x: x + super_inst_len), 'OK')
+        lambda x: x + super_inst_start + super_inst_len - 1), 'OK')
 
   def test_step_inside_super_instruction(self):
     if not SingleSteppingWorks():
@@ -929,6 +938,11 @@ class DebugStubTest(unittest.TestCase):
 
       reply = connection.RspRequest('vCont;s:1')
       self.assertEquals(reply, 'T05thread:1;')
+
+      if IS_SAIGO and ARCH == 'x86-64':
+        # Skip the mov instruction that saigo emits before the superinstruction.
+        reply = connection.RspRequest('vCont;s:1')
+        self.assertEquals(reply, 'T05thread:1;')
 
       regs = DecodeRegs(connection.RspRequest('g'))
 
@@ -1148,9 +1162,15 @@ def Main():
   # The remaining arguments go to unittest.main().
   sys.argv = sys.argv[:index]
   global ARCH
+  global IS_SAIGO
   global NM_TOOL
   global SEL_LDR_COMMAND
   ARCH = args.pop(0)
+  is_saigo = args.pop(0)
+  if is_saigo == '0':
+    IS_SAIGO = False
+  elif is_saigo == '1':
+    IS_SAIGO = True
   NM_TOOL = args.pop(0)
   SEL_LDR_COMMAND = args
   unittest.main()
