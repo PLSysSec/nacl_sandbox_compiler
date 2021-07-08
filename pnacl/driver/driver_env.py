@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -15,6 +15,12 @@ from __future__ import print_function
 from driver_log import Log, DriverExit
 from shelltools import shell
 import types
+
+# TODO(crbug.com/1205898): Remove this once python3 is enabled.
+try:
+    unicode
+except NameError:
+    unicode = str
 
 INITIAL_ENV = {
   # Set by DriverMain
@@ -245,7 +251,7 @@ class Environment(object):
     self.data.update(extra)
 
   def dump(self):
-    for (k,v) in self.data.iteritems():
+    for (k,v) in self.data.items():
       print('%s == %s' % (k, v))
 
   def push(self):
@@ -286,10 +292,12 @@ class Environment(object):
 
   # Set one or more variables using named arguments
   def setmany(self, **kwargs):
-    for k,v in kwargs.iteritems():
-      if isinstance(v, types.StringTypes):
+    for k,v in kwargs.items():
+      # TODO(crbug.com/1205898): Remove the unicode check once python3 is
+      # enabled.
+      if isinstance(v, str) or isinstance(v, unicode):
         self.set(k, v)
-      elif isinstance(v, types.ListType):
+      elif isinstance(v, list):
         self.set(k, *v)
       else:
         Log.Fatal('env.setmany given a non-string and non-list value')
@@ -527,4 +535,4 @@ def override_env(meth_name, func):
   and the new function.
   """
   global env
-  setattr(env, meth_name, types.MethodType(func, env, Environment))
+  setattr(env, meth_name, types.MethodType(func, env))

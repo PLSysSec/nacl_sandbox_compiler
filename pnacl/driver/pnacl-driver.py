@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -464,7 +464,7 @@ def DriverOutputTypes(driver_flag, compiling_to_native):
 
 def ReadDriverRevision():
   rev_file = env.getone('DRIVER_REV_FILE')
-  nacl_ver = DriverOpen(rev_file, 'rb').readlines()[0]
+  nacl_ver = DriverOpen(rev_file, 'rb').readlines()[0].decode(encoding="utf-8")
   m = re.search(r'\[GIT\].*/native_client(?:\.git)?:\s*([0-9a-f]{40})',
                 nacl_ver)
   if m:

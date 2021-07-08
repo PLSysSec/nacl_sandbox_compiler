@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -16,7 +16,7 @@ import driver_test_utils
 import driver_tools
 import filetype
 
-import cStringIO
+import io
 import os
 import shutil
 import sys
@@ -55,7 +55,7 @@ class TestPathNames(driver_test_utils.DriverTesterCommon):
       f.write('int main() { return 0; }')
 
   def AssertRaisesAndReturnOutput(self, exc, func, *args):
-    capture_out = cStringIO.StringIO()
+    capture_out = io.StringIO()
     driver_log.Log.CaptureToStream(capture_out)
     self.assertRaises(exc, func, *args)
     driver_log.Log.ResetStreams()

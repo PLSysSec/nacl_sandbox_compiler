@@ -1,10 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 from __future__ import print_function
 
+import functools
 import platform
 import os
 import random
@@ -52,7 +53,7 @@ def SetExecutableMode(path):
     # There's no way to get it without setting it.
     umask = os.umask(0)
     os.umask(umask)
-    os.chmod(realpath, 0755 & ~umask)
+    os.chmod(realpath, 0o755 & ~umask)
 
 
 def FilterOutArchArgs(args):
@@ -246,7 +247,7 @@ def ReadConfig():
     return
   driver_bin = env.getone('DRIVER_BIN')
   driver_conf = pathtools.join(driver_bin, 'driver.conf')
-  fp = DriverOpen(driver_conf, 'r')
+  fp = DriverOpen(driver_conf, 'r', encoding="utf-8")
   linecount = 0
   for line in fp:
     linecount += 1
@@ -307,7 +308,7 @@ def ShouldExpandCommandFile(arg):
 
 def DoExpandCommandFile(argv, i):
   arg = argv[i]
-  fd = DriverOpen(pathtools.normalize(arg[1:]), 'r')
+  fd = DriverOpen(pathtools.normalize(arg[1:]), 'r', encoding="utf-8")
   more_args = []
 
   # Use shlex here to process the response file contents.
@@ -382,7 +383,7 @@ def ParseArgsBase(argv, patternlist):
         exec(action)
       else:
         action(*groups)
-    except Exception, err:
+    except Exception as err:
       Log.Fatal('ParseArgs action [%s] failed with: %s', action, err)
     i += num_matched
   return (matched, unmatched)
@@ -405,7 +406,7 @@ def MatchOne(argv, i, patternlist):
     if None in matches:
       continue
     groups = [ list(m.groups()) for m in matches ]
-    groups = reduce(lambda x,y: x+y, groups, [])
+    groups = functools.reduce(lambda x,y: x+y, groups, [])
     return (len(regex), action, groups)
   return (0, '', [])
 
@@ -521,7 +522,7 @@ class TempNameGen(object):
       # Find conflicts
       ConflictMap = dict()
       Conflicts = set()
-      for (f, [n, path]) in self.TempMap.iteritems():
+      for (f, [n, path]) in self.TempMap.items():
         candidate = output + '---' + '_'.join(path[-n:]) + '---'
         if candidate in ConflictMap:
           Conflicts.add(ConflictMap[candidate])
@@ -541,7 +542,7 @@ class TempNameGen(object):
 
     # Clean up the map
     NewMap = dict()
-    for (f, [n, path]) in self.TempMap.iteritems():
+    for (f, [n, path]) in self.TempMap.items():
       candidate = output + '---' + '_'.join(path[-n:]) + '---'
       NewMap[f] = candidate
     self.TempMap = NewMap
@@ -673,7 +674,11 @@ def Run(args,
                          stdout=redirect_stdout,
                          stderr=redirect_stderr)
     result_stdout, result_stderr = p.communicate()
-  except Exception, e:
+    if result_stdout:
+      result_stdout = result_stdout.decode(encoding="utf-8")
+    if result_stderr:
+      result_stderr = result_stderr.decode(encoding="utf-8")
+  except Exception as e:
     msg =  '%s\nCommand was: %s' % (str(e), StringifyCommand(args))
     print(msg)
     DriverExit(1)

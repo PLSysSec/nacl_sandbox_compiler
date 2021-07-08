@@ -1,21 +1,28 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 from __future__ import print_function
 
+import io
 import sys
 import pathtools
+
+# TODO(crbug.com/1205898): Remove this once python3 is enabled.
+try:
+    unicode
+except NameError:
+    unicode = str
 
 #TODO: DriverOpen/Close are in here because this is a low level lib without
 # any dependencies. Maybe they should go in another low level lib, or maybe
 # this should become a low level lib that's more general than just log
 
-def DriverOpen(filename, mode, fail_ok = False):
+def DriverOpen(filename, mode, encoding = None, fail_ok = False):
   try:
-    fp = open(pathtools.tosys(filename), mode)
-  except Exception:
+    fp = io.open(pathtools.tosys(filename), mode, encoding=encoding)
+  except Exception as e:
     if not fail_ok:
       Log.Fatal("%s: Unable to open file", pathtools.touser(filename))
       DriverExit(1)
@@ -144,7 +151,9 @@ class LogManager(object):
     if args:
       m = m % args
     for o in outs:
-      print(m, file=o)
+      # TODO(crbug.com/1205898): Remove the unicode cast once python3 is
+      # enabled.
+      print(unicode(m), file=o)
 
 
 def StringifyCommand(cmd):

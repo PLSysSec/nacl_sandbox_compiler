@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -41,7 +41,7 @@ class TestExpandResponseFile(driver_test_utils.DriverTesterCommon):
     attempt to open a file with quotes in its name.
     """
     t = self.getTemp(close=False)
-    t.write('-E "%s" -I.. -o out.o\n' % file_to_quote)
+    t.write(b'-E "%s" -I.. -o out.o\n' % bytes(file_to_quote.encode("utf-8")))
     # Close to flush and ensure file is reopenable on windows.
     t.close()
     pre_argv = ['early_arg.c', '@' + t.name, 'later_arg.c']
@@ -75,10 +75,10 @@ class TestExpandResponseFile(driver_test_utils.DriverTesterCommon):
     # Response files can span multiple lines and do not
     # require a line continuation char like '\' or '^'.
     t = self.getTemp(close=False)
-    t.write('f.c\n')
-    t.write(' -I.. \n')
-    t.write(' -c\n')
-    t.write('-o f.o  ')
+    t.write(b'f.c\n')
+    t.write(b' -I.. \n')
+    t.write(b' -c\n')
+    t.write(b'-o f.o  ')
     t.close()
     argv = driver_tools.DoExpandCommandFile(['@' + t.name], 0)
     self.assertEqual(argv, ['f.c', '-I..', '-c', '-o', 'f.o'])

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -75,7 +75,7 @@ def main(argv):
       else:
         # objdump always outputs to stdout, and doesn't recognize -o
         # Let's add this feature to be consistent.
-        fp = DriverOpen(output, 'w')
+        fp = DriverOpen(output, 'w', encoding="UTF-8")
         driver_tools.Run('${OBJDUMP} ${FLAGS} ${input}', redirect_stdout=fp)
         DriverClose(fp)
     else:

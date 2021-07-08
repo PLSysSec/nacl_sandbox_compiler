@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -150,7 +150,7 @@ def RemoveInterpProgramHeader(filename):
       fp = open(filename, 'rb+')
       fp.seek(ehdr.phoff + ehdr.phentsize * i)
       # Zero this program header. Note PT_NULL is 0.
-      fp.write('\0' * ehdr.phentsize)
+      fp.write(b'\0' * ehdr.phentsize)
       fp.close()
 
 def main(argv):

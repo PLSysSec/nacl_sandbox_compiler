@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2013 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -21,7 +21,7 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
 
   def getFakeSourceFile(self):
     with self.getTemp(suffix='.c', close=False) as s:
-      s.write('void _start() {}')
+      s.write(b'void _start() {}')
       s.close()
       return s
 

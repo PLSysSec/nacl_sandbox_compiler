@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -26,7 +26,7 @@ class TestStrip(driver_test_utils.DriverTesterCommon):
 
   def getSource(self, num):
     with self.getTemp(suffix='.c', close=False) as t:
-      t.write('''
+      t.write(b'''
 extern void puts(const char *);
 
 void foo%d(void) {

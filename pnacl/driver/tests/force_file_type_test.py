@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2013 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -16,7 +16,7 @@ import driver_tools
 import filetype
 import pathtools
 
-import cStringIO
+import io
 import os
 import re
 import sys
@@ -94,7 +94,7 @@ class TestForceFileType(unittest.TestCase):
     if not driver_test_utils.CanRunHost():
       return
     # Add a string stream to capture output.
-    capture_out = cStringIO.StringIO()
+    capture_out = io.StringIO()
     driver_log.Log.CaptureToStream(capture_out)
 
     # Major hack to capture the exit (prevent Log.Fatal from blowin up).

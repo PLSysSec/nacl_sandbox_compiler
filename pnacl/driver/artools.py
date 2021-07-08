@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -12,11 +12,11 @@ import elftools
 import pathtools
 
 # See above link to wiki entry on archive format.
-AR_MAGIC = '!<arch>\n'
+AR_MAGIC = b'!<arch>\n'
 # Thin archives are like normal archives except that there are only
 # indirect references to each member (the data is not embedded).
 # See manpage for a description of this.
-THIN_MAGIC = '!<thin>\n'
+THIN_MAGIC = b'!<thin>\n'
 
 # filetype.IsArchive calls this IsArchive. Top-level tools should prefer
 # filetype.IsArchive, both for consistency (i.e., all checks for file type come
@@ -67,7 +67,7 @@ def GetArchiveType(filename):
   # Find a regular file or symbol table
   empty_file = True
   found_type = ''
-  strtab_data = ''
+  strtab_data = b''
   while not found_type:
     member = MemberHeader(fp)
     if member.error == 'EOF':
@@ -85,7 +85,7 @@ def GetArchiveType(filename):
         # We instead must get at the member indirectly.
         data = GetThinArchiveData(filename, member, strtab_data)
 
-      if data.startswith('BC'):
+      if data.startswith(b'BC'):
         found_type = 'archive-bc'
       else:
         elf_header = elftools.DecodeELFHeader(data, filename)
@@ -127,28 +127,28 @@ class MemberHeader(object):
     self.size = header[48:48 + 10]
     self.fmag = header[58:60]
 
-    if self.fmag != '`\n':
+    if self.fmag != b'`\n':
       self.error = 'Invalid archive member header magic string %s' % header
       return
 
     self.size = int(self.size)
 
-    self.is_svr4_symtab = (self.name == '/               ')
-    self.is_llvm_symtab = (self.name == '#_LLVM_SYM_TAB_#')
-    self.is_bsd4_symtab = (self.name == '__.SYMDEF SORTED')
-    self.is_strtab      = (self.name == '//              ')
+    self.is_svr4_symtab = (self.name == b'/               ')
+    self.is_llvm_symtab = (self.name == b'#_LLVM_SYM_TAB_#')
+    self.is_bsd4_symtab = (self.name == b'__.SYMDEF SORTED')
+    self.is_strtab      = (self.name == b'//              ')
     self.is_regular_file = not (self.is_svr4_symtab or
                                 self.is_llvm_symtab or
                                 self.is_bsd4_symtab or
                                 self.is_strtab)
 
     # BSD style long names (not supported)
-    if self.name.startswith('#1/'):
+    if self.name.startswith(b'#1/'):
       self.error = "BSD-style long file names not supported"
       return
 
     # If it's a GNU long filename, note this.  We use this for thin archives.
-    self.is_long_name = (self.is_regular_file and self.name.startswith('/'))
+    self.is_long_name = (self.is_regular_file and self.name.startswith(b'/'))
 
     if self.is_regular_file and not self.is_long_name:
       # Filenames end with '/' and are padded with spaces up to 16 bytes

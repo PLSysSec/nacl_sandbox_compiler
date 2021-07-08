@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,7 +8,7 @@
 This tests that pnacl-ld manages linking and LLVM opt flags correctly.
 """
 
-import cStringIO
+import io
 import re
 import unittest
 
@@ -28,7 +28,7 @@ class TestLDOptions(driver_test_utils.DriverTesterCommon):
     # It even cares that the file is really bitcode.
     with self.getTemp(suffix='.ll', close=False) as t:
       with self.getTemp(suffix='.o') as o:
-        t.write('''
+        t.write(b'''
 define i32 @_start() {
   ret i32 0
 }
@@ -44,7 +44,7 @@ define i32 @_start() {
     # TODO(jvoung): Get rid of INHERITED_DRIVER_ARGS, which leaks across runs.
     env.set('INHERITED_DRIVER_ARGS', '')
     temp_output = self.getTemp()
-    capture_out = cStringIO.StringIO()
+    capture_out = io.StringIO()
     driver_log.Log.CaptureToStream(capture_out)
     driver_tools.RunDriver('pnacl-ld',
                            ['--pnacl-driver-verbose',

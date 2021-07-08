@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2013 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -12,9 +12,9 @@ import artools
 import driver_log
 import elftools
 
-LLVM_BITCODE_MAGIC = 'BC\xc0\xde'
-LLVM_WRAPPER_MAGIC = '\xde\xc0\x17\x0b'
-PNACL_BITCODE_MAGIC = 'PEXE'
+LLVM_BITCODE_MAGIC = b'BC\xc0\xde'
+LLVM_WRAPPER_MAGIC = b'\xde\xc0\x17\x0b'
+PNACL_BITCODE_MAGIC = b'PEXE'
 
 class SimpleCache(object):
   """ Cache results of a function using a dictionary. """
@@ -24,7 +24,7 @@ class SimpleCache(object):
   @classmethod
   def ClearAllCaches(cls):
     """ Clear cached results from all functions. """
-    for d in cls.__all_caches.itervalues():
+    for d in cls.__all_caches.values():
       d.clear()
 
   def __init__(self, f):
@@ -148,7 +148,7 @@ def ParseLinkerScript(filename):
 
   ret = []
   stack = []
-  expect = ''  # Expected next token
+  expect = b''  # Expected next token
   while True:
     token = GetNextToken(fp)
     if token is None:
@@ -161,47 +161,47 @@ def ParseLinkerScript(filename):
 
     if expect:
       if token == expect:
-        expect = ''
+        expect = b''
         continue
       else:
         return None
 
     if not stack:
-      if token == 'INPUT':
-        expect = '('
+      if token == b'INPUT':
+        expect = b'('
         stack.append(token)
-      elif token == 'GROUP':
-        expect = '('
-        ret.append('--start-group')
+      elif token == b'GROUP':
+        expect = b'('
+        ret.append(b'--start-group')
         stack.append(token)
-      elif token == 'OUTPUT_FORMAT':
-        expect = '('
+      elif token == b'OUTPUT_FORMAT':
+        expect = b'('
         stack.append(token)
-      elif token == 'EXTERN':
-        expect = '('
+      elif token == b'EXTERN':
+        expect = b'('
         stack.append(token)
-      elif token == ';':
+      elif token == b';':
         pass
       else:
         return None
     else:
-      if token == ')':
+      if token == b')':
         section = stack.pop()
-        if section == 'AS_NEEDED':
-          ret.append('--no-as-needed')
-        elif section == 'GROUP':
-          ret.append('--end-group')
-      elif token == 'AS_NEEDED':
-        expect = '('
-        ret.append('--as-needed')
-        stack.append('AS_NEEDED')
-      elif stack[-1] == 'OUTPUT_FORMAT':
+        if section == b'AS_NEEDED':
+          ret.append(b'--no-as-needed')
+        elif section == b'GROUP':
+          ret.append(b'--end-group')
+      elif token == b'AS_NEEDED':
+        expect = b'('
+        ret.append(b'--as-needed')
+        stack.append(b'AS_NEEDED')
+      elif stack[-1] == b'OUTPUT_FORMAT':
         # Ignore stuff inside OUTPUT_FORMAT
         pass
-      elif stack[-1] == 'EXTERN':
-        ret.append('--undefined=' + token)
+      elif stack[-1] == b'EXTERN':
+        ret.append(b'--undefined=' + token)
       else:
-        ret.append('-l:' + token)
+        ret.append(b'-l:' + token)
 
   fp.close()
   return ret
@@ -211,7 +211,7 @@ def ParseLinkerScript(filename):
 # Returns: ''   for EOF.
 #          None on error.
 def GetNextToken(fp):
-  token = ''
+  token = b''
   while True:
     ch = fp.read(1)
 
@@ -220,14 +220,14 @@ def GetNextToken(fp):
 
     # Whitespace terminates a token
     # (but ignore whitespace before the token)
-    if ch in (' ', '\t', '\n', '\r'):
+    if ch in (b' ', b'\t', b'\n', b'\r'):
       if token:
         break
       else:
         continue
 
     # ( and ) are tokens themselves (or terminate existing tokens)
-    if ch in ('(',')'):
+    if ch in (b'(',b')'):
       if token:
         fp.seek(-1, os.SEEK_CUR)
         break
@@ -236,15 +236,15 @@ def GetNextToken(fp):
         break
 
     token += ch
-    if token.endswith('/*'):
-      if not ReadPastComment(fp, '*/'):
+    if token.endswith(b'/*'):
+      if not ReadPastComment(fp, b'*/'):
         return None
       token = token[:-2]
 
   return token
 
 def ReadPastComment(fp, terminator):
-  s = ''
+  s = b''
   while True:
     ch = fp.read(1)
     if not ch:

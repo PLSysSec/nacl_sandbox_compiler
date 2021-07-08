@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -62,7 +62,7 @@ def TestEnvReset(self, more_overrides={}):
   SetupNaClDir(self)
   SetupToolchainDir(self)
   SetupHostDir(self)
-  for k, v in more_overrides.iteritems():
+  for k, v in more_overrides.items():
     self.set(k, v)
 
 def ApplyTestEnvOverrides(env, more_overrides={}):

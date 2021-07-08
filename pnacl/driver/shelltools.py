@@ -1,17 +1,21 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 from driver_log import Log
 
-import types
-
 ######################################################################
 #
 # Shell Utilities
 #
 ######################################################################
+
+# TODO(crbug.com/1205898): Remove this once python3 is enabled.
+try:
+    unicode
+except NameError:
+    unicode = str
 
 class shell(object):
 
@@ -32,7 +36,8 @@ class shell(object):
     For example: split('cmd -arg1 -arg2="a b c"')
     Returns ['cmd', '-arg1', '-arg2=a b c']
     """
-    assert(isinstance(s, types.StringTypes))
+    # TODO(crbug.com/1205898): Remove the unicode check once python3 is enabled.
+    assert(isinstance(s, unicode) or isinstance(s, str))
     out = []
     inspace = True
     inquote = False

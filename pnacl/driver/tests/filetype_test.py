@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2013 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -19,7 +19,7 @@ class TestFiletypeCache(driver_test_utils.DriverTesterCommon):
 
   def getFakeLLAndBitcodeFile(self):
     with self.getTemp(suffix='.ll', close=False) as t:
-      t.write('''
+      t.write(b'''
 define i32 @main() {
   ret i32 0
 }
@@ -52,7 +52,7 @@ define i32 @main() {
 
   def getBCWithDebug(self):
     with self.getTemp(suffix='.c', close=False) as t:
-      t.write('''
+      t.write(b'''
 int __attribute__((noinline)) baz(int x, int y) {
   return x + y;
 }

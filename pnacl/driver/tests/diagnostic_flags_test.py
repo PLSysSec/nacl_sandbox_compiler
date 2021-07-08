@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,7 +7,7 @@
 
 This tests that diagnostic flags work fine, even with --pnacl-* flags.
 """
-import cStringIO
+import io
 import os
 import unittest
 
@@ -44,7 +44,7 @@ class TestDiagnosticFlags(unittest.TestCase):
 
     It should only be in the 'Driver invocation:' part that we print out.
     """
-    capture_out = cStringIO.StringIO()
+    capture_out = io.StringIO()
     driver_log.Log.CaptureToStream(capture_out)
     driver_tools.RunDriver('pnacl-clang', flags + [pnacl_flag])
     driver_log.Log.ResetStreams()

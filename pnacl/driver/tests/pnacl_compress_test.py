@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -22,7 +22,7 @@ class TestPnaclCompress(driver_test_utils.DriverTesterCommon):
   def getFakePexe(self):
     with self.getTemp(suffix='.ll', close=False) as t:
       with self.getTemp(suffix='.pexe') as p:
-        t.write('''
+        t.write(b'''
 define i32 @foo() {
   %1 = add i32 1, 1
   %2 = add i32 %1, %1

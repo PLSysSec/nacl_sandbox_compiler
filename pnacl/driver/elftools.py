@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2013 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,7 +11,7 @@ from collections import namedtuple
 from driver_log import DriverOpen, DriverClose, Log, FixArch
 
 class ELFHeader(object):
-  ELF_MAGIC = '\x7fELF'
+  ELF_MAGIC = b'\x7fELF'
   ELF_TYPES = { 1: 'REL',  # .o
                 2: 'EXEC', # .exe
                 3: 'DYN' } # .so
@@ -51,7 +51,15 @@ class ELFHeader(object):
 
   def __init__(self, header, filename):
     pack_format = ''.join(fmt for fmt, _ in self.ELF_HEADER_FORMAT)
-    e_class = ord(header[4])
+    if isinstance(header[4], int):
+      e_class = header[4]
+      e_osabi = header[7]
+      e_abiver = header[8]
+    else:
+      e_class = ord(header[4])
+      e_osabi = ord(header[7])
+      e_abiver = ord(header[8])
+
     if e_class == ELFHeader.ELFCLASS32:
       pack_format = pack_format.replace('P', 'I')
     elif e_class == ELFHeader.ELFCLASS64:
@@ -60,8 +68,6 @@ class ELFHeader(object):
       Log.Fatal('%s: ELF file has unknown class (%d)', filename, e_class)
 
     ehdr = self.Ehdr(*struct.unpack_from(pack_format, header))
-    e_osabi = ord(header[7])
-    e_abiver = ord(header[8])
 
     if e_osabi not in ELFHeader.ELF_OSABI:
       Log.Fatal('%s: ELF file has unknown OS ABI (%d)', filename, e_osabi)

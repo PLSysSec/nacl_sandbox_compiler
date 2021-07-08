@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -15,7 +15,7 @@ import driver_test_utils
 import driver_tools
 import filetype
 
-import cStringIO
+import io
 import os
 import re
 import sys
@@ -32,7 +32,7 @@ class TestTranslateOptions(driver_test_utils.DriverTesterCommon):
     # It even cares that the file is really bitcode.
     with self.getTemp(suffix='.ll', close=False) as t:
       with self.getTemp(suffix='.pexe') as p:
-        t.write('''
+        t.write(b'''
 define i32 @_start() {
   ret i32 0
 }
@@ -64,7 +64,7 @@ define i32 @_start() {
     # grepping the stdout/stderr since it never actually invokes
     # the subprocess. Unfortunately, pnacl-translate does grep the output of
     # the sandboxed LLC run, so we can only go that far with --dry-run.
-    capture_out = cStringIO.StringIO()
+    capture_out = io.StringIO()
     driver_log.Log.CaptureToStream(capture_out)
     backup_exit = sys.exit
     sys.exit = driver_test_utils.FakeExit

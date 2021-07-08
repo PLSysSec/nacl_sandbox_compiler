@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2013 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -125,8 +125,8 @@ class DriverToolsTest(unittest.TestCase):
 
   def _WriteDummyElfHeader(self, stream):
     header = struct.pack(
-        '<4sBBBBB7xHH',
-        '\177ELF',  # ELF magic
+        b'<4sBBBBB7xHH',
+        b'\177ELF',  # ELF magic
         1,  # ei_class = ELFCLASS32
         1,  # ei_data = ELFDATA2LSB
         1,  # ei_version = EV_CURRENT
@@ -136,21 +136,21 @@ class DriverToolsTest(unittest.TestCase):
         3)  # e_machine = EM_386
     # Append dummy values as the rest of the ELF header. The size of
     # Elf32_Ehdr is 52.
-    header += '\0' * (52 - len(header))
+    header += b'\0' * (52 - len(header))
     stream.write(header)
 
   def _WriteDummyArHeader(self, stream):
-    stream.write('!<arch>\n')
+    stream.write(b'!<arch>\n')
 
   def _WriteDummyArFileHeader(self, stream, name, filesize):
     stream.writelines([
-        (name + '/').ljust(16),
-        '0'.rjust(12),  # Dummy timestamp
-        '0'.rjust(6),  # Dummy ownerid
-        '0'.rjust(6),  # Dummy groupid
-        '666'.rjust(8),  # Dummy filemode (rw-rw-rw-)
-        str(filesize).rjust(10),
-        '\x60\x0A'])
+        bytes((name + '/').ljust(16).encode("utf-8")),
+        bytes('0'.rjust(12).encode("utf-8")),  # Dummy timestamp
+        bytes('0'.rjust(6).encode("utf-8")),  # Dummy ownerid
+        bytes('0'.rjust(6).encode("utf-8")),  # Dummy groupid
+        bytes('666'.rjust(8).encode("utf-8")),  # Dummy filemode (rw-rw-rw-)
+        bytes(filesize.rjust(10).encode("utf-8")),
+        b'`\n'])
 
   def test_ArchMerge_ObjectFile(self):
     with NamedTemporaryFile(suffix='.o') as path:
@@ -174,7 +174,7 @@ class DriverToolsTest(unittest.TestCase):
       with open(path, 'wb') as stream:
         self._WriteDummyArHeader(stream)
         # 52 is the length of dummy ELF header size.
-        self._WriteDummyArFileHeader(stream, 'file', filesize=52)
+        self._WriteDummyArFileHeader(stream, 'file', filesize='52')
         self._WriteDummyElfHeader(stream)
 
       # First, ARCH is not set.

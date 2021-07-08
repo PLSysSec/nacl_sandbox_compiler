@@ -19,4 +19,3 @@ PYDIR="${DRIVER_BIN}/pydir"
 # Expect to find python in the PATH. It can be overridden with PNACLPYTHON.
 PNACLPYTHON="${PNACLPYTHON:-python}"
 ${PNACLPYTHON} "${PYDIR}/loader.py" "${TOOLNAME}" "$@"
-
