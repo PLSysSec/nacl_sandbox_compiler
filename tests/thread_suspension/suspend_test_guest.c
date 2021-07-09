@@ -74,6 +74,13 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
   test_shm->continue_after_suspension_func =
       (uintptr_t) ContinueAfterSuspension;
   assert(offsetof(struct SuspendTestShm, var) == 0);
+#if defined(__saigo__) && defined(__x86_64__)
+  /*
+   * R11 will be used as scratch register for the NACLSTORE32, and will end up
+   * being a copy of RAX, which points to test_shm.
+   */
+  regs->r11 = (uintptr_t) test_shm;
+#endif
 #if defined(__i386__)
   regs->eax = (uintptr_t) test_shm;
   ASM_WITH_REGS(
