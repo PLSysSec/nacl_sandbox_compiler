@@ -57,7 +57,6 @@ int nacl_thread_nice(int nacl_nice) {
     default:
       NaClLog(LOG_WARNING, "nacl_thread_nice failed (bad nice value)\n");
       return -1;
-      break;
   }
   return -1;
 }
