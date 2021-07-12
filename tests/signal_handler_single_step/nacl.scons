@@ -12,7 +12,8 @@ if env.IsRunningUnderValgrind():
 
 if 'TRUSTED_ENV' not in env:
   Return()
-trusted_env = env['TRUSTED_ENV']
+trusted_env = env['TRUSTED_ENV'].Clone()
+trusted_env.Append(CPPDEFINES=['SAIGO=%d' % env.Bit('saigo')])
 
 if not env.AllowInlineAssembly():
   Return()

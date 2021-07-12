@@ -363,6 +363,15 @@ static void TrapSignalHandler(int signal,
      * so there are multiple values that prog_ctr can have here.
      */
     context.prog_ctr = expected_regs->prog_ctr;
+#if SAIGO && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+    /*
+     * Saigo will hide the sandbox base, and expand calls to push return address
+     * and jmp. Therefore, the stack_ptr can change by 8 while single stepping.
+     */
+    if (context.stack_ptr == expected_regs->stack_ptr - 8ll) {
+      context.stack_ptr = expected_regs->stack_ptr;
+    }
+#endif
     RegsAssertEqual(&context, expected_regs);
   } else if ((g_natp->suspend_state & NACL_APP_THREAD_TRUSTED) != 0) {
     SignalSafeLogStringLiteral("Trusted (syscall) context\n");
