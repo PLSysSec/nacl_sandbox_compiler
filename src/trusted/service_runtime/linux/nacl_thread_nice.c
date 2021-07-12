@@ -13,6 +13,7 @@
 #include <string.h>
 #include <sys/resource.h>
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_nice.h"
 
@@ -42,7 +43,7 @@ int nacl_thread_nice(int nacl_nice) {
         return 0;  /* success */
       }
       /* Sorry; no RT priviledges. Try NICE_NORMAL */
-      /* fallthrough */
+      NACL_FALLTHROUGH;
     case NICE_NORMAL:
       if (0 == setpriority(PRIO_PROCESS, 0, kNormalPriority)) {
         return 0;  /* success */

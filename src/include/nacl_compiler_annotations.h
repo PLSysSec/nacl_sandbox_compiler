@@ -102,4 +102,13 @@
 # define NACL_UNLIKELY(x) (x)
 #endif
 
+#ifndef __has_attribute
+# define __has_attribute(x) 0
+#endif
+#if __has_attribute(fallthrough)
+# define NACL_FALLTHROUGH __attribute__((fallthrough))
+#else
+# define NACL_FALLTHROUGH
+#endif
+
 #endif
