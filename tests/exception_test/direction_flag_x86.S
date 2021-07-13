@@ -18,11 +18,15 @@
 
         .global get_x86_direction_flag
 get_x86_direction_flag:
-        naclssp $8, %r15
+        NACLSSP($0x8)
 
         mov %esp, %esi
         mov %esp, %edi
+#if defined(__saigo__)
+        movsb
+#else
         movsb %nacl:(%rsi), %nacl:(%rdi), %r15
+#endif
 
         /* Clear %eax */
         xor %eax, %eax
@@ -30,7 +34,7 @@ get_x86_direction_flag:
         cmp %esp, %edi
         setb %al
 
-        naclasp $8, %r15
+        NACLASP($0x8)
         naclret
 
 #elif defined(__i386__)

@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/tests/common/superinstructions.h"
 
 /* Save all callee-saved registers to a global struct. */
 #define SAVE_REGS(global_var) \
@@ -64,7 +65,7 @@ try_block_test:
         .cfi_startproc
         .cfi_personality 0x3,__gxx_personality_v0
         .cfi_lsda 0x3,.L_lsda_start
-        naclsspq $8, %r15
+        NACLSSP($0x8)
         .cfi_def_cfa_offset 16
 .L_catch_start:
         /* Set callee-saved registers to known values. */

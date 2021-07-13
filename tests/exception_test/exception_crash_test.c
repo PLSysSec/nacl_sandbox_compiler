@@ -15,7 +15,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-
 char stack_in_rwdata[0x1000];
 
 /*
@@ -65,7 +64,10 @@ __asm__(".pushsection .text, \"ax\", @progbits\n"
 # if defined(__i386__)
         "mov $recovery_stack - 4, %esp\n"
         "jmp error_exit\n"
-# elif defined(__x86_64__)
+# elif defined(__x86_64__) && defined(__saigo__)
+        "mov $recovery_stack - 8, %esp\n"
+        "jmp error_exit\n"
+# elif defined(__x86_64__) && !defined(__saigo__)
         "naclrestsp $recovery_stack - 8, %r15\n"
         "jmp error_exit\n"
 # endif

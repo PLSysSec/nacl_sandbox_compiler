@@ -91,7 +91,7 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
       /* Align to ensure no NOPs are inserted in the code that follows. */
       ".p2align 5\n"
       /* Set "test_shm->var = test_shm" to indicate that we are ready. */
-      "movl %%eax, %%nacl:(%%r15, %%rax)\n"
+      NACLSTORE32("%%eax", "(%%r15, %%rax)")
       "spin_instruction:\n"
       "jmp spin_instruction\n");
 #elif defined(__arm__)
@@ -165,7 +165,7 @@ static void SyscallRegisterSetterThread(struct SuspendTestShm *test_shm) {
     ASM_WITH_REGS(
         &call_regs,
         "push $ContinueAfterSyscall\n"  /* Push return address */
-        NACLJMP("%%eax", "%%r15"));
+        NACLJMP("%%eax", "%%rax", "%%r15"));
 #elif defined(__arm__)
     call_regs.r0 = (uintptr_t) test_shm;  /* Set syscall argument */
     call_regs.r1 = syscall_addr;  /* Scratch register */
@@ -203,7 +203,7 @@ __asm__(".pushsection .text, \"ax\", @progbits\n"
         "SyscallLoop:\n"
         /* Call via a temporary register so as not to modify %r12. */
         "mov %r12d, %eax\n"
-        NACLCALL_REG("%eax", "%r15")
+        NACLCALL_REG("%eax", "%rax", "%r15")
         "SyscallReturnAddress:\n"
         "jmp SyscallLoop\n"
         ".popsection\n");

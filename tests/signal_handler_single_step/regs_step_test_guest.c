@@ -43,7 +43,7 @@ uint32_t g_regs_should_match;
             "movl $1, g_regs_should_match(%rip)\n" \
             /* Call via a temporary register so as not to modify %r12. */ \
             "movl %r12d, %eax\n" \
-            NACLCALL_REG("%eax", "%r15") \
+            NACLCALL_REG("%eax", "%rax", "%r15") \
             "SyscallReturnAddress" suffix ":\n" \
             "movl $0, g_regs_should_match(%rip)\n" \
             "jmp ReturnFromSyscall\n" \

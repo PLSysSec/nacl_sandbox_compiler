@@ -144,7 +144,7 @@ void TestSyscall(uintptr_t syscall_addr) {
     ASM_WITH_REGS(
         &call_regs,
         "push $ContinueAfterSyscall\n"  /* Push return address */
-        NACLJMP("%%eax","%%r15"));
+        NACLJMP("%%eax","%%rax","%%r15"));
 #elif defined(__arm__)
     call_regs.r1 = syscall_addr;  /* Scratch register */
     call_regs.lr = (uintptr_t) ContinueAfterSyscall;  /* Return address */

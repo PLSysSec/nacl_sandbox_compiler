@@ -265,7 +265,7 @@ void test_super_instruction(void) {
 #elif defined(__x86_64__)
   __asm__(".p2align 5\n" /* Ensures nacljmp doesn't cross a bundle boundary */
           "hlt\n"
-          NACLJMP("%ecx", "%r15"));
+          NACLJMP("%ecx", "%rcx", "%r15"));
 #elif defined(__arm__)
   __asm__(".p2align 4\n" /* Ensures branch doesn't cross a bundle boundary */
           /*

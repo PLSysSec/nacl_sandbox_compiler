@@ -12,6 +12,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/tests/common/superinstructions.h"
 
 
 /*
@@ -51,7 +52,7 @@
 
 # define ASM_WITH_REGS(regs, asm_code) \
     __asm__( \
-        "naclrestbp %0, %%r15\n" \
+        NACLRESTBP("%0", "%%r15") \
         "movq 0x00(%%rbp), %%rax\n" \
         "movq 0x08(%%rbp), %%rbx\n" \
         "movq 0x10(%%rbp), %%rcx\n" \
@@ -59,7 +60,7 @@
         "movq 0x20(%%rbp), %%rsi\n" \
         "movq 0x28(%%rbp), %%rdi\n" \
         /* Handle %rbp (0x30) later */ \
-        "naclrestsp 0x38(%%rbp), %%r15\n" \
+        NACLRESTSP("0x38(%%rbp)", "%%r15") \
         "movq 0x40(%%rbp), %%r8\n" \
         "movq 0x48(%%rbp), %%r9\n" \
         "movq 0x50(%%rbp), %%r10\n" \
@@ -67,7 +68,7 @@
         "movq 0x60(%%rbp), %%r12\n" \
         "movq 0x68(%%rbp), %%r13\n" \
         "movq 0x70(%%rbp), %%r14\n" \
-        "naclrestbp 0x30(%%rbp), %%r15\n" \
+        NACLRESTBP("0x30(%%rbp)", "%%r15") \
         RESET_X86_FLAGS \
         asm_code \
         : : "r"(regs) : "memory")
@@ -284,7 +285,8 @@ extern const uint8_t kX86FlagBits[5];
         "call " #callee_func "\n" \
         ".popsection\n")
 
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64 \
+      && !defined(__saigo__)
 
 # define REGS_SAVER_FUNC_NOPROTO(def_func, callee_func) \
     void callee_func(struct NaClSignalContext *regs); \
@@ -325,6 +327,56 @@ extern const uint8_t kX86FlagBits[5];
         /* Align the stack pointer */ \
         "and $~15, %esp\n" \
         "addq %r15, %rsp\n" \
+        "call " #callee_func "\n" \
+        ".popsection\n")
+
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64 \
+      && defined(__saigo__)
+
+# define REGS_SAVER_FUNC_NOPROTO(def_func, callee_func) \
+    void callee_func(struct NaClSignalContext *regs); \
+    __asm__( \
+        ".pushsection .text, \"ax\", @progbits\n" \
+        ".p2align 5\n" \
+        ".global " #def_func "\n"\
+        #def_func ":\n" \
+        /* Push most of "struct NaClSignalContext" in reverse order. */ \
+        "push $0\n"  /* Leave space for flags */ \
+        "push $0\n"  /* Leave space for prog_ctr */ \
+        "push %r15\n" \
+        "push %r14\n" \
+        "push %r13\n" \
+        "push %r12\n" \
+        "push %r11\n" \
+        "push %r10\n" \
+        "push %r9\n" \
+        "push %r8\n" \
+        /* \
+         * Saigo would sandbox a push %rsp, only pushing the lower 32 bits. \
+         * Instead, use a move to store %rsp. Do the same for %rbp. \
+         */ \
+        "push $0\n" \
+        "mov %rsp, 0x0(%rsp)\n" \
+        "push $0\n" \
+        "mov %rbp, 0x0(%rsp)\n" \
+        "push %rdi\n" \
+        "push %rsi\n" \
+        "push %rdx\n" \
+        "push %rcx\n" \
+        "push %rbx\n" \
+        "push %rax\n" \
+        /* Save flags. */ \
+        SAVE_X86_FLAGS_INTO_REG("%rax") \
+        "movl %eax, 0x88(%rsp)\n" \
+        /* Fill out prog_ctr with known value */ \
+        "leaq " #def_func "(%rip), %rax\n" \
+        "movq %rax, 0x80(%rsp)\n" \
+        /* Adjust saved %rsp value to account for preceding pushes. */ \
+        "addq $11 * 8, 0x38(%rsp)\n" \
+        /* Set argument to callee_func(). */ \
+        "movl %esp, %edi\n" \
+        /* Align the stack pointer */ \
+        "and $~15, %esp\n" \
         "call " #callee_func "\n" \
         ".popsection\n")
 
