@@ -26,6 +26,12 @@ import os
 import platform
 import posixpath
 
+# TODO(crbug.com/1205898): Remove this once python3 is enabled.
+try:
+    unicode
+except NameError:
+    unicode = str
+
 # This is only true when the driver is invoked on
 # Windows, but outside of Cygwin.
 WINDOWS_MANGLE = 'windows' in platform.system().lower()
@@ -52,6 +58,7 @@ def touser(npath):
 def tosys(npath):
   """ Convert a normalized path into a system-style path """
   if WINDOWS_MANGLE:
+    npath = unicode(npath)
     if npath.startswith('/cygdrive'):
       components = npath.split('/')
       assert(components[0] == '')
@@ -62,7 +69,7 @@ def tosys(npath):
     else:
       # Work around for an issue that windows has opening long
       # relative paths.  http://bugs.python.org/issue4071
-      npath = os.path.abspath(unicode(npath))
+      npath = os.path.abspath(npath)
       return npath.replace('/', '\\')
   else:
     return npath
