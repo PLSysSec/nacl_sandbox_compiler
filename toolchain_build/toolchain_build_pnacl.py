@@ -151,7 +151,7 @@ BITCODE_BIASES = tuple(
 
 DIRECT_TO_NACL_ARCHES = ['x86_64', 'i686', 'arm', 'mipsel']
 
-SAIGO_ARCHES = ['i686']
+SAIGO_ARCHES = ['i686', 'x86_64']
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 

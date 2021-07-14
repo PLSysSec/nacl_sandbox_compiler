@@ -149,20 +149,14 @@ def TargetLibCflags(bias_arch):
   return flags
 
 
-def NewlibIsystemCflags(bias_arch):
+def NewlibIsystemCflags(bias_arch, saigo=False):
   include_arch = MultilibArch(bias_arch)
+  lib_name = 'abs_newlib'
+  if saigo:
+    lib_name = 'abs_newlib_saigo'
   return ' '.join([
     '-isystem',
-    command.path.join('%(' + GSDJoin('abs_newlib', include_arch) +')s',
-                      TripleFromArch(include_arch), 'include')])
-
-def NewlibSaigoIsystemCflags(bias_arch):
-  # TODO(fabiansommer): Replace the next line with MultilibArch(bias_arch)
-  # once x86_64 works. Probably merge this function with the above function.
-  include_arch = bias_arch
-  return ' '.join([
-    '-isystem',
-    command.path.join('%(' + GSDJoin('abs_newlib_saigo', include_arch) +')s',
+    command.path.join('%(' + GSDJoin(lib_name, include_arch) +')s',
                       TripleFromArch(include_arch), 'include')])
 
 def LibCxxCflags(bias_arch):
@@ -174,7 +168,7 @@ def LibCxxCflags(bias_arch):
 
 def LibCxxSaigoCflags(bias_arch):
   return ' '.join([TargetLibCflags(bias_arch),
-                   NewlibSaigoIsystemCflags(bias_arch),
+                   NewlibIsystemCflags(bias_arch, saigo=True),
                    '-DHAS_THREAD_LOCAL=1'])
 
 def NativeTargetFlag(bias_arch):
@@ -207,10 +201,7 @@ def BuildTargetObjectCmd(source, output, bias_arch, output_dir='%(cwd)s',
   flags = ['-Wall', '-Werror', '-O2', '-c'] + extra_flags
   if IsBiasedBCArch(bias_arch):
     flags.extend(BiasedBitcodeTargetFlag(bias_arch))
-  if saigo:
-    flags.extend(NewlibSaigoIsystemCflags(bias_arch).split())
-  else:
-    flags.extend(NewlibIsystemCflags(bias_arch).split())
+  flags.extend(NewlibIsystemCflags(bias_arch, saigo=saigo).split())
   return command.Command(
       [PnaclTool('clang', arch=bias_arch, msys=False, saigo=saigo)] + flags + [
           command.path.join('%(src)s', source),
@@ -368,7 +359,7 @@ GROUP ( libnacl.a libcrt_common.a )
   return template % ', '.join(['"' + fmt + '"' for fmt in format_list])
 
 
-def NewlibDirectoryCmds(bias_arch, newlib_triple, saigo=False):
+def NewlibDirectoryCmds(bias_arch, newlib_triple):
   commands = []
   def NewlibLib(name):
     return os.path.join('%(output)s', newlib_triple, 'lib', name)
@@ -380,7 +371,7 @@ def NewlibDirectoryCmds(bias_arch, newlib_triple, saigo=False):
   target_triple = TripleFromArch(bias_arch)
   # TODO(fabiansommer): The saigo parameter should be unnecessary once newlib
   # can be compiled for x86_64.
-  if bias_arch != 'i686' or saigo:
+  if bias_arch != 'i686':
     commands.extend([
         # For biased bitcode builds, we configured newlib with target=le32-nacl
         # to get its pure C implementation, so rename its output dir (which
@@ -408,17 +399,6 @@ def NewlibDirectoryCmds(bias_arch, newlib_triple, saigo=False):
             os.path.join('%(output)s', multilib_triple, 'lib'),
             os.path.join('%(output)s', multilib_triple, 'lib32')),
     ])
-  if saigo:
-    commands.extend([
-              # Headers are the same for 32 bits and 64 bits.
-              command.CopyRecursive(
-                     os.path.join('%(output)s', 'i686-nacl'),
-                     os.path.join('%(output)s', 'x86_64-nacl')),
-              # 32 bit libs should be in lib32.
-              command.Rename(
-                     os.path.join('%(output)s', 'x86_64-nacl', 'lib'),
-                     os.path.join('%(output)s', 'x86_64-nacl', 'lib32')),
-    ])
   # Remove the 'share' directory from the biased builds; the data is
   # duplicated exactly and takes up 2MB per package.
   if bias_arch != 'le32':
@@ -428,7 +408,11 @@ def NewlibDirectoryCmds(bias_arch, newlib_triple, saigo=False):
 # For saigo, we build newlib with le32-nacl as a target, which does not compile
 # setjmp.S. Instead, we pull in setjmp from the native_client repo.
 def NewlibSaigoCmds(bias_arch):
-  archive_path = command.path.join('%(output)s', '%s-nacl' % bias_arch, 'lib')
+  lib = 'lib'
+  if bias_arch is 'i686':
+    lib = 'lib32'
+  archive_path = command.path.join('%(output)s',
+                                   '%s-nacl' % MultilibArch(bias_arch), lib)
   return [
      command.Command([PnaclTool('clang', arch=bias_arch, saigo=True),
                       '-Wall', '-Werror', '-O2', '-c', '%(setjmp)s',
@@ -473,10 +457,8 @@ def D2NLibsSupportCommands(bias_arch, clang_libdir, saigo=False):
   extra_cflags = ''
   libname = 'libgcc_eh'
   if saigo:
-    extra_cflags = NewlibSaigoIsystemCflags(bias_arch)
     libname = 'libgcc_eh_saigo'
-  else:
-    extra_cflags = NewlibIsystemCflags(bias_arch)
+  extra_cflags = NewlibIsystemCflags(bias_arch, saigo=saigo)
   commands = [
               # Build compiler_rt which is now also used for the PNaCl
               # translator.
@@ -632,7 +614,7 @@ def TargetLibs(bias_arch, is_canonical):
       },
   }
   # TODO(fabiansommer): Enable saigo toolchain for more arches.
-  if (bias_arch == 'i686'):
+  if bias_arch == 'i686' or bias_arch == 'x86_64':
     libs.update({
       T('newlib_saigo'): {
           'type': TargetLibBuildType(is_canonical),
@@ -666,15 +648,13 @@ def TargetLibs(bias_arch, is_canonical):
               command.Command(MakeCommand()),
               command.Command(['make', 'DESTDIR=%(abs_output)s', 'install']),
           ]
-          + NewlibDirectoryCmds(bias_arch, 'le32-nacl', saigo=True)
+          + NewlibDirectoryCmds(bias_arch, 'le32-nacl')
           + NewlibSaigoCmds(bias_arch)
       },
       T('libs_support_saigo'): {
           'type': TargetLibBuildType(is_canonical),
-          # TODO(fabiansommer): Change bias_arch to MultilibArch(bias_arch) once
-          # newlib_saigo_x86_64 works - see old libcxx target.
           'dependencies': [ 'compiler_rt_src',
-                            GSDJoin('newlib_saigo', bias_arch),
+                            GSDJoin('newlib_saigo', MultilibArch(bias_arch)),
                             TL('libgcc_eh_saigo'),
                             'target_lib_compiler_saigo'],
           'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
@@ -686,11 +666,9 @@ def TargetLibs(bias_arch, is_canonical):
       },
       T('libcxx_saigo'): {
           'type': TargetLibBuildType(is_canonical),
-          # TODO(fabiansommer): Change bias_arch to MultilibArch(bias_arch) once
-          # newlib_saigo_x86_64 works - see old libcxx target.
           'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
                            'target_lib_compiler_saigo', T('newlib_saigo'),
-                           GSDJoin('newlib_saigo', bias_arch),
+                           GSDJoin('newlib_saigo', MultilibArch(bias_arch)),
                            T('libs_support_saigo')],
           'commands' :
               [command.SkipForIncrementalCommand(
@@ -1042,7 +1020,7 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
       },
     })
   # TODO(fabiansommer): Enable saigo toolchain for more arches.
-  if arch == 'x86-32':
+  if arch == 'x86-32' or arch == 'x86-64':
    libs.update({
       GSDJoin('libgcc_eh_saigo', arch): {
           'type': TargetLibBuildType(is_canonical),
@@ -1116,7 +1094,9 @@ def SDKCompiler(arches):
                    [GSDJoin('libcxx', arch) for arch in arches])
   # TODO(fabiansommer): Use more arches
   saigo_packages = [GSDJoin('newlib_saigo', 'i686'),
-                    GSDJoin('libcxx_saigo', 'i686')]
+                    GSDJoin('newlib_saigo', 'x86_64'),
+                    GSDJoin('libcxx_saigo', 'i686'),
+                    GSDJoin('libcxx_saigo', 'x86_64')]
   compiler = {
       'sdk_compiler': {
           'type': 'work',
@@ -1132,19 +1112,7 @@ def SDKCompiler(arches):
           'dependencies': ['target_lib_compiler_saigo'] + saigo_packages,
           'commands': [
               command.CopyRecursive('%(' + t + ')s', '%(output)s')
-              for t in ['target_lib_compiler_saigo'] + saigo_packages] +
-          [
-              # TODO(fabiansommer): The following commands can be deleted once
-              # x86-64 works.
-              # Headers are the same for 32 bits and 64 bits.
-              command.CopyRecursive(
-                     os.path.join('%(output)s', 'i686-nacl', 'include'),
-                     os.path.join('%(output)s', 'x86_64-nacl', 'include')),
-              # 32 bit libs should be in lib32.
-              command.CopyRecursive(
-                     os.path.join('%(output)s', 'i686-nacl', 'lib'),
-                     os.path.join('%(output)s', 'x86_64-nacl', 'lib32')),
-          ],
+              for t in ['target_lib_compiler_saigo'] + saigo_packages]
       },
   }
   return compiler
@@ -1191,7 +1159,7 @@ def SDKLibs(arch, is_canonical, extra_flags=[]):
           ],
       }
   }
-  if arch == 'i686':
+  if arch == 'i686' or arch == 'x86_64':
     libs[GSDJoin('core_sdk_libs_saigo', arch)] = {
         'type': TargetLibBuildType(is_canonical),
         'dependencies': ['sdk_compiler_saigo', 'target_lib_compiler_saigo'],
