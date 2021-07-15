@@ -17,6 +17,12 @@ blob_env.Append(LINKFLAGS=['-Wl,-Trodata-segment=${IRT_BLOB_DATA_START}',
 # NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
 blob_env.FilterOut(CCFLAGS=['-pedantic'])
 
+# Enable -Wextra to mirror Chromium IRT build flags.
+# Disable warnings that fire - they also need to be disabled for the Chromium
+# build in BUILD.gn.
+if env.Bit('saigo'):
+  blob_env.Append(CCFLAGS=['-Wextra', '-Wno-unused-parameter'])
+
 irt_support_sources = [
     'irt_entry.c',
     'irt_entry_core.c',

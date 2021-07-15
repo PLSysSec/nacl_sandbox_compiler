@@ -20,6 +20,12 @@ executable("irt_core") {
 
 static_library("irt_core_lib") {
   cflags_c = [ "-std=c99" ]
+  if (defined(is_nacl_saigo) && is_nacl_saigo) {
+    cflags_c += [
+      "-Wextra",
+      "-Wno-unused-parameter",
+    ]
+  }
 
   sources = [
     "../../untrusted/pthread/nc_condvar.c",
