@@ -369,8 +369,6 @@ def NewlibDirectoryCmds(bias_arch, newlib_triple):
       command.WriteData(NewlibLibcScript(bias_arch, 'elf64'),
                         NewlibLib('libc.a'))])
   target_triple = TripleFromArch(bias_arch)
-  # TODO(fabiansommer): The saigo parameter should be unnecessary once newlib
-  # can be compiled for x86_64.
   if bias_arch != 'i686':
     commands.extend([
         # For biased bitcode builds, we configured newlib with target=le32-nacl
@@ -423,23 +421,10 @@ def NewlibSaigoCmds(bias_arch):
   ]
 
 
-def LibcxxDirectoryCmds(bias_arch, saigo=False):
+def LibcxxDirectoryCmds(bias_arch):
   if bias_arch != 'i686':
     return []
   lib_dir = os.path.join('%(output)s', MultilibLibDir(bias_arch))
-  # TODO(fabiansommer): Remove the special treatment for saigo once x86-64
-  # libcxx works.
-  if saigo:
-    return [
-      # Use the multlib-style lib dir and shared headers for i686
-      command.Mkdir(os.path.dirname(lib_dir)),
-      command.Rename(os.path.join('%(output)s', 'i686-nacl', 'lib'),
-                     lib_dir),
-      # For saigo, we need the headers since we don't have them from x86-64.
-      command.Rename(os.path.join('%(output)s', 'i686-nacl', 'include'),
-                     os.path.join('%(output)s', 'x86_64-nacl', 'include')),
-      command.RemoveDirectory(os.path.join('%(output)s', 'i686-nacl')),
-    ]
   return [
       # Use the multlib-style lib dir and shared headers for i686
       command.Mkdir(os.path.dirname(lib_dir)),
@@ -707,7 +692,7 @@ def TargetLibs(bias_arch, is_canonical):
                   'DESTDIR=' + os.path.join('%(abs_output)s', target_triple),
                   'VERBOSE=1',
                   'install']),
-          ] + LibcxxDirectoryCmds(bias_arch, saigo=True)
+          ] + LibcxxDirectoryCmds(bias_arch)
       },
     })
   if IsBCArch(bias_arch):
