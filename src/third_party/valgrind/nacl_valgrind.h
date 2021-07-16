@@ -172,6 +172,17 @@
 #  endif
 #endif
 
+/* Superinstructions for saigo */
+#if defined(__saigo__)
+#define RAX_WITH_OFFSET(OFFSET) OFFSET"(%%rax)"
+#define NACLASP(VAL) "addq "VAL", %%rsp\n\t"
+#define NACLSSP(VAL) "subq "VAL", %%rsp\n\t"
+#else
+#define RAX_WITH_OFFSET(OFFSET) "%%nacl:"OFFSET"(%%r15,%%rax)"
+#define NACLASP(VAL) "naclasp "VAL", %%r15\n\t"
+#define NACLSSP(VAL) "naclssp "VAL", %%r15\n\t"
+#endif
+
 /* For NaCl this will be redefined later. */
 #define VALGRIND_SANDBOX_PTR(a) (a)
 
@@ -1240,10 +1251,10 @@ typedef
       _argvec[0] = (uint64_t)_orig.nraddr;                   \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $128,%%r15\n\t"                   \
+         NACLASP("$128")                   \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1262,11 +1273,11 @@ typedef
       _argvec[1] = (uint64_t)(arg1);                         \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $128,%%r15\n\t"                                 \
+         NACLASP("$128")                                 \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1285,12 +1296,12 @@ typedef
       _argvec[2] = (uint64_t)(arg2);                         \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $128,%%r15\n\t"                   \
+         NACLASP("$128")                   \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1311,13 +1322,13 @@ typedef
       _argvec[3] = (uint64_t)(arg3);                         \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $128,%%r15\n\t"                   \
+         NACLASP("$128")                   \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1339,14 +1350,14 @@ typedef
       _argvec[4] = (uint64_t)(arg4);                         \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "movq "RAX_WITH_OFFSET("32")", %%rcx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $128,%%r15\n\t"                   \
+         NACLASP("$128")                   \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1369,15 +1380,15 @@ typedef
       _argvec[5] = (uint64_t)(arg5);                         \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
-         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "movq "RAX_WITH_OFFSET("40")", %%r8\n\t"                              \
+         "movq "RAX_WITH_OFFSET("32")", %%rcx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $128,%%r15\n\t"                   \
+         NACLASP("$128")                   \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1401,16 +1412,16 @@ typedef
       _argvec[6] = (uint64_t)(arg6);                         \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
-         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
-         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "movq "RAX_WITH_OFFSET("48")", %%r9\n\t"                              \
+         "movq "RAX_WITH_OFFSET("40")", %%r8\n\t"                              \
+         "movq "RAX_WITH_OFFSET("32")", %%rcx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $128,%%r15\n\t"                   \
+         NACLASP("$128")                   \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1436,17 +1447,17 @@ typedef
       _argvec[7] = (uint64_t)(arg7);                         \
       __asm__ volatile(                                                 \
          CFI_PROLOGUE                                                   \
-         "naclssp $136, %%r15\n\t"                                      \
-         "pushq %%nacl:56(%%r15,%%rax)\n\t"                             \
-         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                        \
-         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                        \
-         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                       \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                       \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                       \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                        \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */     \
+         NACLSSP("$136")                                      \
+         "pushq "RAX_WITH_OFFSET("56")"\n\t"                             \
+         "movq "RAX_WITH_OFFSET("48")", %%r9\n\t"                        \
+         "movq "RAX_WITH_OFFSET("40")", %%r8\n\t"                        \
+         "movq "RAX_WITH_OFFSET("32")", %%rcx\n\t"                       \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                       \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                       \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                        \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */     \
          VALGRIND_CALL_NOREDIR_RAX                                      \
-         "naclasp $144,%%r15\n\t"                                       \
+         NACLASP("$144")                                       \
          CFI_EPILOGUE                                                   \
          : /*out*/   "=a" (_res)                                        \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX, __FP_IN_RBX        \
@@ -1473,18 +1484,18 @@ typedef
       _argvec[8] = (uint64_t)(arg8);                         \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
-         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
-         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
-         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "pushq "RAX_WITH_OFFSET("64")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("56")"\n\t"                                    \
+         "movq "RAX_WITH_OFFSET("48")", %%r9\n\t"                              \
+         "movq "RAX_WITH_OFFSET("40")", %%r8\n\t"                              \
+         "movq "RAX_WITH_OFFSET("32")", %%rcx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $144,%%r15\n\t"                                 \
+         NACLASP("$144")                                 \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1512,19 +1523,19 @@ typedef
       _argvec[9] = (uint64_t)(arg9);                         \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $136, %%r15\n\t"                                \
-         "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
-         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
-         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
-         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$136")                                \
+         "pushq "RAX_WITH_OFFSET("72")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("64")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("56")"\n\t"                                    \
+         "movq "RAX_WITH_OFFSET("48")", %%r9\n\t"                              \
+         "movq "RAX_WITH_OFFSET("40")", %%r8\n\t"                              \
+         "movq "RAX_WITH_OFFSET("32")", %%rcx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $160,%%r15\n\t"                                 \
+         NACLASP("$160")                                 \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1553,20 +1564,20 @@ typedef
       _argvec[10] = (uint64_t)(arg10);                       \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "pushq %%nacl:80(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
-         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
-         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
-         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "pushq "RAX_WITH_OFFSET("80")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("72")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("64")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("56")"\n\t"                                    \
+         "movq "RAX_WITH_OFFSET("48")", %%r9\n\t"                              \
+         "movq "RAX_WITH_OFFSET("40")", %%r8\n\t"                              \
+         "movq "RAX_WITH_OFFSET("32")", %%rcx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $160,%%r15\n\t"                                 \
+         NACLASP("$160")                                 \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1596,21 +1607,21 @@ typedef
       _argvec[11] = (uint64_t)(arg11);                       \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $136, %%r15\n\t"                                \
-         "pushq %%nacl:88(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:80(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
-         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
-         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
-         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$136")                                \
+         "pushq "RAX_WITH_OFFSET("88")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("80")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("72")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("64")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("56")"\n\t"                                    \
+         "movq "RAX_WITH_OFFSET("48")", %%r9\n\t"                              \
+         "movq "RAX_WITH_OFFSET("40")", %%r8\n\t"                              \
+         "movq "RAX_WITH_OFFSET("32")", %%rcx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $176,%%r15\n\t"                                 \
+         NACLASP("$176")                                 \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
@@ -1641,22 +1652,22 @@ typedef
       _argvec[12] = (uint64_t)(arg12);                       \
       __asm__ volatile(                                           \
          CFI_PROLOGUE                                             \
-         "naclssp $128, %%r15\n\t"                                \
-         "pushq %%nacl:96(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:88(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:80(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
-         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
-         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
-         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
-         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
-         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
-         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
-         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
-         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
+         NACLSSP("$128")                                \
+         "pushq "RAX_WITH_OFFSET("96")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("88")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("80")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("72")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("64")"\n\t"                                    \
+         "pushq "RAX_WITH_OFFSET("56")"\n\t"                                    \
+         "movq "RAX_WITH_OFFSET("48")", %%r9\n\t"                              \
+         "movq "RAX_WITH_OFFSET("40")", %%r8\n\t"                              \
+         "movq "RAX_WITH_OFFSET("32")", %%rcx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("24")", %%rdx\n\t"                              \
+         "movq "RAX_WITH_OFFSET("16")", %%rsi\n\t"                              \
+         "movq "RAX_WITH_OFFSET("8")", %%rdi\n\t"                               \
+         "movq "RAX_WITH_OFFSET("0")", %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
-         "naclasp $176,%%r15\n\t"                                 \
+         NACLASP("$176")                                 \
          CFI_EPILOGUE                                             \
          : /*out*/   "=a" (_res)                                  \
          : /*in*/    "a" (&_argvec[0]), __FP_IN_RBX                            \
