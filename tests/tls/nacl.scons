@@ -15,7 +15,7 @@ defines_map = {
     'nopthread' : ['WITH_TBSS', 'TDATA_LARGE_ALIGN', 'TBSS_LARGE_ALIGN']}
 
 pic_list = [('', [])]
-if not env.Bit('bitcode'):
+if not env.Bit('bitcode') and not env.Bit('saigo'):
   pic_list.append(('_pic', ['-fPIC']))
 
 for case_name, defines in sorted(defines_map.iteritems()):
