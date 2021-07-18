@@ -283,7 +283,6 @@ static ElfW(Addr) load_elf_file(const char *filename,
     default:
       fail(filename, "ELF file has wrong architecture!  ",
            "e_machine", ehdr.e_machine, NULL, 0);
-      break;
   }
 
   ElfW(Phdr) phdr[MAX_PHNUM];
@@ -596,7 +595,6 @@ ElfW(Addr) do_load(stack_val_t *stack) {
 Failed to find AT_BASE, AT_ENTRY, AT_PHDR, AT_PHNUM, or AT_PAGESZ!",
              NULL, 0, NULL, 0);
         /*NOTREACHED*/
-        break;
       case AT_BASE:
         av_base = av;
         break;
