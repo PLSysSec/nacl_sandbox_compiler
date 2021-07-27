@@ -51,4 +51,4 @@ binutils_x86=1d8592cc9f02cc9aeaef992c296376a8fd4c8761
 #
 # Three lines avoid merge conflicts.
 #
-llvm_saigo=901e6f2d8ce35dd646e9661ad78cf36dc3cf4d90
+llvm_saigo=c486a8bb9b3787e51375c96661f19876711b99bb
