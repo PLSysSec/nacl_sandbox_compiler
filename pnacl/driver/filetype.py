@@ -148,7 +148,7 @@ def ParseLinkerScript(filename):
 
   ret = []
   stack = []
-  expect = b''  # Expected next token
+  expect = ''  # Expected next token
   while True:
     token = GetNextToken(fp)
     if token is None:
@@ -161,47 +161,47 @@ def ParseLinkerScript(filename):
 
     if expect:
       if token == expect:
-        expect = b''
+        expect = ''
         continue
       else:
         return None
 
     if not stack:
-      if token == b'INPUT':
-        expect = b'('
+      if token == 'INPUT':
+        expect = '('
         stack.append(token)
-      elif token == b'GROUP':
-        expect = b'('
-        ret.append(b'--start-group')
+      elif token == 'GROUP':
+        expect = '('
+        ret.append('--start-group')
         stack.append(token)
-      elif token == b'OUTPUT_FORMAT':
-        expect = b'('
+      elif token == 'OUTPUT_FORMAT':
+        expect = '('
         stack.append(token)
-      elif token == b'EXTERN':
-        expect = b'('
+      elif token == 'EXTERN':
+        expect = '('
         stack.append(token)
-      elif token == b';':
+      elif token == ';':
         pass
       else:
         return None
     else:
-      if token == b')':
+      if token == ')':
         section = stack.pop()
-        if section == b'AS_NEEDED':
-          ret.append(b'--no-as-needed')
-        elif section == b'GROUP':
-          ret.append(b'--end-group')
-      elif token == b'AS_NEEDED':
-        expect = b'('
-        ret.append(b'--as-needed')
-        stack.append(b'AS_NEEDED')
-      elif stack[-1] == b'OUTPUT_FORMAT':
+        if section == 'AS_NEEDED':
+          ret.append('--no-as-needed')
+        elif section == 'GROUP':
+          ret.append('--end-group')
+      elif token == 'AS_NEEDED':
+        expect = '('
+        ret.append('--as-needed')
+        stack.append('AS_NEEDED')
+      elif stack[-1] == 'OUTPUT_FORMAT':
         # Ignore stuff inside OUTPUT_FORMAT
         pass
-      elif stack[-1] == b'EXTERN':
-        ret.append(b'--undefined=' + token)
+      elif stack[-1] == 'EXTERN':
+        ret.append('--undefined=' + token)
       else:
-        ret.append(b'-l:' + token)
+        ret.append('-l:' + token)
 
   fp.close()
   return ret
@@ -211,23 +211,28 @@ def ParseLinkerScript(filename):
 # Returns: ''   for EOF.
 #          None on error.
 def GetNextToken(fp):
-  token = b''
+  token = ''
   while True:
     ch = fp.read(1)
 
     if not ch:
       break
 
+    try:
+      ch = ch.decode()
+    except:
+      return None
+
     # Whitespace terminates a token
     # (but ignore whitespace before the token)
-    if ch in (b' ', b'\t', b'\n', b'\r'):
+    if ch in (' ', '\t', '\n', '\r'):
       if token:
         break
       else:
         continue
 
     # ( and ) are tokens themselves (or terminate existing tokens)
-    if ch in (b'(',b')'):
+    if ch in ('(',')'):
       if token:
         fp.seek(-1, os.SEEK_CUR)
         break
@@ -236,20 +241,23 @@ def GetNextToken(fp):
         break
 
     token += ch
-    if token.endswith(b'/*'):
-      if not ReadPastComment(fp, b'*/'):
+    if token.endswith('/*'):
+      if not ReadPastComment(fp, '*/'):
         return None
       token = token[:-2]
 
   return token
 
 def ReadPastComment(fp, terminator):
-  s = b''
+  s = ''
   while True:
     ch = fp.read(1)
     if not ch:
       return False
-    s += ch
+    try:
+      s += ch.decode()
+    except:
+      return False
     if s.endswith(terminator):
       break
 
