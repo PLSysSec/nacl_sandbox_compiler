@@ -137,7 +137,22 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
   assert(context->regs_size == sizeof(NaClUserRegisterState));
 
   assert(portable->stack_ptr == (uint32_t) g_regs_at_crash.stack_ptr);
+
+#if defined(__arm__) && defined(__saigo__)
+  /*
+   * On ARM, Saigo will sandbox the faulting instruction, causing the label
+   * prog_ctr_at_crash to be off by one instruction (4 bytes).
+   */
+  assert(portable->prog_ctr == (uintptr_t) prog_ctr_at_crash+4);
+  /*
+   * g_regs_at_crash.prog_ctr was set to prog_ctr_at_crash earlier, so we need
+   * to adjust it.
+   */
+  g_regs_at_crash.prog_ctr += 4;
+#else
   assert(portable->prog_ctr == (uintptr_t) prog_ctr_at_crash);
+#endif
+
 #if defined(__i386__)
   assert(portable->frame_ptr == g_regs_at_crash.ebp);
   assert(context->arch == EM_386);
