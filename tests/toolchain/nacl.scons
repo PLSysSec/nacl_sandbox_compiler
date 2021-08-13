@@ -493,7 +493,7 @@ if not env.Bit('pnacl_generate_pexe'):
   # Since PNaCl has no reason to generate PIC at all until there is some
   # form of ELF shared object support (if that ever happens at all),
   # perhaps we'll never really need to test this.
-  if not env.Bit('bitcode'):
+  if not env.Bit('bitcode') and not (env.Bit('saigo') and env.Bit('build_arm')):
     pic_env = asm_env.Clone()
     pic_env.Append(CFLAGS=['-fPIC'])
     if pic_env.Bit('build_arm'):
