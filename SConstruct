@@ -1151,7 +1151,7 @@ def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None,
       target_arch = pynacl.platform.GetArch(GetTargetPlatform())
 
     # See if we have a custom toolchain directory set.
-    if is_saigo:
+    if is_saigo and lib_name != 'glibc':
       toolchain_arg = 'saigo_%s_dir' % lib_name
     elif is_pnacl:
       toolchain_arg = 'pnacl_%s_dir' % lib_name
@@ -1164,7 +1164,7 @@ def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None,
       return env.SConstructAbsPath(custom_toolchain_dir)
 
     # Get the standard toolchain name since no directory custom was found.
-    if is_saigo:
+    if is_saigo and lib_name != 'glibc':
       target_env = 'saigo'
     elif is_pnacl:
       target_env = 'pnacl'
