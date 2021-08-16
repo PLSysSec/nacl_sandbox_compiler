@@ -11,6 +11,10 @@ Import('env')
 if env.Bit('bitcode'):
   Return()
 
+# elf_loader requires PIC, which saigo does not support.
+if env.Bit('saigo'):
+  Return()
+
 # elf_loader requires some IRT interfaces.
 if not env.Bit('tests_use_irt'):
   Return()
