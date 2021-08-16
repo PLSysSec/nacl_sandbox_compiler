@@ -266,7 +266,19 @@ void test_super_instruction(void) {
   __asm__(".p2align 5\n" /* Ensures nacljmp doesn't cross a bundle boundary */
           "hlt\n"
           NACLJMP("%ecx", "%rcx", "%r15"));
-#elif defined(__arm__)
+#elif defined(__arm__) && defined(__saigo__)
+  __asm__(".p2align 4\n" /* Ensures branch doesn't cross a bundle boundary */
+          /*
+           * Arrange the breakpoint so that the test can skip over it by
+           * jumping to the next bundle.  This means we never have to set the
+           * program counter to within a bundle, which could be unsafe,
+           * because BKPTs guard data literals in the ARM sandbox.
+           */
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_ABORT_NOW) "\n"
+          ".p2align 4\n"
+          /* Saigo will autosandbox the branch, no need to do anything else. */
+          "bx r0");
+#elif defined(__arm__) && !defined(__saigo__)
   __asm__(".p2align 4\n" /* Ensures branch doesn't cross a bundle boundary */
           /*
            * Arrange the breakpoint so that the test can skip over it by
