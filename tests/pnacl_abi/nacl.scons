@@ -5,6 +5,10 @@
 
 Import('env')
 
+# On ARM, division by zero does not fault, and saigo does not insert a trap.
+if env.Bit('saigo') and env.Bit('build_arm'):
+  Return()
+
 # Divide ABI check.
 div_nexe = env.ComponentProgram('divide_by_zero',
                                 'divide_by_zero.c',
