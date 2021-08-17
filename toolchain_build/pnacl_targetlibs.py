@@ -169,7 +169,7 @@ def LibCxxCflags(bias_arch):
 def LibCxxSaigoCflags(bias_arch):
   return ' '.join([TargetLibCflags(bias_arch),
                    NewlibIsystemCflags(bias_arch, saigo=True),
-                   '-DHAS_THREAD_LOCAL=1'])
+                   '-DHAS_THREAD_LOCAL=1', '-D__ARM_DWARF_EH__'])
 
 def NativeTargetFlag(bias_arch):
   arch = TargetArch(bias_arch)
@@ -413,7 +413,8 @@ def NewlibSaigoCmds(bias_arch):
                                    '%s-nacl' % MultilibArch(bias_arch), lib)
   return [
      command.Command([PnaclTool('clang', arch=bias_arch, saigo=True),
-                      '-Wall', '-Werror', '-O2', '-c', '%(setjmp)s',
+                      '-Wall', '-Werror', '-O2', '-fintegrated-as',
+                      '-c', '%(setjmp)s',
                       '-o', command.path.join('%(cwd)s', 'lib_a-setjmp.o')]),
      command.Command([PnaclTool('ar', arch=bias_arch, saigo=True), 'r',
          command.path.join(archive_path, 'libcrt_common.a'),
@@ -598,8 +599,7 @@ def TargetLibs(bias_arch, is_canonical):
           ] + LibcxxDirectoryCmds(bias_arch)
       },
   }
-  # TODO(fabiansommer): Enable saigo toolchain for more arches.
-  if bias_arch == 'i686' or bias_arch == 'x86_64':
+  if bias_arch == 'i686' or bias_arch == 'x86_64' or bias_arch == 'arm':
     libs.update({
       T('newlib_saigo'): {
           'type': TargetLibBuildType(is_canonical),
@@ -1004,8 +1004,7 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
           'commands': LibgccEhCommands(arch, no_nacl_gcc),
       },
     })
-  # TODO(fabiansommer): Enable saigo toolchain for more arches.
-  if arch == 'x86-32' or arch == 'x86-64':
+  if arch == 'x86-32' or arch == 'x86-64' or arch == 'arm':
    libs.update({
       GSDJoin('libgcc_eh_saigo', arch): {
           'type': TargetLibBuildType(is_canonical),
@@ -1077,11 +1076,12 @@ def UnsandboxedRuntime(arch, is_canonical):
 def SDKCompiler(arches):
   arch_packages = ([GSDJoin('newlib', arch) for arch in arches] +
                    [GSDJoin('libcxx', arch) for arch in arches])
-  # TODO(fabiansommer): Use more arches
   saigo_packages = [GSDJoin('newlib_saigo', 'i686'),
                     GSDJoin('newlib_saigo', 'x86_64'),
+                    GSDJoin('newlib_saigo', 'arm'),
                     GSDJoin('libcxx_saigo', 'i686'),
-                    GSDJoin('libcxx_saigo', 'x86_64')]
+                    GSDJoin('libcxx_saigo', 'x86_64'),
+                    GSDJoin('libcxx_saigo', 'arm')]
   compiler = {
       'sdk_compiler': {
           'type': 'work',
@@ -1144,7 +1144,7 @@ def SDKLibs(arch, is_canonical, extra_flags=[]):
           ],
       }
   }
-  if arch == 'i686' or arch == 'x86_64':
+  if arch == 'i686' or arch == 'x86_64' or arch == 'arm':
     libs[GSDJoin('core_sdk_libs_saigo', arch)] = {
         'type': TargetLibBuildType(is_canonical),
         'dependencies': ['sdk_compiler_saigo', 'target_lib_compiler_saigo'],

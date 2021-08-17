@@ -151,7 +151,7 @@ BITCODE_BIASES = tuple(
 
 DIRECT_TO_NACL_ARCHES = ['x86_64', 'i686', 'arm', 'mipsel']
 
-SAIGO_ARCHES = ['i686', 'x86_64']
+SAIGO_ARCHES = ['i686', 'x86_64', 'arm']
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
@@ -994,18 +994,20 @@ def TargetLibCompiler(host, options):
 def TargetLibCompilerSaigo(host, options):
   def H(component_name):
     return FlavoredName(component_name, host, options)
-  binutils = H('binutils_x86')
+  binutils = H('binutils')
+  binutils_x86 = H('binutils_x86')
   if TripleIsMSVC(host):
-    binutils = FlavoredName('binutils_x86', 'i686-w64-mingw32', options)
+    binutils = FlavoredName('binutils', 'i686-w64-mingw32', options)
+    binutils_x86 = FlavoredName('binutils_x86', 'i686-w64-mingw32', options)
 
   compiler = {
       'target_lib_compiler_saigo': {
           'type': 'work',
           'output_subdir': 'target_lib_compiler_saigo',
-          'dependencies': [H('llvm-saigo'), binutils],
+          'dependencies': [H('llvm-saigo'), binutils, binutils_x86],
           'commands': [
               command.CopyRecursive('%(' + t + ')s', '%(output)s')
-              for t in [H('llvm-saigo'), binutils]
+              for t in [H('llvm-saigo'), binutils, binutils_x86]
           ]
       }
   }
@@ -1372,7 +1374,8 @@ def GetUploadPackageTargets():
     saigo_triple = pynacl.platform.PlatformTripleSaigo(os_name, arch)
     legal_saigo_triple = pynacl.gsd_storage.LegalizeName(saigo_triple)
     saigo_os_packages.setdefault(os_name, []).extend(
-        ['binutils_x86_%s' % legal_triple,
+        ['binutils_%s' % legal_triple,
+         'binutils_x86_%s' % legal_triple,
          'llvm_saigo_%s' % legal_saigo_triple])
 
   # Unsandboxed target IRT libraries
