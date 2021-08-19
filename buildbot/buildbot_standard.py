@@ -468,8 +468,7 @@ def BuildScript(status, context):
 
   # Tests for saigo.
   context['saigo'] = True
-  # TODO(fabiansommer): Enable for more arches.
-  if ((context['arch'] == '32' or context['arch'] == '64')
+  if (context['arch'] in ('32', '64', 'arm')
       and not context['use_glibc']
       and not context['no_scons']):
     with Step('scons_compile for Saigo', status):

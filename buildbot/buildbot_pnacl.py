@@ -124,8 +124,7 @@ def RunSconsTests(status, context):
   # Run tests for saigo.
   context['pnacl'] = False
   context['saigo'] = True
-  # TODO(fabiansommer): Enable for more arches.
-  if arch == 'x86-32' or arch == 'x86-64':
+  if arch in ('arm', 'x86-32', 'x86-64'):
     # Build for non-IRT mode.
     if not context['skip_build']:
       with Step('build_saigo ' + arch, status, halt_on_fail=False):
