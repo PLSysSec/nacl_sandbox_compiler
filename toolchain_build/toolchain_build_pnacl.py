@@ -1192,6 +1192,8 @@ def HostToolsSaigo(host, options):
 
   if TripleIsMSVC(host):
     PrepareVSEnv()
+    llvm_host_arch_flags += ['-DLLVM_USE_CRT_RELEASE=MT',
+                             '-DLLVM_USE_CRT_DEBUG=MTd']
 
   build_dylib = 'OFF' if TripleIsWindows(host) else 'ON'
   rpath_origin = '@executable_path' if TripleIsMac(host) else '$ORIGIN'
