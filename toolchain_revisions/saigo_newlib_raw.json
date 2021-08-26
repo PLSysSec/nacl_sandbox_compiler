@@ -218,11 +218,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "ee602260c856b00b27a0cb24980fd3783ab62297",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/llvm_saigo_x86_64_apple_darwin_82a4962107307f16e00c903da7a4b3032d1573a4.log",
+          "hash": "2d0b2f070ad1b5007da323b419083a783ee3ee44",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/llvm_saigo_x86_64_apple_darwin_acd91a2dbeb3e949c8db94cf8ba62e3aaa59df9e.log",
           "name": "llvm_saigo_x86_64_apple_darwin.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/llvm_saigo_x86_64_apple_darwin_82a4962107307f16e00c903da7a4b3032d1573a4.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/llvm_saigo_x86_64_apple_darwin_acd91a2dbeb3e949c8db94cf8ba62e3aaa59df9e.tgz"
         },
         {
           "extract_dir": "",
@@ -343,11 +343,11 @@
         },
         {
           "extract_dir": "",
-          "hash": "fe9767500e79174bedf0d84dd1cd286721c1e136",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/llvm_saigo_x86_64_win32_0712b2229a7d7e7122570a2f5210ecb759cac1ae.log",
+          "hash": "cf8334134dbb1bb458e2a4be7e4a169878868a1d",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/llvm_saigo_x86_64_win32_7c8bb24815eefdf0c72429ccdb7dc9a852af5183.log",
           "name": "llvm_saigo_x86_64_win32.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/llvm_saigo_x86_64_win32_0712b2229a7d7e7122570a2f5210ecb759cac1ae.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/llvm_saigo_x86_64_win32_7c8bb24815eefdf0c72429ccdb7dc9a852af5183.tgz"
         },
         {
           "extract_dir": "",
@@ -377,6 +377,6 @@
       "version": 1
     }
   },
-  "revision": "c5685872d82ea5760455f7304c680ad14abd600c",
-  "revision_hash": "836425a6c740367d9316c6899668e02765347aa7"
+  "revision": "4a36c3309c08059f0e7125098db388dd22d2acbd",
+  "revision_hash": "4d59be22937a4c4bf80882fa2be85c4e06d3824c"
 }
