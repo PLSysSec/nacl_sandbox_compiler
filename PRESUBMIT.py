@@ -43,29 +43,6 @@ while not os.path.isfile(os.path.join(NACL_TOP_DIR, 'PRESUBMIT.py')):
   assert len(NACL_TOP_DIR) >= 3, "Could not find NaClTopDir"
 
 
-def CheckGitBranch():
-  p = subprocess.Popen("git branch -vv", shell=True,
-                       stdout=subprocess.PIPE)
-  output, _ = p.communicate()
-  lines = output.split('\n')
-  for line in lines:
-    # output format for checked-out branch should be
-    # * branchname hash [TrackedBranchName ...
-    toks = line.split()
-    if '*' not in toks[0]:
-      continue
-    if not ('origin/main' in toks[3] or
-            'origin/refs/heads/main' in toks[3]):
-      warning = 'Warning: your current branch:\n' + line
-      warning += '\nis not tracking origin/main. git cl push may silently '
-      warning += 'fail to push your change. To fix this, do\n'
-      warning += 'git branch -u origin/main'
-      return warning
-    return None
-  print('Warning: presubmit check could not determine local git branch')
-  return None
-
-
 def _CommonChecks(input_api, output_api):
   """Checks for both upload and commit."""
   results = []
@@ -118,11 +95,6 @@ def CheckChangeOnUpload(input_api, output_api):
   """
   report = []
   report.extend(_CommonChecks(input_api, output_api))
-
-  branch_warning = CheckGitBranch()
-  if branch_warning:
-    report.append(output_api.PresubmitPromptWarning(branch_warning))
-
   return report
 
 
@@ -139,55 +111,3 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api, output_api,
       json_url='http://nativeclient-status.appspot.com/current?format=json'))
   return report
-
-
-# Note that this list is duplicated in the Commit Queue.  If you change
-# this list, you should also update the CQ's list in infra/config/cq.cfg
-# (see https://crbug.com/399059).
-DEFAULT_TRYBOTS = [
-    'nacl-precise32_newlib_dbg',
-    'nacl-precise32_newlib_opt',
-    'nacl-precise32_glibc_opt',
-    'nacl-precise64_newlib_dbg',
-    'nacl-precise64_newlib_opt',
-    'nacl-precise64_glibc_opt',
-    'nacl-mac_newlib_dbg',
-    'nacl-mac_newlib_opt',
-    'nacl-mac_glibc_dbg',
-    'nacl-mac_glibc_opt',
-    'nacl-win32_newlib_opt',
-    'nacl-win32_glibc_opt',
-    'nacl-win64_newlib_dbg',
-    'nacl-win64_newlib_opt',
-    'nacl-win64_glibc_opt',
-    'nacl-win8-64_newlib_dbg',
-    'nacl-win8-64_newlib_opt',
-    'nacl-arm_opt_panda',
-    # arm-nacl-gcc bots
-    'nacl-win7_64_arm_newlib_opt',
-    'nacl-mac_arm_newlib_opt',
-    'nacl-precise64_arm_newlib_opt',
-    'nacl-precise64_arm_glibc_opt',
-    # pnacl scons bots
-    'nacl-precise_64-newlib-arm_qemu-pnacl',
-    'nacl-precise_64-newlib-x86_32-pnacl',
-    'nacl-precise_64-newlib-x86_64-pnacl',
-    'nacl-mac_newlib_opt_pnacl',
-    'nacl-win7_64_newlib_opt_pnacl',
-    # pnacl spec2k bots
-    'nacl-arm_perf_panda',
-    'nacl-precise_64-newlib-x86_32-pnacl-spec',
-    'nacl-precise_64-newlib-x86_64-pnacl-spec',
-    ]
-
-PNACL_TOOLCHAIN_TRYBOTS = [
-    'nacl-toolchain-linux-pnacl-x86_64',
-    'nacl-toolchain-linux-pnacl-x86_32',
-    'nacl-toolchain-mac-pnacl-x86_32',
-    'nacl-toolchain-win7-pnacl-x86_64',
-    ]
-
-TOOLCHAIN_BUILD_TRYBOTS = [
-    'nacl-toolchain-precise64-newlib-arm',
-    'nacl-toolchain-mac-newlib-arm',
-    ] + PNACL_TOOLCHAIN_TRYBOTS
