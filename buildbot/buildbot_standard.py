@@ -482,6 +482,11 @@ def BuildScript(status, context):
     return
   ### BEGIN GN tests ###
   DoGNTest(status, context, using_gn, 'gn_', ' (GN)')
+
+  context['saigo'] = True
+  if context['arch'] in ('32', '64', 'arm') and not context['use_glibc']:
+    DoGNTest(status, context, using_gn, 'gn_', ' for Saigo (GN)')
+  context['saigo'] = False
   ### END GN tests ###
 
 
