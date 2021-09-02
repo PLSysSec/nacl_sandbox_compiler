@@ -21,13 +21,14 @@ import time
 
 def CheckSConsLocation():
   """Check that the version of scons we are running lives in the native_client
-  tree.
+  tree or directly above.
 
   Without this, if system scons is used then it produces rather cryptic error
   messages.
   """
   scons_location = os.path.dirname(os.path.abspath(SCons.__file__))
-  nacl_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  nacl_dir = os.path.dirname(os.path.dirname(os.path.dirname(
+                                             os.path.abspath(__file__))))
   if not scons_location.startswith(nacl_dir):
     raise SCons.Errors.UserError('native_client must be built with its local '
                                  'version of SCons.\n  You are running SCons '
@@ -241,7 +242,7 @@ def AddSiteDir(site_dir):
   """
   # Call the same function that SCons does for the --site-dir option.
   SCons.Script.Main._load_site_scons_dir(
-      SCons.Node.FS.get_default_fs().SConstruct_dir, site_dir)
+      SCons.Node.FS.get_default_fs().SConstruct_dir.__str__(), site_dir)
 
 
 #------------------------------------------------------------------------------
@@ -363,7 +364,7 @@ def SiteInitMain():
   # site_scons directories.
   if not SCons.Script.GetOption('no_site_dir'):
     SCons.Script.Main._load_site_scons_dir(
-        SCons.Node.FS.get_default_fs().SConstruct_dir, None)
+        SCons.Node.FS.get_default_fs().SConstruct_dir.__str__(), None)
 
 
 # Run main code

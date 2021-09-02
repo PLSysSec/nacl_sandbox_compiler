@@ -592,7 +592,6 @@ def generate(env):
   )
   env.Append(
       LIBPATH=['$LIB_DIR'],
-      RPATH=['$LIB_DIR'],
 
       # Default alias groups for component builders
       COMPONENT_PACKAGE_GROUPS=['all_packages'],
