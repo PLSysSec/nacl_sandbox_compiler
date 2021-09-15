@@ -107,7 +107,4 @@ def CheckChangeOnCommit(input_api, output_api):
   """
   report = []
   report.extend(_CommonChecks(input_api, output_api))
-  report.extend(input_api.canned_checks.CheckTreeIsOpen(
-      input_api, output_api,
-      json_url='http://nativeclient-status.appspot.com/current?format=json'))
   return report
