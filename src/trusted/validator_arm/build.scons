@@ -267,7 +267,7 @@ validator_tests = {
 # stdout. Stderr is expected to be empty.
 if env.Bit('build_arm'):
   untrusted_env = env.MakeUntrustedNativeEnv()
-  for test, exit_status in validator_tests.iteritems():
+  for test, exit_status in validator_tests.items():
     nexe = untrusted_env.ComponentProgram(test, 'testdata/' + test + '.S',
                                           LINKFLAGS=['-nodefaultlibs',
                                                      '-nostdlib'])

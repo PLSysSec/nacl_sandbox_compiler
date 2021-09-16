@@ -68,7 +68,7 @@ def AddTest(env, test_variant, envlist, settings):
                        for i in range(num_modules) ]
 
   # Generate the module source files (module0.c, module1.c, ...).
-  settings_args = ['--%s=%s' % (k,str(v)) for k,v in settings.iteritems()]
+  settings_args = ['--%s=%s' % (k,str(v)) for k,v in settings.items()]
   base_env = env.Clone()
   base_env['GENERATOR_SETTINGS'] = ' '.join(settings_args)
 

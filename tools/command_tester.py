@@ -327,7 +327,7 @@ def ProcessOptions(argv):
   ResetGlobalSettings()
   try:
     opts, args = getopt.getopt(argv, '', [x + '='  for x in GlobalSettings])
-  except getopt.GetoptError, err:
+  except getopt.GetoptError as err:
     Print(str(err))  # will print something like 'option -a not recognized'
     sys.exit(1)
 
@@ -387,7 +387,7 @@ def FormatExitStatus(number):
   # statuses (STATUS_*) more recognisable.
   return '%i (0x%x)' % (number, number & 0xffffffff)
 
-def FormatResult((exit_status, printed_status)):
+def FormatResult(exit_status, printed_status):
   return 'exit status %s and signal info %r' % (
       FormatExitStatus(exit_status), printed_status)
 
@@ -477,8 +477,8 @@ def CheckExitStatus(failed, req_status, using_nacl_signal_handler,
     actual_printed_status = None
 
   actual_result = (exit_status, actual_printed_status)
-  msg = '\nERROR: Command returned: %s\n' % FormatResult(actual_result)
-  msg += 'but we expected: %s' % '\n  or: '.join(FormatResult(r)
+  msg = '\nERROR: Command returned: %s\n' % FormatResult(*actual_result)
+  msg += 'but we expected: %s' % '\n  or: '.join(FormatResult(*r)
                                                  for r in expected_results)
   if actual_result not in expected_results:
     Print(msg)

@@ -17,8 +17,7 @@ import subprocess
 import sys
 import tempfile
 
-import file_tools
-import hashing_tools
+from pynacl import file_tools, hashing_tools
 
 
 PYNACL_DIR = os.path.dirname(os.path.abspath(__file__))

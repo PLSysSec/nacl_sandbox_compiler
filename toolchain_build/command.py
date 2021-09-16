@@ -146,7 +146,7 @@ class Runnable(object):
         # Manually make a string in dict syntax, but sorted on keys.
         return ('{' +
                 ', '.join(repr(key) + ': ' + ReprForHash(value)
-                          for key, value in sorted(datum.iteritems(),
+                          for key, value in sorted(datum.items(),
                                                    key=lambda t: t[0])) +
                 '}')
       elif isinstance(datum, list):
@@ -161,7 +161,7 @@ class Runnable(object):
       values += [ReprForHash(v)]
     # The order of a dictionary's items is unpredictable.
     # Sort by key for hashing purposes.
-    for k, v in sorted(self._kwargs.iteritems(), key=lambda t: t[0]):
+    for k, v in sorted(self._kwargs.items(), key=lambda t: t[0]):
       values += [repr(k), ReprForHash(v)]
     values += [FILE_CONTENTS_HASH]
 
@@ -207,7 +207,7 @@ def Command(command, stdout=None, run_cond=None, **kwargs):
     # Perform substitution on any env overrides.
     if 'env' in check_call_kwargs:
       check_call_kwargs['env'] = { k: subst.Substitute(v)
-            for (k, v) in check_call_kwargs['env'].iteritems() }
+            for (k, v) in check_call_kwargs['env'].items() }
       check_call_kwargs['env'].update(PlatformEnvironment(path_dirs))
     else:
       check_call_kwargs['env'] = PlatformEnvironment(path_dirs)
@@ -474,7 +474,7 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
                                     reclone=reclone,
                                     pathspec=pathspec, git_cache=git_cache,
                                     push_url=push_url, logger=logger)
-    except pynacl.repo_tools.InvalidRepoException, e:
+    except pynacl.repo_tools.InvalidRepoException as e:
       remote_repos = dict(pynacl.repo_tools.GitRemoteRepoList(abs_dest,
                                                               logger=logger))
       tracked_url = remote_repos.get('origin', 'None')

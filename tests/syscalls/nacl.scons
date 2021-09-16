@@ -36,7 +36,7 @@ syscalls_nexe = env.ComponentProgram('syscalls',
 # TODO(bradnelson): find a better way to make the plumbing on this work.
 inputs = env.Command(env.File('file_ok_rdwr.txt'), env.File('file_ok.txt'),
            [Copy(env.File('file_ok_rdwr.txt'), env.File('file_ok.txt')),
-            Chmod(env.File('file_ok_rdwr.txt'), 0644)])
+            Chmod(env.File('file_ok_rdwr.txt'), 0o644)])
 Default(inputs)
 
 # syscalls_test exercise open/read/write, so need filesystem access

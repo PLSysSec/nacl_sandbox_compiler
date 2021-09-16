@@ -118,8 +118,8 @@ def AddToUncompressedTrie(root, byte_list, accept_info):
 
 def GetUnionOfChildKeys(n1, n2):
   """Returns the set of child keys that are present in either node."""
-  keys = set(n1.children.iterkeys())
-  keys.update(n2.children.iterkeys())
+  keys = set(n1.children.keys())
+  keys.update(n2.children.keys())
   return keys
 
 
@@ -151,7 +151,7 @@ class NodeCache(object):
     Returns:
       node: a node that resides in the cache.
     """
-    key = (accept_info, tuple(sorted(children.iteritems())))
+    key = (accept_info, tuple(sorted(children.items())))
     node = self._cache.get(key)
     if node is None:
       node = Node(accept_info)
@@ -202,7 +202,7 @@ def GetAllAcceptSequences(root):
       raise ValueError('Node has no children but is not accepting', context)
     if node.accept_info is not None:
       accept_sequences.append((node.accept_info, context))
-    for key, value in sorted(node.children.iteritems()):
+    for key, value in sorted(node.children.items()):
       AddAcceptSequences(value, context + [key])
   AddAcceptSequences(root, [])
   return accept_sequences
@@ -216,7 +216,7 @@ def GetAllUniqueNodes(root):
     if node not in node_set:
       node_list.append(node)
       node_set.add(node)
-      for _, child in sorted(node.children.iteritems()):
+      for _, child in sorted(node.children.items()):
         AddNodes(child, node_set)
   AddNodes(root, set())
   return node_list
@@ -242,7 +242,7 @@ def TrieToDict(root):
   return {'start': node_to_id[root],
           'map': dict((node_to_id[node],
                        dict((key, node_to_id[dest])
-                            for key, dest in node.children.iteritems()))
+                            for key, dest in node.children.items()))
                       for node in node_list),
           'input_rr': dict((node_to_id[node], node.accept_info.input_rr)
                            for node in node_list if node.accept_info),
@@ -278,7 +278,7 @@ def TrieFromDict(trie_data, node_cache):
       return id_cache[node_id]
     children = dict(
         (key, MakeNode(child_id))
-        for key, child_id in trie_data['map'][node_id].iteritems())
+        for key, child_id in trie_data['map'][node_id].items())
     accept_info = None
     input_rr = trie_data['input_rr'].get(node_id, None)
     output_rr = trie_data['output_rr'].get(node_id, None)

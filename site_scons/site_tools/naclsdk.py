@@ -96,7 +96,7 @@ def _SetEnvForNativeSdk(env, sdk_path):
     # Find a tooldir for a different subarch that does exist.
     others_map = tool_map.copy()
     del others_map[env['TARGET_SUBARCH']]
-    for subarch, tool_spec in others_map.iteritems():
+    for subarch, tool_spec in others_map.items():
       tooldir = tool_spec['tooldir']
       if os.path.exists(os.path.join(sdk_path, tooldir)):
         # OK, this is the other subarch to use as tooldir.

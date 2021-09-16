@@ -130,7 +130,7 @@ class GSDStorage(object):
 
     gs_path = GS_PATTERN % obj
     gs_tmp_path = gs_path + '.tmp.' + ''.join(
-        random.choice(string.lowercase) for x in range(10))
+        random.choice(string.ascii_lowercase) for x in range(10))
     # Using file://c:/foo/bar form of path as gsutil does not like drive
     # letters without it.
     file_path ='file://' + os.path.abspath(path).replace(os.sep, '/')

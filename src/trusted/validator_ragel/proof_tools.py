@@ -421,9 +421,9 @@ def RunProof(standard_opts, proof_func):
   proof_func((adds, removes), int(standard_opts.bitness))
 
 
-def AssertDiffSetEquals((adds, removes),
-                        expected_adds, expected_removes):
+def AssertDiffSetEquals(diffs, expected_adds, expected_removes):
   """Assert that diffs is composed of expected_adds and expected_removes."""
+  (adds, removes) = diffs
   if adds != expected_adds:
     raise AssertionError('falsely added instructions: ',
                          adds - expected_adds,
@@ -435,4 +435,3 @@ def AssertDiffSetEquals((adds, removes),
                          removes - expected_removes,
                          'missing instructions: ',
                          expected_removes - removes)
-

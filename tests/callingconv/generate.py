@@ -108,7 +108,7 @@ class Settings(object):
     self._script_argv = None
 
   def fixtypes(self):
-    self.seed = long(self.seed)
+    self.seed = int(self.seed)
     self.num_functions = int(self.num_functions)
     self.calls_per_func = int(self.calls_per_func)
     self.max_args_per_func = int(self.max_args_per_func)
@@ -247,7 +247,7 @@ class Module(object):
 
     out.write("/*--------------------------------------------------*\n"
               " * Generator Settings:                              *\n")
-    for k,v in self.settings.__dict__.iteritems():
+    for k,v in self.settings.__dict__.items():
       if k.startswith('_'):
         continue
       lines = WordWrap(str(v), 22)
@@ -502,7 +502,7 @@ class TestFunction(object):
     out.write("  va_end(ap);\n")
     out.write("}\n\n")
 
-alphabet = string.letters + string.digits
+alphabet = string.ascii_letters + string.digits
 
 def make_string():
   global alphabet

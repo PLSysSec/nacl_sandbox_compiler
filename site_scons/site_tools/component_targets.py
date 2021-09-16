@@ -190,7 +190,7 @@ def AddTargetHelp():
       cols = 77 / colwidth
       if cols < 1:
         cols = 1      # If target names are really long, one per line
-      rows = (len(items) + cols - 1) / cols
+      rows = int((len(items) + cols - 1) // cols)
       for row in range(0, rows):
         help_text += '\n  '
         for i in range(row, len(items), rows):

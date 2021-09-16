@@ -52,7 +52,7 @@ class Substituter(object):
                 corresponding to its keys and values.
     """
     self._paths = paths.copy()
-    for key, value in self._paths.iteritems():
+    for key, value in self._paths.items():
       if key.startswith('abs_'):
         raise Exception('Invalid key starts with "abs_": %s' % key)
     self._nonpaths = nonpaths.copy()
@@ -72,7 +72,7 @@ class Substituter(object):
     """
     self._variables = self._nonpaths.copy()
     self._variables['cwd'] = FixPath(os.path.abspath(self._cwd))
-    for key, value in self._paths.iteritems():
+    for key, value in self._paths.items():
       if value:
         abs_path = FixPath(os.path.abspath(value))
         key_path = FixPath(os.path.relpath(value, self._cwd))

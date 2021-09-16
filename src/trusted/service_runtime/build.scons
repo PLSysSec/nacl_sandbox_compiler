@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import platform
 import os
 
@@ -859,7 +861,7 @@ def AddDeathTest(test, skip):
     return
 
   if test in skip:
-    print 'SKIPPING test ', test
+    print('SKIPPING test ', test)
     return
 
   # Use an arch-specific golden file if there is one.

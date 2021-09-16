@@ -82,7 +82,7 @@ def PrintBanner(output):
     lines = output.split('\n')
     print('*' * 80)
     for line in lines:
-      padding = ' ' * max(0, (80 - len(line)) / 2)
+      padding = ' ' * max(0, (80 - len(line)) // 2)
       print(padding + output + padding)
     print('*' * 80)
 
@@ -472,11 +472,11 @@ def Run(args, cwd=None, verbose=True, exit_on_failure=False,
     p = subprocess.Popen(args, stdin=stdin_redir, stdout=stdout_redir,
                          stderr=stderr_redir, cwd=cwd, shell=use_shell)
     (stdout_contents, stderr_contents) = p.communicate()
-  except KeyboardInterrupt, e:
+  except KeyboardInterrupt as e:
     if p:
       p.kill()
     raise e
-  except BaseException, e:
+  except BaseException as e:
     if p:
       p.kill()
     raise e
@@ -549,7 +549,7 @@ def ArgSplit(argv):
   (options, args) = parser.parse_known_args(argv)
 
   # Copy the options into env.
-  for (key, value) in vars(options).iteritems():
+  for (key, value) in vars(options).items():
     setattr(env, key, value)
 
   args += options.remainder

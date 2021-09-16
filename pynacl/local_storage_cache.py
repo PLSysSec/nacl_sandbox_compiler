@@ -13,7 +13,7 @@ Read from GSDStorage if nothing exists locally.
 import os
 import re
 
-import file_tools
+from pynacl import file_tools
 
 
 KEY_PATTERN = re.compile('^[A-Za-z0-9_/.]+$')

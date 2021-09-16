@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import atexit
 import json
 import os
@@ -44,19 +46,19 @@ def PrintFinalReport():
   global ENV_COUNTER
 
   if pre_base_env.Bit('target_stats'):
-    print
-    print '*' * 70
-    print 'COMMAND EXECUTION REPORT'
-    print '*' * 70
+    print()
+    print('*' * 70)
+    print('COMMAND EXECUTION REPORT')
+    print('*' * 70)
     for k in sorted(CMD_COUNTER.keys()):
-      print "%4d %s" % (CMD_COUNTER[k], k)
+      print("%4d %s" % (CMD_COUNTER[k], k))
 
-    print
-    print '*' * 70
-    print 'ENVIRONMENT USAGE REPORT'
-    print '*' * 70
+    print()
+    print('*' * 70)
+    print('ENVIRONMENT USAGE REPORT')
+    print('*' * 70)
     for k in sorted(ENV_COUNTER.keys()):
-      print "%4d  %s" % (ENV_COUNTER[k], k)
+      print("%4d  %s" % (ENV_COUNTER[k], k))
 
   failures = []
   for failure in GetBuildFailures():
@@ -76,16 +78,16 @@ def PrintFinalReport():
   if not failures:
     return
 
-  print
-  print '*' * 70
-  print 'ERROR REPORT: %d failures' % len(failures)
-  print '*' * 70
-  print
+  print()
+  print('*' * 70)
+  print('ERROR REPORT: %d failures' % len(failures))
+  print('*' * 70)
+  print()
   for failure in failures:
     test_name = failure['test_name']
     if test_name != failure['raw_name']:
       test_name = '%s (%s)' % (test_name, failure['raw_name'])
-    print "%s failed: %s\n" % (test_name, failure['errstr'])
+    print("%s failed: %s\n" % (test_name, failure['errstr']))
 
 
 def VerboseConfigInfo(env):
@@ -888,11 +890,11 @@ def AddNodeToTestSuite(env, node, suite_name, node_name, is_broken=False,
   if is_broken or is_flaky and env.Bit('disable_flaky_tests'):
     # Only print if --verbose is specified
     if not GetOption('brief_comstr'):
-      print '*** BROKEN ', node_name
+      print('*** BROKEN ', node_name)
     BROKEN_TEST_COUNT += 1
     env.Alias('broken_tests', node)
   elif env.ShouldSkipTest(node_name):
-    print '*** SKIPPING ', env.GetPlatformString(), ':', node_name
+    print('*** SKIPPING ', env.GetPlatformString(), ':', node_name)
     env.Alias('broken_tests', node)
   else:
     env.Alias('all_tests', node)
@@ -954,9 +956,9 @@ else:
 
 
 def Banner(text):
-  print '=' * 70
-  print text
-  print '=' * 70
+  print('=' * 70)
+  print(text)
+  print('=' * 70)
 
 pre_base_env.AddMethod(Banner)
 
@@ -1325,7 +1327,7 @@ def CommandValidatorTestNacl(env, name, image,
                              **extra):
   validator = env.GetValidator(validator)
   if validator is None:
-    print 'WARNING: no validator found. Skipping test %s' % name
+    print('WARNING: no validator found. Skipping test %s' % name)
     return []
 
   if validator_flags is None:
@@ -1561,7 +1563,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
     else:
       loader = env.GetSelLdr()
     if loader is None:
-      print 'WARNING: no sel_ldr found. Skipping test %s' % name
+      print('WARNING: no sel_ldr found. Skipping test %s' % name)
       return []
 
   # Avoid problems with [] as default arguments
@@ -1755,7 +1757,7 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   if (skip is not None and
       (extra.get('exit_status') in UNSUPPORTED_VALGRIND_EXIT_STATUS or
        bool(int(extra.get('declares_exit_status', 0))))):
-    print 'Skipping death test "%s" under %s' % (name, skip)
+    print('Skipping death test "%s" under %s' % (name, skip))
     return []
 
   if env.Bit('asan'):
@@ -1832,7 +1834,7 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   extra['arch'] = env['BUILD_ARCHITECTURE']
   extra['subarch'] = env['BUILD_SUBARCH']
 
-  for flag_name, flag_value in extra.iteritems():
+  for flag_name, flag_value in extra.items():
     assert flag_name in TEST_EXTRA_ARGS, repr(flag_name)
     if isinstance(flag_value, list):
       # Options to command_tester.py which are actually lists must not be
@@ -2479,7 +2481,7 @@ def SetUpLinuxEnvArm(env):
     env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
   if env.Bit('built_elsewhere'):
     def FakeInstall(dest, source, env):
-      print 'Not installing', dest
+      print('Not installing', dest)
       # Replace build commands with no-ops
     env.Replace(CC='true', CXX='true', LD='true',
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
@@ -2642,14 +2644,14 @@ def SetUpLinuxEnvMips(env):
     env.Replace(EMULATOR=jail + '/run_under_qemu_mips32')
   if env.Bit('built_elsewhere'):
     def FakeInstall(dest, source, env):
-      print 'Not installing', dest
+      print('Not installing', dest)
       # Replace build commands with no-ops
     env.Replace(CC='true', CXX='true', LD='true',
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
   else:
     tc_dir = os.path.join(jail, 'bin')
     if not which(os.path.join(tc_dir, 'mipsel-linux-gnu-gcc')):
-      print ("WARNING: "
+      print("WARNING: "
           "MIPS trusted toolchain not found - try running:\n"
           "  build/package_version/package_version.py --packages"
           " linux_x86/mips_trusted sync -x\n"
@@ -3324,7 +3326,7 @@ SCons.Script.AddOption('--download',
                        help='deprecated - allow tools to download')
 
 if nacl_env.GetOption('download'):
-  print '@@@@ --download is deprecated, use gclient runhooks --force'
+  print('@@@@ --download is deprecated, use gclient runhooks --force')
   nacl_sync_env = nacl_env.Clone()
   nacl_sync_env['ENV'] = os.environ
   nacl_sync_env.Execute('gclient runhooks --force')
@@ -3683,14 +3685,14 @@ def DumpCompilerVersion(cc, env):
                            stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE)
       stdout, stderr = p.communicate()
-      print stderr[0:stderr.find("\r")]
+      print(stderr[0:stderr.find("\r")])
     except WindowsError:
       # If vcvars was not run before running SCons, we won't be able to find
       # the compiler at this point.  SCons has built in functions for finding
       # the compiler, but they haven't run yet.
-      print 'Can not find the compiler, assuming SCons will find it later.'
+      print('Can not find the compiler, assuming SCons will find it later.')
   else:
-    print "UNKNOWN COMPILER"
+    print("UNKNOWN COMPILER")
 
 
 def SanityCheckEnvironments(all_envs):
@@ -3801,20 +3803,20 @@ def DumpEnvironmentInfo(selected_envs):
     for env in selected_envs:
       for tag in RELEVANT_CONFIG:
         assert tag in env, repr(tag)
-        print "%s:  %s" % (tag, env.subst(env.get(tag)))
+        print("%s:  %s" % (tag, env.subst(env.get(tag))))
       for tag in MAYBE_RELEVANT_CONFIG:
-        print "%s:  %s" % (tag, env.subst(env.get(tag)))
+        print("%s:  %s" % (tag, env.subst(env.get(tag))))
       cc = env.subst('${CC}')
-      print 'CC:', cc
+      print('CC:', cc)
       asppcom = env.subst('${ASPPCOM}')
-      print 'ASPPCOM:', asppcom
+      print('ASPPCOM:', asppcom)
       DumpCompilerVersion(cc, env)
-      print
+      print()
     rev_file = 'toolchain/linux_x86/pnacl_newlib_raw/REV'
     if os.path.exists(rev_file):
       for line in open(rev_file).read().split('\n'):
         if "Revision:" in line:
-          print "PNACL : %s" % line
+          print("PNACL : %s" % line)
 
 def PnaclSetEmulatorForSandboxedTranslator(selected_envs):
   # Slip in emulator flags if necessary, for the sandboxed pnacl translator
@@ -3890,7 +3892,7 @@ if BROKEN_TEST_COUNT > 0:
   msg = "There are %d broken tests." % BROKEN_TEST_COUNT
   if GetOption('brief_comstr'):
     msg += " Add --verbose to the command line for more information."
-  print msg
+  print(msg)
 
 # separate warnings from actual build output
 Banner('B U I L D - O U T P U T:')

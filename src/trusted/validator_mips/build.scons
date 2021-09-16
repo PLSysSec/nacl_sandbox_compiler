@@ -101,7 +101,7 @@ if env.Bit('linux'):
   }
 
   if env.Bit('build_mips32'):
-    for test, exit_status in validator_tests.iteritems():
+    for test, exit_status in validator_tests.items():
       if test == 'test_invalid_dest':
         text_section_start = '-Wl,--section-start,.text=0x0FFFA000'
       else:

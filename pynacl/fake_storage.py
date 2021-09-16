@@ -6,7 +6,7 @@
 """Fake (similar in memory implementation) version of GSDStorage."""
 
 
-import file_tools
+from pynacl import file_tools
 
 
 class FakeStorage(object):

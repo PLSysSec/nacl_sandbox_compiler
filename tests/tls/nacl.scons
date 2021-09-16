@@ -18,7 +18,7 @@ pic_list = [('', [])]
 if not env.Bit('bitcode') and not env.Bit('saigo'):
   pic_list.append(('_pic', ['-fPIC']))
 
-for case_name, defines in sorted(defines_map.iteritems()):
+for case_name, defines in sorted(defines_map.items()):
   if 'WITH_PTHREAD' in defines:
     libs = ['${PTHREAD_LIBS}']
   else:

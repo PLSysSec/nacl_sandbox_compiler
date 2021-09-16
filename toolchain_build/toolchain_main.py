@@ -238,7 +238,7 @@ class PackageBuilder(object):
     inputs = {}
     # Add in explicit inputs.
     if 'inputs' in package_info:
-      for key, value in package_info['inputs'].iteritems():
+      for key, value in package_info['inputs'].items():
         if key in dependencies:
           raise BuildError('key "%s" found in both dependencies and inputs of '
                           'package "%s"' % (key, package))
@@ -337,10 +337,10 @@ class PackageBuilder(object):
     os.makedirs(packages_dir)
 
     built_packages = []
-    for target, target_dict in self._package_targets.iteritems():
+    for target, target_dict in self._package_targets.items():
       target_dir = os.path.join(packages_dir, target)
       pynacl.file_tools.MakeDirectoryIfAbsent(target_dir)
-      for output_package, components in target_dict.iteritems():
+      for output_package, components in target_dict.items():
         package_desc = package_info.PackageInfo()
 
         include_package = False

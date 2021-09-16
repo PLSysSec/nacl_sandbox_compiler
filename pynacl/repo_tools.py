@@ -10,9 +10,7 @@ import subprocess
 import sys
 import urlparse
 
-import file_tools
-import log_tools
-import platform
+from pynacl import file_tools, log_tools, platform
 
 GIT_ALTERNATES_PATH = os.path.join('.git', 'objects', 'info', 'alternates')
 

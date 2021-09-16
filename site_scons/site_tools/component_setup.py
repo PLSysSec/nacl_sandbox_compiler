@@ -82,7 +82,7 @@ def generate(env):
   #      hammer --mode=dbg,opt port_test
   new_lookup_list = []
   for func in env.lookup_list:
-    if func.im_class != SCons.Node.Alias.AliasNameSpace:
+    if func.__self__.__class__ != SCons.Node.Alias.AliasNameSpace:
       new_lookup_list.append(func)
   env.lookup_list = new_lookup_list
 

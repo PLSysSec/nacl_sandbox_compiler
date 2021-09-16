@@ -218,7 +218,7 @@ def RunTestWithInputOutput(cmd, input_data, capture_stderr=True, timeout=None):
                            stdout=subprocess.PIPE,
                            preexec_fn = no_pipe)
       stdout, stderr, retcode = CommunicateWithTimeout(p, timeout=timeout)
-  except OSError, x:
+  except OSError as x:
     if x.errno == 10:
       print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
       print('ignoring exception', str(sys.exc_info()[1]))
