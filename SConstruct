@@ -1226,7 +1226,7 @@ def SupportsSeccompBpfSandbox(env):
   # We suppose that any Linux kernel v3.2+ supports it, but it is only true
   # for Ubuntu kernels. Seccomp BPF filters reached the mainline at 3.5,
   # so this check will be wrong on some relatively old non-Ubuntu Linux distros.
-  kernel_version = map(int, platform.release().split('.', 2)[:2])
+  kernel_version = list(map(int, platform.release().split('.', 2)[:2]))
   return kernel_version >= [3, 2]
 
 pre_base_env.AddMethod(SupportsSeccompBpfSandbox)

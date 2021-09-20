@@ -429,7 +429,7 @@ class TestFunction(object):
     self.settings = settings
     self.id = id
     self.num_fixed_args = random.randint(0, self.settings.max_args_per_func)
-    self.fixed_arg_types = range(self.num_fixed_args)
+    self.fixed_arg_types = list(range(self.num_fixed_args))
     for i in range(len(self.fixed_arg_types)):
       self.fixed_arg_types[i] = random.choice(settings.all_types)
     if self.num_fixed_args:

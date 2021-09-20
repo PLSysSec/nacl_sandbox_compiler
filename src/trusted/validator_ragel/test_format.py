@@ -70,7 +70,7 @@ def LoadTestFile(filename):
     List of tests (see ParseTest).
   """
   with open(filename) as file_in:
-    return map(ParseTest, SplitLines(file_in, r'-{3,}\s*$'))
+    return list(map(ParseTest, SplitLines(file_in, r'-{3,}\s*$')))
 
 
 def UnparseTest(items_list):

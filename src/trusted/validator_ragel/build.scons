@@ -24,7 +24,7 @@ gen_dir = '$MAIN_DIR/src/trusted/validator_ragel/gen'
 # Currently we only provide ragel pre-built for Linux.
 ragel_binary = '$MAIN_DIR/../third_party/ragel/ragel.linux'
 
-INSTRUCTION_DEFINITIONS = map(env.File, [
+INSTRUCTION_DEFINITIONS = list(map(env.File, [
     'instruction_definitions/general_purpose_instructions.def',
     'instruction_definitions/system_instructions.def',
     'instruction_definitions/x87_instructions.def',
@@ -32,7 +32,7 @@ INSTRUCTION_DEFINITIONS = map(env.File, [
     'instruction_definitions/xmm_instructions.def',
     'instruction_definitions/nops.def',
     'instruction_definitions/tls.def',
-])
+]))
 
 # These objects are included in both dfa_validate_x86_xx and rdfa_validator
 # libraries, so we have to introduce intermediate scons nodes.

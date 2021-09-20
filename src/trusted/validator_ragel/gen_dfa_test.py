@@ -566,20 +566,20 @@ class TestSplit(unittest.TestCase):
   def test_no_split_rm(self):
     instr = gen_dfa.Instruction.Parse('mov =G !E, 0x88')
     self.assertEquals(
-        map(str, gen_dfa.SplitRM(instr)),
+        list(map(str, gen_dfa.SplitRM(instr))),
         ['mov =G !R, 0x88',
          'mov =G !M, 0x88'])
 
   def test_split_rm(self):
     instr = gen_dfa.Instruction.Parse('mov =O !a, 0xa0, ia32')
     self.assertEquals(
-        map(str, gen_dfa.SplitRM(instr)),
+        list(map(str, gen_dfa.SplitRM(instr))),
         [str(instr)])
 
   def test_split_byte(self):
     instr = gen_dfa.Instruction.Parse('mov =I !E, 0xc6 /0')
     self.assertEquals(
-        map(str, gen_dfa.SplitByteNonByte(instr)),
+        list(map(str, gen_dfa.SplitByteNonByte(instr))),
         ['mov =Ib !Eb, 0xc6 /0',
          'mov =Iz !Ev, 0xc7 /0'])
 
@@ -606,7 +606,7 @@ class TestSplit(unittest.TestCase):
         '0xc4 RXB.00001 x.src.L.01 0x58, '
         'CPUFeature_AVX')
     self.assertEquals(
-        map(str, gen_dfa.SplitL(instr)),
+        list(map(str, gen_dfa.SplitL(instr))),
         [('vaddpd =Wpd =Hpd !Vpd, '
           '0xc4 RXB.00001 x.src.0.01 0x58, '
           'CPUFeature_AVX'),
@@ -618,7 +618,7 @@ class TestSplit(unittest.TestCase):
     instr = gen_dfa.Instruction.Parse(
         'movs X Y, 0xa4, rep nacl-amd64-forbidden')
     self.assertEquals(
-        map(str, gen_dfa.SplitByteNonByte(instr)),
+        list(map(str, gen_dfa.SplitByteNonByte(instr))),
         ['movs =Xb &Yb, 0xa4, rep nacl-amd64-forbidden att-show-name-suffix-b',
          'movs =Xv &Yv, 0xa5, rep nacl-amd64-forbidden'])
 

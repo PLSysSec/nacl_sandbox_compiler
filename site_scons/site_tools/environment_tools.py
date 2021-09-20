@@ -171,7 +171,7 @@ def SubstList2(self, *args):
     for x in env['MYPARAMS']:
   which will throw an exception if MYPARAMS isn't defined.
   """
-  return map(str, self.Flatten(self.subst_list(args)))
+  return list(map(str, self.Flatten(self.subst_list(args))))
 
 
 #------------------------------------------------------------------------------

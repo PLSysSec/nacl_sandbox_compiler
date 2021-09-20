@@ -265,7 +265,7 @@ class Instruction(object):
     instruction.ParseNameAndOperands(name_and_operands_column)
     instruction.ParseOpcodes(opcodes_column)
 
-    instruction.attributes = map(Attribute, attributes)
+    instruction.attributes = list(map(Attribute, attributes))
 
     return instruction
 
@@ -371,7 +371,7 @@ class Instruction(object):
             self.opcodes[0] == '0x8f' and self.name != 'pop')
 
   def __str__(self):
-    result = ' '.join([self.name] + map(str, self.operands))
+    result = ' '.join([self.name] + list(map(str, self.operands)))
     result += ', ' + ' '.join(self.opcodes)
     if len(self.attributes) > 0:
       result += ', ' + ' '.join(self.attributes)

@@ -222,8 +222,8 @@ REG32_TO_REG64 = {
     '%r14d' : '%r14',
     '%r15d' : '%r15'}
 
-REGS32 = REG32_TO_REG64.keys()
-REGS64 = REG32_TO_REG64.values()
+REGS32 = list(REG32_TO_REG64.keys())
+REGS64 = list(REG32_TO_REG64.values())
 
 
 class Condition(object):
