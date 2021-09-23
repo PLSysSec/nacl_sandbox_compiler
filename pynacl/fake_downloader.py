@@ -7,7 +7,11 @@
 
 import os
 import shutil
-import urllib2
+import sys
+if sys.version_info[0] >= 3:
+  import urllib as urllib2
+else:
+  import urllib2
 
 class FakeDownloader(object):
   """Testing replacement for http_download that copies files."""

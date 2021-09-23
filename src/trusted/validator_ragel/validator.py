@@ -4,13 +4,18 @@
 
 from __future__ import print_function
 
-import cStringIO
 import ctypes
 import os
 import re
 import subprocess
 import sys
 import tempfile
+
+if sys.version_info[0] >= 3:
+  from io import BytesIO as bytes_io
+else:
+  from cStringIO import StringIO as bytes_io
+
 
 import objdump_parser
 
@@ -243,7 +248,7 @@ class Validator(object):
 
     instructions = []
     total_bytes = 0
-    for line in cStringIO.StringIO(result):
+    for line in bytes_io(result):
       m = re.match(r'rejected at ([\da-f]+)', line)
       if m is not None:
         offset = int(m.group(1), 16)

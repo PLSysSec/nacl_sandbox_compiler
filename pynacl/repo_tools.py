@@ -8,7 +8,11 @@ import os
 import posixpath
 import subprocess
 import sys
-import urlparse
+
+if sys.version_info[0] >= 3:
+  from urllib import parse as urlparse
+else:
+  import urlparse
 
 from pynacl import file_tools, log_tools, platform
 

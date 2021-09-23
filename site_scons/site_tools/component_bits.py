@@ -9,7 +9,11 @@ This module is automatically included by the component_setup tool.
 """
 
 
-import __builtin__
+import sys
+if sys.version_info[0] >= 3:
+  import builtins as __builtin__
+else:
+  import __builtin__
 import types
 import SCons
 

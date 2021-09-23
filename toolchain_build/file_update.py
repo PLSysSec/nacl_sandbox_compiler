@@ -15,7 +15,6 @@ import os
 import optparse
 import process
 import shutil
-import StringIO
 import sys
 
 def Mkdir(path):

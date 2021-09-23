@@ -10,7 +10,11 @@ import copy
 import itertools
 import optparse
 import re
-import StringIO
+import sys
+if sys.version_info[0] >= 3:
+  from io import StringIO as string_io
+else:
+  from StringIO import StringIO as string_io
 
 import def_format
 
@@ -420,7 +424,7 @@ class InstructionPrinter(object):
     self._mode = mode
     self._bitness = bitness
     self._reverse_operands = reverse_operands
-    self._out = StringIO.StringIO()
+    self._out = string_io()
     self._printed_operand_sources = set()
 
   def GetContent(self):

@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import __builtin__
 import re
 import os
 import shutil

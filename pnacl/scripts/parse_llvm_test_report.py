@@ -17,7 +17,10 @@ import logging
 import optparse
 import os
 import sys
-import StringIO
+if sys.version_info[0] >= 3:
+  from io import StringIO as string_io
+else:
+  from StringIO import StringIO as string_io
 
 # exclude these tests
 EXCLUDES = {}
@@ -66,7 +69,7 @@ def ParseTestsuiteCSV(filecontents):
   '''
   alltests = {}
   failures = {}
-  reader = csv.DictReader(StringIO.StringIO(filecontents))
+  reader = csv.DictReader(string_io(filecontents))
 
   testcount = 0
   for row in reader:

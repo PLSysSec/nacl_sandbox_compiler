@@ -3,8 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import StringIO
 import sys
+if sys.version_info[0] >= 3:
+  from io import StringIO as string_io
+else:
+  from StringIO import StringIO as string_io
 
 import objdump_parser
 import spec
@@ -22,7 +25,7 @@ class SpecValTestRunner(test_format.TestRunner):
         64: spec_val.Validator64}[options.bits]
 
     instructions = []
-    for line in StringIO.StringIO(sections['dis']):
+    for line in string_io(sections['dis']):
       insn = objdump_parser.ParseLine(line)
       insn = objdump_parser.CanonicalizeInstruction(insn)
       instructions.append(insn)

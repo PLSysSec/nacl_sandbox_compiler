@@ -13,11 +13,17 @@ for the target environment.
 
 from __future__ import print_function
 
-import __builtin__
 import sys
 import SCons
 import usage_log
 import time
+
+if sys.version_info[0] >= 3:
+  import builtins as __builtin__
+  timer = time.perf_counter
+else:
+  import __builtin__
+  timer = time.clock
 
 def CheckSConsLocation():
   """Check that the version of scons we are running lives in the native_client
@@ -104,10 +110,10 @@ def BuildEnvironmentSConscripts(env):
       # under $TARGET_ROOT/$OBJ_ROOT with things from above the current
       # directory. When we are passed a SConscript that is already under
       # $TARGET_ROOT, we should not use build_dir.
-      start = time.clock()
+      start = timer()
       ec.SConscript(c_script, exports={'env': ec}, duplicate=0)
       if SCons.Script.ARGUMENTS.get('verbose'):
-        print("[%5d] Loaded" % (1000 * (time.clock() - start)), c_script)
+        print("[%5d] Loaded" % (1000 * (timer() - start)), c_script)
 
     elif not ec.RelativePath('$MAIN_DIR', c_dir).startswith('..'):
       # The above expression means: if c_dir is $MAIN_DIR or anything
@@ -116,11 +122,11 @@ def BuildEnvironmentSConscripts(env):
       # Also, if we are passed a SConscript that
       # is not under $MAIN_DIR, we should fail loudly, because it is unclear how
       # this will correspond to things under $OBJ_ROOT.
-      start = time.clock()
+      start = timer()
       ec.SConscript(c_script, variant_dir='$OBJ_ROOT/' + c_dir,
                     exports={'env': ec}, duplicate=0)
       if SCons.Script.ARGUMENTS.get('verbose'):
-        print("[%5d] Loaded" % (1000 * (time.clock() - start)), c_script)
+        print("[%5d] Loaded" % (1000 * (timer() - start)), c_script)
     else:
       raise SCons.Errors.UserError(
           'Bad location for a SConscript. "%s" is not under '

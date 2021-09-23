@@ -11,7 +11,6 @@ The real entry plumbing is in toolchain_main.py.
 from __future__ import print_function
 
 import os
-import StringIO
 import subprocess
 import sys
 import tempfile
