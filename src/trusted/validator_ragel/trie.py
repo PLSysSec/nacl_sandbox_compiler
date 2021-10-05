@@ -38,8 +38,16 @@ class AcceptInfo(object):
     self.output_rr = output_rr
 
   def __eq__(self, other):
+    if other is None:
+      return False
     return (self.input_rr == other.input_rr and
             self.output_rr == other.output_rr)
+
+  # This is needed in Python 2 but not in Python 3.  In Python 3, "!="
+  # automatically uses the negated result of the __eq__ method, but it
+  # does not do so in Python 2.
+  def __ne__(self, other):
+    return not (self == other)
 
   def __hash__(self):
     return hash((self.input_rr, self.output_rr))

@@ -53,6 +53,31 @@ class TrieTest(unittest.TestCase):
     self.CheckTrieAccepts(trie.GetAllAcceptSequences(reconstructed_trie))
     self.assertEquals(5, len(trie.GetAllUniqueNodes(reconstructed_trie)))
 
+  def testTrieDiffEqual(self):
+    # This is a regression test for a bug that occurred in Python 2
+    # but not in Python 3.
+
+    # Create nodes with AcceptInfos that compare as equal with "=="
+    # but not with "is".
+    trie1 = trie.Node(trie.AcceptInfo(input_rr='%eax', output_rr='%edx'))
+    trie2 = trie.Node(trie.AcceptInfo(input_rr='%eax', output_rr='%edx'))
+
+    # On Python 2, the first of these assertions would fail but the
+    # second would pass.  i.e. "==" and "!=" would not be consistent.
+    # That is because "!=" does not automatically forward to the
+    # __eq__ method on Python 2.  (We don't use assertEquals() here
+    # because we want to test the "==" and "!=" operators
+    # specifically.)
+    self.assertFalse(trie1.accept_info != trie2.accept_info)
+    self.assertTrue(trie1.accept_info == trie2.accept_info)
+    self.assertIsNot(trie1.accept_info, trie2.accept_info)
+
+    # The result was that this comparison of the tries would
+    # incorrectly report a difference on Python 2.
+    node_cache = trie.NodeCache()
+    diffs = list(trie.DiffTries(trie1, trie2, node_cache.empty_node, ()))
+    self.assertEquals(diffs, [])
+
   def testTrieDiff(self):
     trie1 = trie.Node()
     trie2 = trie.Node()
