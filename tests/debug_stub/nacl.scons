@@ -11,6 +11,11 @@ if not env.AllowInlineAssembly():
 if env.UnderWindowsCoverage():
   Return()
 
+if env.Bit('saigo'):
+  # Saigo would inline some functions directly into main, causing breakpoints to
+  # be set incorrectly. Prevent this from happening.
+  env.Append(CCFLAGS=['-fno-inline-functions'])
+
 test_prog = env.ComponentProgram(
     'debugger_test', 'debugger_test.c',
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
