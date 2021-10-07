@@ -216,6 +216,7 @@ class Gdb(object):
     self._log.write('To GDB: %s\n' % request)
     self._gdb.stdin.write(request)
     self._gdb.stdin.write('\n')
+    self._gdb.stdin.flush()
     return self._GetResponse()
 
   def _GetResponse(self):

@@ -210,11 +210,11 @@ EXC_BAD_ACCESS = 1
 # processes on Mac OS X behave differently.
 status_map = {
     'sigtrap' : {
-        'linux2': [-5], # SIGTRAP
+        'linux': [-5], # SIGTRAP
         'darwin': [-5], # SIGTRAP
         },
     'trusted_sigabrt' : {
-        'linux2': [-6], # SIGABRT
+        'linux': [-6], # SIGABRT
         'mac32': [-6], # SIGABRT
         'mac64': [-6], # SIGABRT
         # On Windows, NaClAbort() exits using the HLT instruction.
@@ -225,40 +225,40 @@ status_map = {
         # This case is here because NaClAbort() behaves differently when
         # code coverage is enabled.
         # This is not used on Windows.
-        'linux2': [IndirectSignal(6)], # SIGABRT
+        'linux': [IndirectSignal(6)], # SIGABRT
         'mac32': [IndirectSignal(6)], # SIGABRT
         'mac64': [IndirectSignal(6)], # SIGABRT
         },
     'sigpipe': {
         # This is not used on Windows because Windows does not have an
         # equivalent of SIGPIPE.
-        'linux2': [-13], # SIGPIPE
+        'linux': [-13], # SIGPIPE
         'mac32': [-13], # SIGPIPE
         'mac64': [-13], # SIGPIPE
         },
     'untrusted_sigsegv': {
-        'linux2': [-11], # SIGSEGV
+        'linux': [-11], # SIGSEGV
         'mac32': [-11], # SIGSEGV
         'mac64': [-11], # SIGSEGV
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
     'untrusted_sigill' : {
-        'linux2': [-4], # SIGILL
+        'linux': [-4], # SIGILL
         'mac32': [-4], # SIGILL
         'mac64': [-4], # SIGILL
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
     'untrusted_sigfpe' : {
-        'linux2': [-8], # SIGFPE
+        'linux': [-8], # SIGFPE
         'mac32': [-8], # SIGFPE
         'mac64': [-8], # SIGFPE
         'win32':  win32_sigfpe,
         'win64':  win64_exit_via_ntdll_patch,
         },
     'untrusted_segfault': {
-        'linux2': [-11], # SIGSEGV
+        'linux': [-11], # SIGSEGV
         'mac32': [-10], # SIGBUS
         'mac64': [-10], # SIGBUS
         'mach_exception': EXC_BAD_ACCESS,
@@ -266,14 +266,14 @@ status_map = {
         'win64':  win64_exit_via_ntdll_patch,
         },
     'untrusted_sigsegv_or_equivalent': {
-        'linux2': [-11], # SIGSEGV
+        'linux': [-11], # SIGSEGV
         'mac32': [-11], # SIGSEGV
         'mac64': [-10], # SIGBUS
         'win32':  win32_untrusted_crash_exit,
         'win64':  win64_exit_via_ntdll_patch,
         },
     'trusted_segfault': {
-        'linux2': [-11], # SIGSEGV
+        'linux': [-11], # SIGSEGV
         'mac32': [-10], # SIGBUS
         'mac64': [-11], # SIGSEGV
         'mach_exception': EXC_BAD_ACCESS,
@@ -281,7 +281,7 @@ status_map = {
         'win64':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
         },
     'trusted_sigsegv_or_equivalent': {
-        'linux2': [-11], # SIGSEGV
+        'linux': [-11], # SIGSEGV
         'mac32': [-11], # SIGSEGV
         'mac64': [-11], # SIGSEGV
         'win32':  [],
@@ -298,7 +298,7 @@ status_map = {
     # frame directly, so the exit status comes from getting a SIGSEGV
     # inside the SIGSEGV handler.
     'unwritable_exception_stack': {
-        'linux2': [-11], # SIGSEGV
+        'linux': [-11], # SIGSEGV
         'mac32': [-10], # SIGBUS
         'mac64': [-10], # SIGBUS
         'win32':  win32_untrusted_crash_exit,
@@ -310,7 +310,7 @@ status_map = {
     # exit via exit() or _exit().  We want __builtin_trap() to trigger the
     # debugger or a crash reporter.
     'untrusted_builtin_trap': {
-        'linux2': [-4, -5, -11],
+        'linux': [-4, -5, -11],
         'mac32': [-4, -10, -11],
         'mac64': [-4, -10, -11],
         'win32': win32_untrusted_crash_exit +
@@ -347,6 +347,8 @@ def ProcessOptions(argv):
   elif (sys.platform == 'darwin'):
     # mac32, mac64
     GlobalPlatform = 'mac' + GlobalSettings['subarch']
+  elif sys.platform.startswith('linux'):
+    GlobalPlatform = 'linux'
   else:
     GlobalPlatform = sys.platform
 

@@ -98,7 +98,7 @@ def DeclareBit(bit_name, desc, exclusive_groups=None):
 
   # Add bit to its exclusive groups
   if exclusive_groups:
-    if type(exclusive_groups) == types.StringType:
+    if isinstance(exclusive_groups, str):
       exclusive_groups = [exclusive_groups]
     for g in exclusive_groups:
       if g not in _bit_exclusive_groups:

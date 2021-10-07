@@ -38,7 +38,10 @@ def Main(args):
   for line in proc.stdout:
     match = regex.match(line)
     if match:
-      line = proc.stdout.next()
+      if sys.version_info[0] >= 3:
+        line = proc.stdout.readline()
+      else:
+        line = proc.stdout.next()
       match2 = regex2.match(line)
       if match2:
         p_off = int(match.group(1), 16)
