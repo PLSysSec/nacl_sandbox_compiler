@@ -20,8 +20,8 @@ BUNDLE_SIZE = 32
 
 def CreateElfContent(bits, text_segment):
   e_ident = {
-      32: '\177ELF\1',
-      64: '\177ELF\2'}[bits]
+      32: b'\177ELF\1',
+      64: b'\177ELF\2'}[bits]
   e_machine = {
       32: 3,
       64: 62}[bits]
@@ -31,8 +31,8 @@ def CreateElfContent(bits, text_segment):
   e_phentsize = 0
 
   elf_header_fmt = {
-      32: '<16sHHIIIIIHHHHHH',
-      64: '<16sHHIQQQIHHHHHH'}[bits]
+      32: b'<16sHHIIIIIHHHHHH',
+      64: b'<16sHHIQQQIHHHHHH'}[bits]
 
   elf_header = struct.pack(
       elf_header_fmt,
@@ -49,8 +49,8 @@ def CreateElfContent(bits, text_segment):
   p_paddr = 0
 
   pheader_fmt = {
-      32: '<IIIIIIII',
-      64: '<IIQQQQQQ'}[bits]
+      32: b'<IIIIIIII',
+      64: b'<IIQQQQQQ'}[bits]
 
   pheader_fields = {
       32: (p_type, p_offset, p_vaddr, p_paddr,
@@ -62,10 +62,10 @@ def CreateElfContent(bits, text_segment):
 
   result = elf_header
   assert len(result) <= e_phoff
-  result += '\0' * (e_phoff - len(result))
+  result += b'\0' * (e_phoff - len(result))
   result += pheader
   assert len(result) <= p_offset
-  result += '\0' * (p_offset - len(result))
+  result += b'\0' * (p_offset - len(result))
   result += text_segment
 
   return result
@@ -73,7 +73,7 @@ def CreateElfContent(bits, text_segment):
 
 def RunRdfaValidator(options, data):
   # Add nops to make it bundle-sized.
-  data += (-len(data) % BUNDLE_SIZE) * '\x90'
+  data += (-len(data) % BUNDLE_SIZE) * b'\x90'
   assert len(data) % BUNDLE_SIZE == 0
 
   # TODO(shcherbina): get rid of custom prefix once
@@ -147,9 +147,9 @@ def CheckValidJumpTargets(options, data_chunks):
   Returns:
     None.
   """
-  data = ''.join(data_chunks)
+  data = b''.join(data_chunks)
   # Add nops to make it bundle-sized.
-  data += (-len(data) % BUNDLE_SIZE) * '\x90'
+  data += (-len(data) % BUNDLE_SIZE) * b'\x90'
   assert len(data) % BUNDLE_SIZE == 0
 
   # Since we check validity of jump target by adding jump and validating
@@ -166,7 +166,7 @@ def CheckValidJumpTargets(options, data_chunks):
 
   for i in range(pos + 1):
     # Encode JMP with 32-bit relative target.
-    jump = '\xe9' + struct.pack('<i', i - (len(data) + 5))
+    jump = b'\xe9' + struct.pack(b'<i', i - (len(data) + 5))
     return_code, _ = RunRdfaValidator(options, data + jump)
     if return_code == 0:
       assert i in valid_jump_targets, (
@@ -187,7 +187,7 @@ class RdfaTestRunner(test_format.TestRunner):
   def GetSectionContent(self, options, sections):
     data_chunks = list(test_format.ParseHex(sections['hex']))
 
-    return_code, stdout = RunRdfaValidator(options, ''.join(data_chunks))
+    return_code, stdout = RunRdfaValidator(options, b''.join(data_chunks))
 
     result = ''.join('%x: %s\n' % (offset, message)
                      for offset, message in ParseRdfaMessages(stdout))

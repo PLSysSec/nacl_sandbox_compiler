@@ -61,8 +61,8 @@ class GdbRspConnection(object):
                     % timeout_in_seconds)
 
   def _GetReply(self):
-    reply = ''
-    message_finished = re.compile('#[0-9a-fA-F]{2}')
+    reply = b''
+    message_finished = re.compile(b'#[0-9a-fA-F]{2}')
     while True:
       data = self._socket.recv(1024)
       if len(data) == 0:
@@ -71,17 +71,17 @@ class GdbRspConnection(object):
       reply += data
       if message_finished.match(reply[-3:]):
         break
-    match = re.match('\+\$([^#]*)#([0-9a-fA-F]{2})$', reply)
+    match = re.match(b'\+\$([^#]*)#([0-9a-fA-F]{2})$', reply)
     if match is None:
       raise AssertionError('Unexpected reply message: %r' % reply)
     reply_body = match.group(1)
     checksum = match.group(2)
-    expected_checksum = '%02x' % RspChecksum(reply_body)
+    expected_checksum = b'%02x' % RspChecksum(reply_body)
     if checksum != expected_checksum:
       raise AssertionError('Bad RSP checksum: %r != %r' %
                            (checksum, expected_checksum))
     # Send acknowledgement.
-    self._socket.send('+')
+    self._socket.send(b'+')
     return reply_body
 
   # Send an rsp message, but don't wait for or expect a reply.
@@ -94,7 +94,7 @@ class GdbRspConnection(object):
     return self._GetReply()
 
   def RspInterrupt(self):
-    self._socket.send('\x03')
+    self._socket.send(b'\x03')
     return self._GetReply()
 
   def Close(self):

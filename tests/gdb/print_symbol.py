@@ -11,11 +11,11 @@ class PrintSymbolTest(gdb_test.GdbTest):
   def test_print_symbol(self):
     self.gdb.Command('break set_global_var')
     self.gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
-    self.assertEquals(self.gdb.Eval('global_var'), '2')
-    self.assertEquals(self.gdb.Eval('arg'), '1')
+    self.assertEquals(self.gdb.Eval('global_var'), b'2')
+    self.assertEquals(self.gdb.Eval('arg'), b'1')
     self.gdb.ResumeAndExpectStop('finish', 'function-finished')
-    self.assertEquals(self.gdb.Eval('global_var'), '1')
-    self.assertEquals(self.gdb.Eval('local_var'), '3')
+    self.assertEquals(self.gdb.Eval('global_var'), b'1')
+    self.assertEquals(self.gdb.Eval('local_var'), b'3')
 
 
 if __name__ == '__main__':

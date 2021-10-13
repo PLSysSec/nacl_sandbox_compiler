@@ -25,7 +25,7 @@ def AssertEquals(x, y):
 
 
 def ParseNumber(number):
-  if number.startswith('0x'):
+  if number.startswith(b'0x'):
     return int(number[2:], 16)
   return int(number)
 
@@ -109,10 +109,10 @@ def GenerateManifest(output_dir, nexe, runnable_ld, name):
 
 class RecordParser(object):
 
-  STATUS_RE = re.compile('[^,]+')
-  KEY_RE = re.compile('([^"{\[=]+)=')
-  VALUE_PREFIX_RE = re.compile('"|{|\[')
-  STRING_VALUE_RE = re.compile('([^"]*)"')
+  STATUS_RE = re.compile(b'[^,]+')
+  KEY_RE = re.compile(b'([^"{\[=]+)=')
+  VALUE_PREFIX_RE = re.compile(b'"|{|\[')
+  STRING_VALUE_RE = re.compile(b'([^"]*)"')
 
   def __init__(self, line):
     self.line = line
@@ -138,9 +138,9 @@ class RecordParser(object):
   def ParseValue(self):
     value_prefix_match = self.Match(self.VALUE_PREFIX_RE)
     assert value_prefix_match is not None
-    if value_prefix_match.group(0) == '"':
+    if value_prefix_match.group(0) == b'"':
       return self.ParseString()
-    elif value_prefix_match.group(0) == '{':
+    elif value_prefix_match.group(0) == b'{':
       return self.ParseDict()
     else:
       return self.ParseList()
@@ -157,15 +157,15 @@ class RecordParser(object):
         result.append({key_match.group(1): value})
       else:
         result.append(value)
-      if not self.Skip(','):
+      if not self.Skip(b','):
         break
     return result
 
   def ParseList(self):
-    if self.Skip(']'):
+    if self.Skip(b']'):
       return []
     result = self.ParseListMembers()
-    assert self.Skip(']')
+    assert self.Skip(b']')
     return result
 
   def ParseDictMembers(self):
@@ -174,22 +174,22 @@ class RecordParser(object):
       key_match = self.Match(self.KEY_RE)
       assert key_match is not None
       result[key_match.group(1)] = self.ParseValue()
-      if not self.Skip(','):
+      if not self.Skip(b','):
         break
     return result
 
   def ParseDict(self):
-    if self.Skip('}'):
+    if self.Skip(b'}'):
       return {}
     result = self.ParseDictMembers()
-    assert self.Skip('}')
+    assert self.Skip(b'}')
     return result
 
   def Parse(self):
     status_match = self.Match(self.STATUS_RE)
     assert status_match is not None
     result = {}
-    if self.Skip(','):
+    if self.Skip(b','):
       result = self.ParseDictMembers()
     AssertEquals(self.pos, len(self.line))
     return (status_match.group(0), result)
@@ -215,7 +215,7 @@ class Gdb(object):
   def _SendRequest(self, request):
     self._log.write('To GDB: %s\n' % request)
     self._gdb.stdin.write(request)
-    self._gdb.stdin.write('\n')
+    self._gdb.stdin.write(b'\n')
     self._gdb.stdin.flush()
     return self._GetResponse()
 
@@ -223,71 +223,72 @@ class Gdb(object):
     results = []
     while True:
       line = self._gdb.stdout.readline().rstrip()
-      if line == '':
+      if line == b'':
         return results
       self._log.write('From GDB: %s\n' % line)
-      if line == '(gdb)':
+      if line == b'(gdb)':
         return results
       results.append(line)
 
   def _GetResultRecord(self, result):
     for line in result:
-      if line.startswith('^'):
+      if line.startswith(b'^'):
         return RecordParser(line).Parse()
     raise AssertionError('No result record found in %r' % result)
 
   def _GetLastExecAsyncRecord(self, result):
     for line in reversed(result):
-      if line.startswith('*'):
+      if line.startswith(b'*'):
         return RecordParser(line).Parse()
     raise AssertionError('No asynchronous execute status record found in %r'
                            % result)
 
   def Command(self, command):
     status, items = self._GetResultRecord(self._SendRequest(command))
-    AssertEquals(status, '^done')
+    AssertEquals(status, b'^done')
     return items
 
   def ExpectToFailCommand(self, command):
     status, items = self._GetResultRecord(self._SendRequest(command))
-    AssertEquals(status, '^error')
+    AssertEquals(status, b'^error')
 
   def ResumeCommand(self, command):
     status, items = self._GetResultRecord(self._SendRequest(command))
-    AssertEquals(status, '^running')
+    AssertEquals(status, b'^running')
     status, items = self._GetLastExecAsyncRecord(self._GetResponse())
-    AssertEquals(status, '*stopped')
+    AssertEquals(status, b'*stopped')
     return items
 
   def ResumeAndExpectStop(self, resume_command, expected_stop_reason):
     stop_info = self.ResumeCommand(resume_command)
-    if 'reason' not in stop_info or stop_info['reason'] != expected_stop_reason:
+    if (b'reason' not in stop_info
+        or stop_info[b'reason'] != expected_stop_reason):
       raise AssertionError(
           'GDB reported stop reason %r but we expected %r (full info is %r)'
-          % (stop_info.get('reason'), expected_stop_reason, stop_info))
+          % (stop_info.get(b'reason'), expected_stop_reason, stop_info))
 
   def Quit(self):
     status, items = self._GetResultRecord(self._SendRequest('-gdb-exit'))
-    AssertEquals(status, '^exit')
+    AssertEquals(status, b'^exit')
 
   def Disconnect(self):
     status, items = self._GetResultRecord(self._SendRequest('disconnect'))
-    AssertEquals(status, '^done')
+    AssertEquals(status, b'^done')
 
   def Detach(self):
     status, items = self._GetResultRecord(self._SendRequest('detach'))
-    AssertEquals(status, '^done')
+    AssertEquals(status, b'^done')
 
   def Kill(self):
     status, items = self._GetResultRecord(self._SendRequest('kill'))
-    AssertEquals(status, '^done')
+    AssertEquals(status, b'^done')
 
   def KillProcess(self):
     self._expected_success = False
     KillProcess(self._gdb)
 
   def Eval(self, expression):
-    return self.Command('-data-evaluate-expression ' + expression)['value']
+    return self.Command('-data-evaluate-expression ' + expression)[b'value']
 
   def GetPC(self):
     return ParseNumber(self.Eval('$pc')) & ((1 << 32) - 1)

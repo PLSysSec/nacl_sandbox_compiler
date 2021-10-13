@@ -12,16 +12,18 @@ class StackTraceTest(gdb_test.GdbTest):
     self.gdb.Command('break leaf_call')
     self.gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
     result = self.gdb.Command('-stack-list-frames 0 2')
-    self.assertEquals(result['stack'][0]['frame']['func'], 'leaf_call')
-    self.assertEquals(result['stack'][1]['frame']['func'], 'nested_calls')
-    self.assertEquals(result['stack'][2]['frame']['func'], 'main')
+    self.assertEquals(result[b'stack'][0][b'frame'][b'func'], b'leaf_call')
+    self.assertEquals(result[b'stack'][1][b'frame'][b'func'], b'nested_calls')
+    self.assertEquals(result[b'stack'][2][b'frame'][b'func'], b'main')
 
     result = self.gdb.Command('-stack-list-arguments 1 0 1')
-    self.assertEquals(result['stack-args'][0]['frame']['args'][0]['value'], '2')
-    self.assertEquals(result['stack-args'][1]['frame']['args'][0]['value'], '1')
+    self.assertEquals(result[b'stack-args'][0][b'frame'][b'args'][0][b'value'],
+                      b'2')
+    self.assertEquals(result[b'stack-args'][1][b'frame'][b'args'][0][b'value'],
+                      b'1')
     self.gdb.Command('return')
     self.gdb.ResumeAndExpectStop('finish', 'function-finished')
-    self.assertEquals(self.gdb.Eval('global_var'), '1')
+    self.assertEquals(self.gdb.Eval('global_var'), b'1')
 
 
 if __name__ == '__main__':

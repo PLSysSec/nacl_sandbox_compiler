@@ -22,7 +22,7 @@ class RdfaTestRunner(test_format.TestRunner):
 
   def GetSectionContent(self, options, sections):
     arch = {32: '-Mi386', 64: '-Mx86-64'}[options.bits]
-    data = ''.join(test_format.ParseHex(sections['hex']))
+    data = b''.join(test_format.ParseHex(sections['hex']))
 
     # TODO(shcherbina): get rid of custom prefix once
     # https://code.google.com/p/nativeclient/issues/detail?id=3631

@@ -14,7 +14,7 @@ class StepFromFuncStartTest(gdb_test.GdbTest):
     self.gdb.ResumeCommand('step')
     self.gdb.ResumeCommand('step')
     self.gdb.ResumeCommand('step')
-    self.assertEquals(self.gdb.Eval('global_var'), '1')
+    self.assertEquals(self.gdb.Eval('global_var'), b'1')
 
 
 if __name__ == '__main__':

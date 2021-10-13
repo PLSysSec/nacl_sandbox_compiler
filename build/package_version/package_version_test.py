@@ -747,7 +747,7 @@ class TestPackageVersion(unittest.TestCase):
       )
       os.makedirs(os.path.dirname(mismatch_tar2))
       with open(mismatch_tar2, 'wb') as f:
-        f.write('mismatch tar')
+        f.write(b'mismatch tar')
 
       package_desc = self.GeneratePackageInfo(
         [mock_tar1, mock_tar2],

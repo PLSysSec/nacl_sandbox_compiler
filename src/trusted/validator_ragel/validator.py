@@ -323,7 +323,7 @@ def main():
 
   # 'z' is the first byte of JP instruction (which does not validate in this
   # case because it crosses bundle boundary)
-  data = '\x90' * 31 + 'z'
+  data = b'\x90' * 31 + b'z'
 
   for bitness in 32, 64:
     errors = []

@@ -25,7 +25,7 @@ class MmapTest(gdb_test.GdbTest):
     self.gdb.ResumeAndExpectStop('finish', 'function-finished')
     file_mapping_str = self.gdb.Eval('file_mapping')
     file_mapping = gdb_test.ParseNumber(file_mapping_str)
-    self.gdb.Command('break *' + file_mapping_str)
+    self.gdb.Command(b'break *' + file_mapping_str)
     self.gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
     # Check that breakpoint in memory mapped code is working.
     self.assertEquals(self.gdb.GetPC(), file_mapping)
@@ -33,7 +33,7 @@ class MmapTest(gdb_test.GdbTest):
     self.gdb.ResumeAndExpectStop('finish', 'function-finished')
     file_mapping_str = self.gdb.Eval('file_mapping')
     file_mapping = gdb_test.ParseNumber(file_mapping_str)
-    self.gdb.Command('break *' + file_mapping_str)
+    self.gdb.Command(b'break *' + file_mapping_str)
     self.gdb.ResumeAndExpectStop('continue', 'breakpoint-hit')
     # Check that breakpoint in memory mapped code is working.
     self.assertEquals(self.gdb.GetPC(), file_mapping)

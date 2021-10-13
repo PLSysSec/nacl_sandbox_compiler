@@ -18,10 +18,10 @@ def Main(args):
   objdump = args[0]
   obj_file = args[1]
 
-  regex = re.compile(r"""\s* LOAD \s+ off \s+ (0x[0-9a-f]+) \s+
+  regex = re.compile(br"""\s* LOAD \s+ off \s+ (0x[0-9a-f]+) \s+
                          vaddr \s+ (0x[0-9a-f]+) \s+""",
                      re.VERBOSE)
-  regex2 = re.compile(r"""\s* filesz \s+ (0x[0-9a-f]+) \s+
+  regex2 = re.compile(br"""\s* filesz \s+ (0x[0-9a-f]+) \s+
                               memsz \s+ (0x[0-9a-f]+) \s+
                               flags \s+ r-x""",
                       re.VERBOSE)

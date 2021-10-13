@@ -18,9 +18,9 @@ class DisconnectTest(gdb_test.GdbTest):
     # Confirm that when you connect and disconnect the debugger that you stay
     # at the same place and that breakpoints continue to be preserved.
     for breakpoint, expected_value in [
-        ['test_disconnect', '0'],
-        ['test_disconnect_layer2', '100001'],
-        ['test_disconnect_layer3', '100002']]:
+        ['test_disconnect', b'0'],
+        ['test_disconnect_layer2', b'100001'],
+        ['test_disconnect_layer3', b'100002']]:
       # Break on the next location.
       self.gdb.Command('break %s' % breakpoint)
       # Run to that breakpoint.
