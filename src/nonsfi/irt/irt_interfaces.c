@@ -839,19 +839,19 @@ size_t nacl_irt_query_core(const char *interface_ident,
                              irt_interfaces, sizeof(irt_interfaces));
 }
 
-int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
+int nacl_irt_nonsfi_entry(int argc, char **argv, char **environment,
                           nacl_entry_func_t entry_func,
                           nacl_irt_query_func_t query_func) {
-  /* Find size of environ array. */
+  /* Find size of environment array. */
   size_t env_count = 0;
-  while (environ[env_count] != NULL)
+  while (environment[env_count] != NULL)
     env_count++;
 
   size_t count =
       1  /* cleanup_func pointer */
       + 2  /* envc and argc counts */
       + argc + 1  /* argv array, with terminator */
-      + env_count + 1  /* environ array, with terminator */
+      + env_count + 1  /* environment array, with terminator */
       + 4;  /* auxv: 2 entries, one of them the terminator */
   uint32_t *data = malloc(count * sizeof(uint32_t));
   if (data == NULL) {
@@ -868,7 +868,7 @@ int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
     data[pos++] = (uintptr_t) argv[i];
   data[pos++] = 0;
   for (i = 0; i < env_count; i++)
-    data[pos++] = (uintptr_t) environ[i];
+    data[pos++] = (uintptr_t) environment[i];
   data[pos++] = 0;
   /* auxv[0] */
   data[pos++] = AT_SYSINFO;
@@ -883,11 +883,11 @@ int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
 }
 
 #if defined(DEFINE_MAIN)
-int main(int argc, char **argv, char **environ) {
+int main(int argc, char **argv, char **environment) {
   nacl_irt_nonsfi_allow_dev_interfaces();
   nacl_entry_func_t entry_func = USER_START;
 
-  return nacl_irt_nonsfi_entry(argc, argv, environ, entry_func,
+  return nacl_irt_nonsfi_entry(argc, argv, environment, entry_func,
                                nacl_irt_query_core);
 }
 #endif

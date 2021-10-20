@@ -400,8 +400,8 @@ static int signum;
 
 sigjmp_buf crash_load;
 
-void  handler_load(int  signum) {
-  siglongjmp(crash_load, signum);
+void  handler_load(int  signal_num) {
+  siglongjmp(crash_load, signal_num);
 }
 
 void  all_sigs(struct sigaction *new_action,
