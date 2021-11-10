@@ -39,18 +39,18 @@ DRIVER_UTILS = [name + '.py' for name in
 
 def CMakePlatformName():
     return {
-        'linux': 'Linux',
-        'linux2': 'Linux',
-        'darwin': 'Darwin',
-        'win32': 'win64'
+        'linux': 'linux',
+        'linux2': 'linux',
+        'darwin': 'macos',
+        'win32': 'windows'
     }[sys.platform]
 
 
 def CMakeArch():
-    return 'x64' if pynacl.platform.IsWindows() else 'x86_64'
+    return 'universal' if pynacl.platform.IsMac() else 'x86_64'
 
 WASM_STORAGE_BASE = 'https://wasm.storage.googleapis.com/'
-PREBUILT_CMAKE_VERSION = '3.15.3'
+PREBUILT_CMAKE_VERSION = '3.21.3'
 PREBUILT_CMAKE_BASE_NAME = 'cmake-%s-%s-%s' % (
     PREBUILT_CMAKE_VERSION, CMakePlatformName(), CMakeArch())
 PREBUILT_CMAKE_DIR = os.path.join(NACL_DIR, PREBUILT_CMAKE_BASE_NAME)
