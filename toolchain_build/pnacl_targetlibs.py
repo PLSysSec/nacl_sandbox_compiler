@@ -22,6 +22,13 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 CLANG_VER = '3.7.0'
 SAIGO_CLANG_VER = '14.0.0'
 
+# Return the file name with the appropriate suffix for an executable file.
+def Exe(file):
+  if pynacl.platform.IsWindows():
+    return file + '.exe'
+  else:
+    return file
+
 def ToolName(name):
   return 'pnacl-' + name
 
@@ -66,6 +73,7 @@ def MakeCommand():
     # have this problem, but it has issues with pathnames with LLVM's build.
     make_command.append('-j%(cores)s')
   return make_command
+
 
 # Return the component name to use for a component name with
 # a host triple. GNU configuration triples contain dashes, which are converted
@@ -169,7 +177,9 @@ def LibCxxCflags(bias_arch):
 def LibCxxSaigoCflags(bias_arch):
   return ' '.join([TargetLibCflags(bias_arch),
                    NewlibIsystemCflags(bias_arch, saigo=True),
-                   '-DHAS_THREAD_LOCAL=1', '-D__ARM_DWARF_EH__'])
+                   '-DHAS_THREAD_LOCAL=1', '-D__ARM_DWARF_EH__',
+                   '-D_NEWLIB_VERSION="2.1.0"',
+                   '-D_LIBCPP_HAS_THREAD_API_PTHREAD'])
 
 def NativeTargetFlag(bias_arch):
   arch = TargetArch(bias_arch)
@@ -651,47 +661,59 @@ def TargetLibs(bias_arch, is_canonical):
       },
       T('libcxx_saigo'): {
           'type': TargetLibBuildType(is_canonical),
-          'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
+          'dependencies': ['llvm_saigo_src', 'gcc_src',
                            'target_lib_compiler_saigo', T('newlib_saigo'),
                            GSDJoin('newlib_saigo', MultilibArch(bias_arch)),
                            T('libs_support_saigo')],
           'commands' :
               [command.SkipForIncrementalCommand(
-                  [pnacl_commands.PrebuiltCMakeBin(), '-G', 'Unix Makefiles',
+                  [pnacl_commands.PrebuiltCMakeBin(), '-G', 'Ninja',
+                   '-B', '.',
                    '-DCMAKE_C_COMPILER_WORKS=1',
                    '-DCMAKE_CXX_COMPILER_WORKS=1',
-                   '-DCMAKE_INSTALL_PREFIX=',
+                   '-DCMAKE_INSTALL_PREFIX=' +
+                     os.path.join('%(abs_output)s', target_triple),
                    '-DCMAKE_BUILD_TYPE=Release',
                    '-DCMAKE_C_COMPILER=' +
                        PnaclTool('clang', bias_arch, saigo=True),
                    '-DCMAKE_CXX_COMPILER=' +
                        PnaclTool('clang++', bias_arch, saigo=True),
-                   '-DCMAKE_SYSTEM_NAME=nacl',
                    '-DCMAKE_NM=' + PnaclTool('nm', bias_arch, saigo=True),
                    '-DCMAKE_RANLIB=' +
                        PnaclTool('ranlib', bias_arch, saigo=True),
                    '-DCMAKE_LD=' + PnaclTool('illegal', bias_arch, saigo=True),
                    '-DCMAKE_AS=' + PnaclTool('as', bias_arch, saigo=True),
+                   '-DCMAKE_AR=' + PnaclTool('ar', bias_arch, saigo=True),
                    '-DCMAKE_OBJDUMP=' +
                        PnaclTool('illegal', bias_arch, saigo=True),
-                   '-DCMAKE_C_FLAGS=-std=gnu11 ' + LibCxxSaigoCflags(bias_arch),
-                   '-DCMAKE_CXX_FLAGS=-std=gnu++11 ' +
-                       LibCxxSaigoCflags(bias_arch),
-                   '-DLIBCXX_ENABLE_CXX0X=0',
+                   '-DCMAKE_LIBTOOL=' + PnaclTool('ar', bias_arch, saigo=True),
+                   '-DCMAKE_SYSTEM_NAME=nacl',
+                   '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi',
+                   '-DLLVM_DEFAULT_TARGET_TRIPLE=' + target_triple,
+                   '-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=0',
+                   '-DLLVM_ENABLE_PIC=OFF',
+                   '-DLLVM_HAS_ATOMICS=ON',
+                   '-DLLVM_LIBSTDCXX_MIN=1',
+                   '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=1',
+                   '-DLLVM_INCLUDE_BENCHMARKS=OFF',
+                   '-DLIBCXX_INCLUDE_BENCHMARKS=OFF',
                    '-DLIBCXX_ENABLE_SHARED=0',
+                   '-DLIBCXX_ENABLE_FILESYSTEM=0',
                    '-DLIBCXX_CXX_ABI=libcxxabi',
-                   '-DLIBCXX_LIBCXXABI_INCLUDE_PATHS=' + command.path.join(
-                       '%(abs_libcxxabi_src)s', 'include'),
-                   '%(libcxx_src)s']),
+                   '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=1',
+                   '-DLIBCXXABI_ENABLE_SHARED=0',
+                   '-DCMAKE_POSITION_INDEPENDENT_CODE=OFF',
+                   '-DCMAKE_C_FLAGS=' + LibCxxSaigoCflags(bias_arch),
+                   '-DCMAKE_CXX_FLAGS=' + LibCxxSaigoCflags(bias_arch),
+                   '%(llvm_saigo_src)s/llvm']),
               command.Copy(os.path.join('%(gcc_src)s', 'gcc',
                                         'unwind-generic.h'),
                            os.path.join('include', 'unwind.h')),
-              command.Command(MakeCommand() + ['VERBOSE=1']),
-              command.Command([
-                  'make',
-                  'DESTDIR=' + os.path.join('%(abs_output)s', target_triple),
-                  'VERBOSE=1',
-                  'install']),
+              command.Command([Exe('ninja'), '-v', 'cxx', 'cxxabi']),
+              command.Command([Exe('ninja'),
+                               'install-cxx',
+                               'install-cxxabi',
+                               'install-cxx-headers']),
           ] + LibcxxDirectoryCmds(bias_arch)
       },
     })
