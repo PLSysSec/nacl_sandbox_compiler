@@ -148,7 +148,7 @@ static nc_thread_memory_block_t *nc_allocate_memory_block_mu(
 
   if (!STAILQ_EMPTY(head)) {
     /* Try to get one from queue. */
-    nc_thread_memory_block_t *node = STAILQ_FIRST(head);
+    node = STAILQ_FIRST(head);
 
     /*
      * On average the memory blocks will be marked as not used in the same order
