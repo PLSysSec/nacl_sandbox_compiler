@@ -29,7 +29,6 @@ vars = {
   "gn_version": "git_revision:e002e68a48d1c82648eadde2f6aafa20d08c36f2",
 
   # Separately pinned repositories, update with roll-dep individually.
-  "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db",
   "gtest_rev": "2d3543f81d6d4583332f8b60768ade18e0f96220",
   "gyp_rev": "e7079f0e0e14108ab0dba58728ff219637458563",
   "mingw_rev": "3cc8b140b883a9fe4986d12cfd46c16a093d3527", # from svn revision 7064
@@ -79,9 +78,6 @@ deps = {
   "validator_snapshots":
     (Var("chromium_git") + "/native_client/src/validator_snapshots.git@" +
      Var("validator_snapshots_rev")),
-  "third_party/binutils":
-    Var("chromium_git") + "/chromium/src/third_party/binutils.git@" +
-    Var("binutils_rev"),
   "third_party/lcov":
     Var("chromium_git") + "/chromium/src/third_party/lcov.git@" +
     Var("lcov_rev"),
@@ -153,9 +149,7 @@ hooks = [
   ###
   ### From here until the similar marker below, these clauses are copied
   ### almost verbatim from chromium/src/DEPS.  They are modified to drop
-  ### the src/ prefix on file names, and third_party/binutils/download.py
-  ### gets the extra --ignore-if-arch=arm argument, but otherwise they
-  ### should stay identical.
+  ### the src/ prefix on file names but otherwise they should stay identical.
   ###
 
   {
@@ -203,19 +197,6 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_mac',
     'action': ['python', 'build/mac_toolchain.py'],
-  },
-  # Pull binutils for linux, enabled debug fission for faster linking /
-  # debugging when used with clang on Ubuntu Precise.
-  # https://code.google.com/p/chromium/issues/detail?id=352046
-  {
-    'name': 'binutils',
-    'pattern': 'third_party/binutils',
-    'condition': 'checkout_linux',
-    'action': [
-        'python',
-        'third_party/binutils/download.py',
-        '--ignore-if-arch=arm',
-    ],
   },
   {
     # Pull clang if needed or requested via GYP_DEFINES.
