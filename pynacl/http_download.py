@@ -12,6 +12,7 @@ import base64
 import os
 import os.path
 import sys
+import time
 
 try:
   import urllib2 as urllib
@@ -61,12 +62,13 @@ def HttpDownload(url, target, username=None, password=None, verbose=True,
   opener.addheaders = headers
   urllib.install_opener(opener)
   _CreateDirectory(os.path.split(target)[0])
-  # Retry up to 10 times (appengine logger is flaky).
-  for i in range(10):
+  # Retry up to 4 times (appengine logger is flaky).
+  for i in range(4):
     if i:
+      time.sleep(10**(i-1))
       logger('Download failed on %s, retrying... (%d)\n' % (url, i))
     try:
-      # 30 second timeout to ensure we fail and retry on stalled connections.
+      # Exponential timeout to ensure we fail and retry on stalled connections.
       src = urllib.urlopen(url, timeout=30)
       try:
         pynacl.download_utils.WriteDataFromStream(
@@ -89,6 +91,8 @@ def HttpDownload(url, target, username=None, password=None, verbose=True,
       logger('Failed to open.\n')
     except urllib.URLError:
       logger('Failed mid stream.\n')
+    except Exception as e:
+      logger('Download failed: %s' % e)
   else:
     logger('Download failed on %s, giving up.\n' % url)
     raise

@@ -172,7 +172,7 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
       logging.info('Downloading package archive: %s (%d/%d)' %
                    (archive_desc.name, index+1, num_archives))
       try:
-        downloader(archive_desc.url, local_archive_file)
+        downloader(archive_desc.url, local_archive_file, logger=logging.warning)
       except Exception as e:
         raise error.Error('Could not download URL (%s): %s' %
                           (archive_desc.url, e))

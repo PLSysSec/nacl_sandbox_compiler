@@ -41,10 +41,10 @@ def LegalizeName(name):
   return re.sub(r'[^A-Za-z0-9_/.]', '_', name)
 
 
-def HttpDownload(url, target):
+def HttpDownload(url, target, logger=logging.debug):
   """Default download route."""
   pynacl.http_download.HttpDownload(
-      url, os.path.abspath(target), verbose=False, logger=logging.debug)
+      url, os.path.abspath(target), verbose=False, logger=logger)
 
 
 class GSDStorageError(Exception):
