@@ -132,6 +132,7 @@ def InfoWin32():
 
 
 PLATFORM_INFO = {
+    'linux': InfoLinux,
     'linux2': InfoLinux,
     'linux3': InfoLinux,
     'darwin': InfoDarwin,
@@ -152,10 +153,10 @@ def main():
   if sys.platform in PLATFORM_INFO:
     try:
       PLATFORM_INFO[sys.platform]()
-    except Exception, err:
-      print('ERRROR: processing sys info', str(err))
+    except Exception as err:
+      print('ERROR: processing sys info', str(err))
   else:
-    print('ERROR: unknwon platform', system.platform)
+    print('ERROR: unknown platform', sys.platform)
 
   return 0
 
