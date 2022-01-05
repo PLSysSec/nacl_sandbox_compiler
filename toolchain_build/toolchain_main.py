@@ -288,6 +288,7 @@ class PackageBuilder(object):
         subdir=output_subdir,
         bskey_extra = build_signature_key_extra)
     except subprocess.CalledProcessError as e:
+      pynacl.log_tools.WriteAnnotatorLine('@@@STEP_FAILURE@@@')
       raise BuildError(
         'Error building %s: %s' % (package, str(e)))
 
