@@ -89,7 +89,7 @@ deps = {
   "tools/gyp":
     Var("chromium_git") + "/external/gyp.git@" + Var("gyp_rev"),
 
-  'src/buildtools/linux64': {
+  'buildtools/linux64': {
     'packages': [
       {
         'package': 'gn/gn/linux-amd64',
