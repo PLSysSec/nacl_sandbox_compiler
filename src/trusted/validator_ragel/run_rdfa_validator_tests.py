@@ -88,6 +88,8 @@ def RunRdfaValidator(options, data):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
+    stdout = stdout.decode('utf-8')
+    stderr = stderr.decode('utf-8')
     assert stdout == '', stdout
     return_code = proc.wait()
   finally:

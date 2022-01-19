@@ -174,6 +174,7 @@ def RunTestWithInputOutput(cmd, input_data, capture_stderr=True, timeout=None):
         large input or output, especially on windows
   NOTE: input_data can be either a string or or a file like object,
         file like objects may be better for large input/output
+  NOTE: The captured output is returned as string.
   """
   assert type(cmd) == list
   stdout = ''
@@ -235,6 +236,9 @@ def RunTestWithInputOutput(cmd, input_data, capture_stderr=True, timeout=None):
     cpu_time_consumed = 0
   else:
     cpu_time_consumed = timer.ElapsedCpuTime(p)
+  if sys.version_info[0] >= 3:
+    stdout = stdout.decode('utf-8', 'backslashreplace')
+    stderr = stderr.decode('utf-8', 'backslashreplace')
   return (cpu_time_consumed, retcode, failed, stdout, stderr)
 
 

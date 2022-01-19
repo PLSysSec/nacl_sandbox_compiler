@@ -369,7 +369,7 @@ def GetNaClSignalInfoFromStderr(stderr):
   # Scan for signal msg in reverse order
   for curline in reversed(lines):
     match = re.match('\*\* (Signal|Mach exception) (\d+) from '
-                     '(trusted|untrusted) code', curline)
+                     '(trusted|untrusted) code', str(curline))
     if match is not None:
       return match.group(0)
   return None

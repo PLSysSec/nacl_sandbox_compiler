@@ -47,7 +47,7 @@ def StableHashPath(path):
   hasher = hashlib.sha1()
 
   if os.path.isfile(path):
-    hasher.update('singlefile:' + HashFileContents(path))
+    hasher.update(b'singlefile:' + HashFileContents(path).encode('utf-8'))
     return hasher.hexdigest()
 
   def RemoveExcludedPaths(paths):
@@ -65,12 +65,12 @@ def StableHashPath(path):
     # are incorporated.
     # Terminating with \x00 to avoid injection attacks.
     for d in dirs:
-      hasher.update('dir:' + d + '\x00')
+      hasher.update(b'dir:' + d.encode('utf-8') + b'\x00')
     for f in files:
-      hasher.update('filename:' + f + '\x00')
+      hasher.update(b'filename:' + f.encode('utf-8') + b'\x00')
       # Don't try to hash nonexistent paths (e.g. bad symlinks)
       if os.path.exists(os.path.join(root, f)):
-        hasher.update('contents:' + HashFileContents(
-            os.path.join(root, f)))
+        hasher.update(b'contents:' + HashFileContents(
+            os.path.join(root, f)).encode('utf-8'))
 
   return hasher.hexdigest()

@@ -472,6 +472,11 @@ def Run(args, cwd=None, verbose=True, exit_on_failure=False,
     p = subprocess.Popen(args, stdin=stdin_redir, stdout=stdout_redir,
                          stderr=stderr_redir, cwd=cwd, shell=use_shell)
     (stdout_contents, stderr_contents) = p.communicate()
+    if sys.version_info[0] >= 3:
+      if stdout_contents is not None:
+        stdout_contents = stdout_contents.decode('utf-8')
+      if stderr_contents is not None:
+        stderr_contents = stderr_contents.decode('utf-8')
   except KeyboardInterrupt as e:
     if p:
       p.kill()

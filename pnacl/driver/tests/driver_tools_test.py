@@ -144,12 +144,12 @@ class DriverToolsTest(unittest.TestCase):
 
   def _WriteDummyArFileHeader(self, stream, name, filesize):
     stream.writelines([
-        bytes((name + '/').ljust(16).encode("utf-8")),
-        bytes('0'.rjust(12).encode("utf-8")),  # Dummy timestamp
-        bytes('0'.rjust(6).encode("utf-8")),  # Dummy ownerid
-        bytes('0'.rjust(6).encode("utf-8")),  # Dummy groupid
-        bytes('666'.rjust(8).encode("utf-8")),  # Dummy filemode (rw-rw-rw-)
-        bytes(filesize.rjust(10).encode("utf-8")),
+        bytes((name + '/').ljust(16).encode('utf-8')),
+        bytes('0'.rjust(12).encode('utf-8')),  # Dummy timestamp
+        bytes('0'.rjust(6).encode('utf-8')),  # Dummy ownerid
+        bytes('0'.rjust(6).encode('utf-8')),  # Dummy groupid
+        bytes('666'.rjust(8).encode('utf-8')),  # Dummy filemode (rw-rw-rw-)
+        bytes(filesize.rjust(10).encode('utf-8')),
         b'`\n'])
 
   def test_ArchMerge_ObjectFile(self):

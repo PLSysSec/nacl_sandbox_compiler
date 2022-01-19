@@ -4,6 +4,7 @@
 
 import re
 import socket
+import sys
 import time
 
 
@@ -25,8 +26,13 @@ def EnsurePortIsAvailable(addr=SEL_LDR_RSP_SOCKET_ADDR):
 
 def RspChecksum(data):
   checksum = 0
+  if sys.version_info[0] >= 3 and isinstance(data, str):
+    data = data.encode('utf-8')
   for char in data:
-    checksum = (checksum + ord(char)) % 0x100
+    if sys.version_info[0] >= 3:
+      checksum = (checksum + char) % 0x100
+    else:
+      checksum = (checksum + ord(char)) % 0x100
   return checksum
 
 
@@ -86,7 +92,7 @@ class GdbRspConnection(object):
 
   # Send an rsp message, but don't wait for or expect a reply.
   def RspSendOnly(self, data):
-    msg = '$%s#%02x' % (data, RspChecksum(data))
+    msg = ('$%s#%02x' % (data, RspChecksum(data))).encode('utf-8')
     return self._socket.send(msg)
 
   def RspRequest(self, data):

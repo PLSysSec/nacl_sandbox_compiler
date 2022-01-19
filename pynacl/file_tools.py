@@ -5,7 +5,7 @@
 
 """Convience file system related operations."""
 
-
+import io
 import os
 import shutil
 import stat
@@ -21,7 +21,7 @@ def AtomicWriteFile(data, filename):
 
   NOTE: Not atomic on Windows!
   Args:
-    data: String to write to the file.
+    data: String or byte array to write to the file.
     filename: Filename to write.
   """
   filename = os.path.abspath(filename)
@@ -29,6 +29,8 @@ def AtomicWriteFile(data, filename):
       prefix='atomic_write', suffix='.tmp',
       dir=os.path.dirname(filename))
   fh = os.fdopen(handle, 'wb')
+  if sys.version_info[0] >= 3 and isinstance(data, str):
+    data = data.encode('utf-8')
   fh.write(data)
   fh.close()
   # Window's can't move into place atomically, delete first.
@@ -44,10 +46,12 @@ def WriteFile(data, filename):
   """Write a file in one step.
 
   Args:
-    data: String to write to the file.
+    data: String or byte array to write to the file.
     filename: Filename to write.
   """
   fh = open(filename, 'wb')
+  if sys.version_info[0] >= 3 and isinstance(data, str):
+    data = data.encode('utf-8')
   fh.write(data)
   fh.close()
 
@@ -58,9 +62,23 @@ def ReadFile(filename):
   Args:
     filename: Filename to read.
   Returns:
-    String containing complete file.
+    Byte array containing complete file.
   """
   fh = open(filename, 'rb')
+  data = fh.read()
+  fh.close()
+  return data
+
+
+def ReadFileString(filename):
+  """Read an UTF-8 encoded file in one step.
+
+  Args:
+    filename: Filename to read.
+  Returns:
+    String containing complete file.
+  """
+  fh = io.open(filename, 'r', encoding='utf-8')
   data = fh.read()
   fh.close()
   return data

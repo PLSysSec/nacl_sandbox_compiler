@@ -213,6 +213,8 @@ class Gdb(object):
     AssertEquals(self._gdb.returncode == 0, self._expected_success)
 
   def _SendRequest(self, request):
+    if isinstance(request, str):
+      request = request.encode('utf-8')
     self._log.write('To GDB: %s\n' % request)
     self._gdb.stdin.write(request)
     self._gdb.stdin.write(b'\n')
@@ -261,6 +263,7 @@ class Gdb(object):
 
   def ResumeAndExpectStop(self, resume_command, expected_stop_reason):
     stop_info = self.ResumeCommand(resume_command)
+    expected_stop_reason = expected_stop_reason.encode('utf-8')
     if (b'reason' not in stop_info
         or stop_info[b'reason'] != expected_stop_reason):
       raise AssertionError(

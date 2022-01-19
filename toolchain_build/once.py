@@ -49,8 +49,8 @@ class HumanReadableSignature(object):
   def update(self, data):
     """Add an item to the signature."""
     # Drop paranoid nulls for human readable output.
-    data = data.replace('\0', '')
-    self._items.append(data)
+    data = data.replace(b'\0', b'')
+    self._items.append(data.decode('utf-8'))
 
   def hexdigest(self):
     """Fake version of hexdigest that returns the inputs."""
@@ -255,6 +255,8 @@ class Once(object):
       out_hash = self._storage.GetData(
           self.KeyForBuildSignature(build_signature, bskey_extra))
       if out_hash is not None:
+        if isinstance(out_hash, bytes):
+          out_hash = out_hash.decode('utf-8')
         cloud_item = self.WriteOutputFromHash(work_dir, package,
                                               out_hash, output)
         if cloud_item is not None:
@@ -333,7 +335,7 @@ class Once(object):
       cmd_logger.setLevel(logging.DEBUG)
 
       log_file = self.GetLogFile(work_dir, package)
-      file_log_handler = logging.FileHandler(log_file, 'wb')
+      file_log_handler = logging.FileHandler(log_file, 'w')
       file_log_handler.setLevel(logging.DEBUG)
       file_log_handler.setFormatter(
           logging.Formatter(fmt='[%(levelname)s - %(asctime)s] %(message)s'))
@@ -431,17 +433,19 @@ class Once(object):
     else:
       h = hasher
 
-    h.update('package:' + package)
-    h.update('summary:' + self.SystemSummary())
+    h.update(b'package:' + package.encode('utf-8'))
+    h.update(b'summary:' + self.SystemSummary().encode('utf-8'))
     for command in commands:
-      h.update('command:')
-      h.update(str(command))
+      h.update(b'command:')
+      h.update(str(command).encode('utf-8'))
     for key in sorted(inputs.keys()):
-      h.update('item_name:' + key + '\x00')
+      h.update(b'item_name:' + key.encode('utf-8') + b'\x00')
       if inputs[key] in self._path_hash_cache:
         path_hash = self._path_hash_cache[inputs[key]]
       else:
-        path_hash = 'item:' + pynacl.hashing_tools.StableHashPath(inputs[key])
+        path_hash = (b'item:' +
+                     pynacl.hashing_tools.StableHashPath(inputs[key])
+                     .encode('utf-8'))
         self._path_hash_cache[inputs[key]] = path_hash
       h.update(path_hash)
     return h.hexdigest()

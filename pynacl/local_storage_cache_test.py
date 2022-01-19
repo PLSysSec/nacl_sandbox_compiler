@@ -23,10 +23,10 @@ class TestLocalStorageCache(unittest.TestCase):
   def CanBeReadBothWays(self, storage, key, out_file, expected):
     # Check that reading key with both GetData and GetFile yields expected.
     # out_file is used for GetFile output.
-    self.assertEquals(expected, storage.GetData(key))
+    self.assertEquals(expected, storage.GetData(key).decode('utf-8'))
     url = storage.GetFile(key, out_file)
     self.assertNotEquals(None, url)
-    self.assertEquals(expected, file_tools.ReadFile(out_file))
+    self.assertEquals(expected, file_tools.ReadFileString(out_file))
 
   def test_WriteRead(self):
     # Check that things written with PutData can be read back.
@@ -105,7 +105,7 @@ class TestLocalStorageCache(unittest.TestCase):
           storage=mem_storage)
       storage.PutData('there', 'foo')
       mem_storage.PutData('hello', 'foo')
-      self.assertEquals('there', storage.GetData('foo'))
+      self.assertEquals('there', storage.GetData('foo').decode('utf-8'))
 
   def test_AcceptSlashesAndDots(self):
     # Check that keys with slashes and dots are okay.
@@ -115,7 +115,8 @@ class TestLocalStorageCache(unittest.TestCase):
           cache_path=os.path.join(work_dir, 'db'),
           storage=mem_storage)
       storage.PutData('hello', 'this/is/a/cool_test.txt')
-      self.assertEquals('hello', storage.GetData('this/is/a/cool_test.txt'))
+      self.assertEquals(
+          'hello', storage.GetData('this/is/a/cool_test.txt').decode('utf-8'))
 
   def test_InvalidKey(self):
     # Check that an invalid key asserts.

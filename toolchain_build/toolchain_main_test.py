@@ -79,14 +79,14 @@ class TestToolchainBuild(unittest.TestCase):
       tb.Main()
       self.assertEqual(
           INITIAL_README_TEXT,
-          pynacl.file_tools.ReadFile(readme_out))
+          pynacl.file_tools.ReadFileString(readme_out))
       # Build again (so the the cache is hit).
       tb = toolchain_main.PackageBuilder(
           packages, package_targets, args)
       tb.Main()
       self.assertEqual(
           INITIAL_README_TEXT,
-          pynacl.file_tools.ReadFile(readme_out))
+          pynacl.file_tools.ReadFileString(readme_out))
       # Build again after changing README.
       packages = GetTestPackages(change_readme=True)
       tb = toolchain_main.PackageBuilder(
@@ -94,7 +94,7 @@ class TestToolchainBuild(unittest.TestCase):
       tb.Main()
       self.assertEqual(
           LATER_README_TEXT,
-          pynacl.file_tools.ReadFile(readme_out))
+          pynacl.file_tools.ReadFileString(readme_out))
 
 
 if __name__ == '__main__':

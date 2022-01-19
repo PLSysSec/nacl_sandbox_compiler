@@ -52,7 +52,7 @@ class TestOnce(unittest.TestCase):
       o.Run('test', self._input_dirs, self._output_dirs[0],
             [command.Copy('%(input0)s/in0', '%(output)s/out')])
       self.assertEquals('FirstTimedata0',
-                        pynacl.file_tools.ReadFile(self._output_files[0]))
+                        pynacl.file_tools.ReadFileString(self._output_files[0]))
 
   def test_HitsCacheSecondTime(self):
     # Test that the computation is not performed on a second instance.
@@ -103,8 +103,8 @@ class TestOnce(unittest.TestCase):
     """Command object to write the length of one file into another."""
     return command.Command([
         sys.executable, '-c',
-          'import sys; open(sys.argv[2], "wb").write('
-          'str(len(open(sys.argv[1], "rb").read())))', src, dst
+          'import sys; open(sys.argv[2], "w").write('
+          'str(len(open(sys.argv[1], "r").read())))', src, dst
         ], **kwargs)
 
   def test_RecomputeHashMatches(self):
@@ -142,15 +142,15 @@ class TestOnce(unittest.TestCase):
       #   - out0 and out1 agree.
       self.assertEquals(
           str(len(pynacl.file_tools.ReadFile(self._input_files[0]))),
-          pynacl.file_tools.ReadFile(self._output_files[0])
+          pynacl.file_tools.ReadFileString(self._output_files[0])
       )
       self.assertEquals(
           str(len(pynacl.file_tools.ReadFile(self._input_files[1]))),
-          pynacl.file_tools.ReadFile(self._output_files[1])
+          pynacl.file_tools.ReadFileString(self._output_files[1])
       )
       self.assertEquals(
-          pynacl.file_tools.ReadFile(self._output_files[0]),
-          pynacl.file_tools.ReadFile(self._output_files[1])
+          pynacl.file_tools.ReadFileString(self._output_files[0]),
+          pynacl.file_tools.ReadFileString(self._output_files[1])
       )
 
   def test_FailsWhenWritingFails(self):
@@ -226,11 +226,11 @@ class TestOnce(unittest.TestCase):
       o.Run('test', self._input_dirs, self._output_dirs[0],
             [command.Command([
                 sys.executable, '-c',
-                'import sys; open(sys.argv[1], "wb").write("hello")',
+                'import sys; open(sys.argv[1], "w").write("hello")',
                 '%(output)s/out'])])
       self.assertEquals(
           'hello',
-          pynacl.file_tools.ReadFile(self._output_files[0])
+          pynacl.file_tools.ReadFileString(self._output_files[0])
       )
 
   def test_NumCores(self):
@@ -254,17 +254,17 @@ class TestOnce(unittest.TestCase):
       o.Run('test', self._input_dirs, self._output_dirs[0],
             [command.Command([
                 sys.executable, '-c',
-                'import sys; open(sys.argv[1], "wb").write("hello")',
+                'import sys; open(sys.argv[1], "w").write("hello")',
                 '%(output)s/out'],
                 run_cond=lambda cmd_opts: True),
              command.Command([
                  sys.executable, '-c',
-                 'import sys; open(sys.argv[1], "wb").write("not hello")',
+                 'import sys; open(sys.argv[1], "w").write("not hello")',
                  '%(output)s/out'],
                  run_cond=lambda cmd_opts: False)])
       self.assertEquals(
           'hello',
-          pynacl.file_tools.ReadFile(self._output_files[0])
+          pynacl.file_tools.ReadFileString(self._output_files[0])
       )
 
   def test_OutputsFlushPathHashCache(self):

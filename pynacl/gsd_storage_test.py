@@ -23,7 +23,8 @@ class TestGSDStorage(unittest.TestCase):
       if step[0] == 0:
         self.assertEqual(
             ['mygsutil', 'cp', '-a', 'public-read'], cmd[0:4])
-        self.assertEqual('foo', file_tools.ReadFile(cmd[4][len('file://'):]))
+        self.assertEqual(
+            'foo', file_tools.ReadFileString(cmd[4][len('file://'):]))
         self.assertEqual('gs://mybucket/bar', cmd[5].split('.')[0])
       elif step[0] == 1:
         self.assertEqual(
@@ -121,7 +122,7 @@ class TestGSDStorage(unittest.TestCase):
         write_bucket='mybucket',
         read_buckets=['mybucket'],
         download=download)
-    self.assertEqual('baz', storage.GetData('bar'))
+    self.assertEqual('baz', storage.GetData('bar').decode('utf-8'))
 
   def test_GetFails(self):
     def download(url, target):
@@ -147,7 +148,7 @@ class TestGSDStorage(unittest.TestCase):
         write_bucket='mybucket',
         read_buckets=['badbucket', 'goodbucket'],
         download=download)
-    self.assertEquals('bar', storage.GetData('foo'))
+    self.assertEquals('bar', storage.GetData('foo').decode('utf-8'))
 
   def test_Exists(self):
     stored_keys = set()

@@ -247,7 +247,7 @@ def ReadConfig():
     return
   driver_bin = env.getone('DRIVER_BIN')
   driver_conf = pathtools.join(driver_bin, 'driver.conf')
-  fp = DriverOpen(driver_conf, 'r', encoding="utf-8")
+  fp = DriverOpen(driver_conf, 'r', encoding='utf-8')
   linecount = 0
   for line in fp:
     linecount += 1
@@ -308,7 +308,7 @@ def ShouldExpandCommandFile(arg):
 
 def DoExpandCommandFile(argv, i):
   arg = argv[i]
-  fd = DriverOpen(pathtools.normalize(arg[1:]), 'r', encoding="utf-8")
+  fd = DriverOpen(pathtools.normalize(arg[1:]), 'r', encoding='utf-8')
   more_args = []
 
   # Use shlex here to process the response file contents.
@@ -675,9 +675,9 @@ def Run(args,
                          stderr=redirect_stderr)
     result_stdout, result_stderr = p.communicate()
     if result_stdout:
-      result_stdout = result_stdout.decode(encoding="utf-8")
+      result_stdout = result_stdout.decode(encoding='utf-8')
     if result_stderr:
-      result_stderr = result_stderr.decode(encoding="utf-8")
+      result_stderr = result_stderr.decode(encoding='utf-8')
   except Exception as e:
     msg =  '%s\nCommand was: %s' % (str(e), StringifyCommand(args))
     print(msg)

@@ -7,6 +7,7 @@ from __future__ import print_function
 import glob
 import optparse
 import re
+import sys
 
 
 def ParseTest(lines):
@@ -124,7 +125,7 @@ def ParseHex(hex_content):
     strings). If line ends with r'\\', chunk is continued on the following line.
   """
 
-  bytes = []
+  byte_list = []
   for line in hex_content.split('\n'):
     line, sep, comment = line.partition('#')
     line = line.strip()
@@ -139,14 +140,18 @@ def ParseHex(hex_content):
 
     for byte in line.split():
       assert len(byte) == 2
-      bytes.append(chr(int(byte, 16)))
+      if sys.version_info[0] >= 3:
+        actual_byte = bytes([int(byte, 16)])
+      else:
+        actual_byte = chr(int(byte, 16))
+      byte_list.append(actual_byte)
 
     if not continuation:
-      assert len(bytes) > 0
-      yield ''.join(bytes)
-      bytes = []
+      assert len(byte_list) > 0
+      yield b''.join(byte_list)
+      byte_list = []
 
-  assert bytes == [], r'r"\\" should not appear on the last line'
+  assert byte_list == [], r'r"\\" should not appear on the last line'
 
 
 def AssertEquals(actual, expected):

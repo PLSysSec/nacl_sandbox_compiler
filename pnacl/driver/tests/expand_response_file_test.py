@@ -41,7 +41,7 @@ class TestExpandResponseFile(driver_test_utils.DriverTesterCommon):
     attempt to open a file with quotes in its name.
     """
     t = self.getTemp(close=False)
-    t.write(b'-E "%s" -I.. -o out.o\n' % bytes(file_to_quote.encode("utf-8")))
+    t.write(b'-E "%s" -I.. -o out.o\n' % bytes(file_to_quote.encode('utf-8')))
     # Close to flush and ensure file is reopenable on windows.
     t.close()
     pre_argv = ['early_arg.c', '@' + t.name, 'later_arg.c']

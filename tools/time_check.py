@@ -36,6 +36,7 @@ def Main(argv):
     # consume output_stream looking for output time value
     time_output = None
     for line in output_stream:
+      line = str(line)
       if options.show_output:
         sys.stdout.write(line + '\n')
       mobj = fp_num_re.search(line)

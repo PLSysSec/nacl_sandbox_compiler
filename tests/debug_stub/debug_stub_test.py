@@ -42,12 +42,17 @@ def AssertEquals(x, y):
 
 def DecodeHex(data):
   assert len(data) % 2 == 0, data
-  return ''.join([chr(int(data[index * 2 : (index + 1) * 2], 16))
-                  for index in range(len(data) / 2)])
+  if sys.version_info[0] >= 3:
+    return bytes([int(data[index * 2 : (index + 1) * 2], 16)
+                  for index in range(len(data) // 2)])
+  return b''.join([chr(int(data[index * 2 : (index + 1) * 2], 16))
+                  for index in range(len(data) // 2)])
 
 
 def EncodeHex(data):
-  return ''.join('%02x' % ord(byte) for byte in data)
+  if sys.version_info[0] >= 3:
+    return b''.join(b'%02x' % byte for byte in data)
+  return b''.join('%02x' % ord(byte) for byte in data)
 
 
 def DecodeEscaping(data):
@@ -56,8 +61,12 @@ def DecodeEscaping(data):
   repeat = False
   escape = False
   for byte in data:
+    if sys.version_info[0] >= 3:
+      byte = bytes([byte])
     if escape:
       last = chr(ord(byte) ^ 0x20)
+      if sys.version_info[0] >= 3:
+        last = last.encode('utf-8')
       ret += last
       escape = False
     elif repeat:
@@ -246,7 +255,7 @@ def EncodeRegs(regs):
   fmt = ''.join([reg_fmt for reg_name, reg_fmt in defs])
 
   values = [regs[r] for r in names]
-  return EncodeHex(struct.pack(fmt, *values))
+  return EncodeHex(struct.pack(fmt, *values)).decode('utf-8')
 
 
 def PopenDebugStub(test):
@@ -324,7 +333,7 @@ def GetSymbols():
   for line in proc.stdout:
     match = re.match(b'(\S+) [TtWwBbDd] ([0-9a-fA-F]+)', line)
     if match is not None:
-      name = match.group(1)
+      name = match.group(1).decode('utf-8')
       addr = int(match.group(2), 16)
       symbols[name] = addr
   result = proc.wait()
@@ -615,8 +624,9 @@ class DebugStubTest(unittest.TestCase):
       # Check writing memory.
       new_data = b'replacement_data\0'
       assert len(new_data) < len(expected_data)
-      reply = connection.RspRequest('M%x,%x:%s' % (mem_addr, len(new_data),
-                                                   EncodeHex(new_data)))
+      reply = connection.RspRequest('M%x,%x:%s' %
+                                    (mem_addr, len(new_data),
+                                     EncodeHex(new_data).decode('utf-8')))
       self.assertEquals(reply, b'OK')
       # Check that we can read back what we wrote.
       reply = connection.RspRequest('m%x,%x' % (mem_addr, len(new_data)))
@@ -797,7 +807,8 @@ class DebugStubTest(unittest.TestCase):
     """
     # Open the nexe.
     reply = connection.RspRequest(
-      'vFile:open:%s,0,0' % EncodeHex(download_filename))
+        'vFile:open:%s,0,0' %
+        EncodeHex(download_filename.encode('utf-8')).decode('utf-8'))
     assert reply.startswith(b'F'), reply
     fd = int(reply[1:], 16)
     self.assertGreaterEqual(fd, 0)
