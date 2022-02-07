@@ -49,19 +49,19 @@ def ToNativePath(native_path):
 
 def IsCygwinSymlink(symtext):
   """Return true if the provided text looks like a Cygwin symlink."""
-  return symtext[:12] == '!<symlink>\xff\xfe'
+  return symtext[:12] == b'!<symlink>\xff\xfe'
 
 
 def SymDatToPath(symtext):
   """Convert a Cygwin style symlink data to a relative path."""
-  return ''.join([ch for ch in symtext[12:] if ch != '\x00'])
+  return ''.join([ch for ch in symtext[12:] if ch != b'\x00'])
 
 
 def PathToSymDat(filepath):
   """Convert a filepath to cygwin style symlink data."""
-  symtag = '!<symlink>\xff\xfe'
+  symtag = b'!<symlink>\xff\xfe'
   unipath = ''.join([ch + '\x00' for ch in filepath])
-  strterm = '\x00\x00'
+  strterm = b'\x00\x00'
   return symtag + unipath + strterm
 
 
@@ -245,7 +245,7 @@ class CygTar(object):
     # We go ahead and check on all platforms just in case we are tar'ing a
     # mount shared with windows.
     if tarinfo.size <= 524:
-      with open(filepath) as fp:
+      with open(filepath, 'rb') as fp:
         symtext = fp.read()
       if IsCygwinSymlink(symtext):
         self.__AddLink(tarinfo, tarfile.SYMTYPE, SymDatToPath(symtext))

@@ -62,7 +62,7 @@ TOOL_ENV_NAMES = { 'CC': 'clang', 'CXX': 'clang++', 'AR': 'ar', 'NM': 'nm',
 def TargetTools(arch, saigo):
   return [ tool + '_FOR_TARGET='
            + PnaclTool(name, arch=arch, msys=True, saigo=saigo)
-           for tool, name in TOOL_ENV_NAMES.iteritems() ]
+           for tool, name in TOOL_ENV_NAMES.items() ]
 
 
 def MakeCommand():
@@ -417,7 +417,7 @@ def NewlibDirectoryCmds(bias_arch, newlib_triple):
 # setjmp.S. Instead, we pull in setjmp from the native_client repo.
 def NewlibSaigoCmds(bias_arch):
   lib = 'lib'
-  if bias_arch is 'i686':
+  if bias_arch == 'i686':
     lib = 'lib32'
   archive_path = command.path.join('%(output)s',
                                    '%s-nacl' % MultilibArch(bias_arch), lib)

@@ -880,7 +880,7 @@ def HostTools(host, options):
     shared = ['--enable-shared']
     cleanup_static_libs = [
         command.Remove(*[os.path.join('%(output)s', 'lib', f) for f
-                         in '*.a', '*Hello.*', 'BugpointPasses.*']),
+                         in ['*.a', '*Hello.*', 'BugpointPasses.*']]),
     ]
   llvm_host_arch_flags, llvm_inputs, llvm_deps = ConfigureHostArchFlags(
       host, [], options, use_afl_fuzz=options.afl_fuzz_dir)
@@ -941,11 +941,11 @@ def HostTools(host, options):
                   'install'])] +
               cleanup_static_libs + [
               command.Remove(*[os.path.join('%(output)s', 'bin', f) for f in
-                               Exe('clang-format', host),
-                               Exe('clang-check', host),
-                               Exe('c-index-test', host),
-                               Exe('clang-tblgen', host),
-                               Exe('llvm-tblgen', host)])] +
+                               [Exe('clang-format', host),
+                                Exe('clang-check', host),
+                                Exe('c-index-test', host),
+                                Exe('clang-tblgen', host),
+                                Exe('llvm-tblgen', host)]])] +
               CreateSymLinksToDirectToNaClTools(host) +
               CreateSymLinksToPNaClTools(host) +
               CopyWindowsHostLibs(host),
@@ -1346,7 +1346,7 @@ def GetUploadPackageTargets():
     common_complete_packages.append('core_sdk_libs_%s' % arch)
 
   for arch in SAIGO_ARCHES:
-    libgcc_eh_arch = 'x86_32' if arch is 'i686' else arch
+    libgcc_eh_arch = 'x86_32' if arch == 'i686' else arch
     saigo_common_packages.append('libgcc_eh_saigo_%s' % libgcc_eh_arch)
     saigo_common_packages.append('newlib_saigo_%s' % arch)
     saigo_common_packages.append('libcxx_saigo_%s' % arch)
@@ -1391,7 +1391,7 @@ def GetUploadPackageTargets():
     legal_triple = pynacl.gsd_storage.LegalizeName('x86-64-' + os_name)
     host_packages[os_name].append('unsandboxed_runtime_%s' % legal_triple)
 
-  for os_name, os_packages in host_packages.iteritems():
+  for os_name, os_packages in host_packages.items():
     package_target = '%s_x86' % pynacl.platform.GetOS(os_name)
     package_targets[package_target] = {}
 

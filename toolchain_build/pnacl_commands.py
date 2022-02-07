@@ -203,6 +203,6 @@ def WriteREVFile(logger, subst, dstfile, base_url, repos, revisions):
     url, rev = pynacl.repo_tools.GitRevInfo(NACL_DIR)
     print('[GIT] %s: %s' % (url, rev), file=f)
 
-    for name, revision in revisions.iteritems():
+    for name, revision in revisions.items():
       repo = base_url + repos[name]
       print('[GIT] %s: %s' % (repo, revision), file=f)

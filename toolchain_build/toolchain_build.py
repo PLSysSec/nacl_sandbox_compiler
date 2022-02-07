@@ -116,7 +116,7 @@ def CollectSources():
 
   patch_packages = []
   patch_commands = []
-  for package, info in GIT_REVISIONS.iteritems():
+  for package, info in GIT_REVISIONS.items():
     sources[package] = {
         'type': 'source',
         'commands': command.SyncGitRepoCmds(GitUrl(package), '%(output)s',

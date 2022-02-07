@@ -205,6 +205,8 @@ def CheckCall(command, stdout=None, logger=None, **kwargs):
   # Capture the output as it comes and emit it immediately.
   line = output.readline()
   while line:
+    if sys.version_info[0] >= 3:
+      line = line.decode('utf-8')
     logger.info(line.rstrip())
     line = output.readline()
 
@@ -242,6 +244,12 @@ def CheckOutput(command, logger=None, **kwargs):
   # TODO(mcgrathr): Shovel stderr bits asynchronously if that ever seems
   # worth the hair.
   stdout_text, stderr_text = p.communicate()
+
+  if sys.version_info[0] >= 3:
+    if stdout_text is not None:
+      stdout_text = stdout_text.decode('utf-8')
+    if stderr_text is not None:
+      stderr_text = stderr_text.decode('utf-8')
 
   if stderr_text:
     logger.info(stderr_text.rstrip())
