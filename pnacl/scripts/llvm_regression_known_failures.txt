@@ -52,11 +52,12 @@ LLVM::Feature/load_module.ll win
 
 LLVM-Unit::ADT/Release+Asserts/ADTTests/APIntTest.LargeAPIntConstruction linux
 LLVM::Transforms/MinSFI/sandbox-indirect-calls.ll linux
+LLVM-Unit::ADT/Release+Asserts/ADTTests/APIntTest.nearestLogBase2 linux
 
+Clang::Integration/carbon.c mac
 Clang::Integration/cocoa-pch.m mac
 Clang::Integration/cocoa.m mac
 
 LLVM::Transforms/LICM/2003-12-11-SinkingToPHI.ll
 LLVM-Unit::ADT/Release+Asserts/ADTTests/ArrayRefTest.InitializerList
-LLVM-Unit::ADT/Release+Asserts/ADTTests/APIntTest.nearestLogBase2
 LLVM::Integer/2007-01-19-TruncSext.ll
