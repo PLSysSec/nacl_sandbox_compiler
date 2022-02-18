@@ -208,22 +208,5 @@ class DriverToolsTest(unittest.TestCase):
       with self.assertRaises(SystemExit):
         driver_tools.ArchMerge(path, True)
 
-  def test_ArchMerge_NonSfi(self):
-    with NamedTemporaryFile(suffix='.o') as path:
-      # Write dummy ELF header for X8632.
-      with open(path, 'wb') as stream:
-        self._WriteDummyElfHeader(stream)
-
-      # Set ARCH to X8632_NONSFI.
-      driver_tools.SetArch('x86-32-nonsfi')
-
-      # The binary format for _NONSFI architecture is compatible with the one
-      # for SFI.
-      driver_tools.ArchMerge(path, True)
-
-      # ARCH is not modified.
-      self.assertEquals('X8632_NONSFI', driver_tools.GetArch())
-
-
 if __name__ == '__main__':
   unittest.main()

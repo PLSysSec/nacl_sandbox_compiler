@@ -170,11 +170,6 @@ scons-tests () {
 
     # nonpexe tests
     RunScons ${arch} ${modeflags} pnacl_generate_pexe=0 "$@" nonpexe_tests
-    if [ ${arch} != "x86-64" ]; then
-      RunScons ${arch} ${modeflags} nonsfi_nacl=1 "$@" nonsfi_tests
-      RunScons ${arch} ${modeflags} nonsfi_nacl=1 pnacl_generate_pexe=0 \
-        "$@" nonsfi_tests
-    fi
   fi
 }
 

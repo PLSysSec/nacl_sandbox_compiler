@@ -181,45 +181,6 @@ def RunSconsTests(status, context):
       SCons(context, parallel=True, mode=irt_mode,
             args=flags_run + flags_run_sbtc + ['translate_fast=1'] + sbtc_tests)
 
-  # Test Non-SFI Mode.
-  # The only architectures that the PNaCl toolchain supports Non-SFI
-  # versions of are currently x86-32 and ARM.
-  # The x86-64 toolchain bot currently also runs these tests from
-  # buildbot_pnacl.sh
-  if context.Linux() and (arch == 'x86-32' or arch == 'arm'):
-    with Step('nonsfi_tests ' + arch, status, halt_on_fail=False):
-      SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run +
-                ['nonsfi_nacl=1',
-                 'nonsfi_tests',
-                 'nonsfi_tests_irt'])
-
-    # Build with pnacl_generate_pexe=0 to allow using pnacl-clang with
-    # direct-to-native mode. This allows assembly to be used in tests.
-    with Step('nonsfi_tests_nopnacl_generate_pexe ' + arch,
-              status, halt_on_fail=False):
-      extra_args = ['nonsfi_nacl=1',
-                    'pnacl_generate_pexe=0',
-                    'nonsfi_tests',
-                    'nonsfi_tests_irt']
-      # nonsfi_tests_irt with pnacl_generate_pexe=0 does not pass on x86-32.
-      # https://code.google.com/p/nativeclient/issues/detail?id=4093
-      if arch == 'x86-32':
-        extra_args.remove('nonsfi_tests_irt')
-      SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run + extra_args)
-
-    # Test nonsfi_loader linked against host's libc.
-    with Step('nonsfi_tests_host_libc ' + arch, status, halt_on_fail=False):
-      # Using skip_nonstable_bitcode=1 here disables the tests for
-      # zero-cost C++ exception handling, which don't pass for Non-SFI
-      # mode yet because we don't build libgcc_eh for Non-SFI mode.
-      SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run +
-                ['nonsfi_nacl=1', 'use_newlib_nonsfi_loader=0',
-                 'nonsfi_tests', 'nonsfi_tests_irt',
-                 'toolchain_tests_irt', 'skip_nonstable_bitcode=1'])
-
   # Test unsandboxed mode.
   if (context.Linux() or context.Mac()) and arch == 'x86-32':
     if context.Linux():

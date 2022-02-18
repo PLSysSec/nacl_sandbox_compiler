@@ -416,11 +416,6 @@ llvm-sb-install() {
     if [[ "${arch}" == "universal" ]]; then
       arches="${SBTC_ARCHES_ALL}"
     fi
-    if [[ "${arch}" == "i686" ]]; then
-      arches+=" x86-32-nonsfi"
-    elif [[ "${arch}" == "armv7" ]]; then
-      arches+=" arm-nonsfi"
-    fi
     translate-sb-tool ${toolname} "${arches}"
     install-sb-tool ${toolname} "${arches}"
   done
@@ -703,11 +698,6 @@ binutils-gold-sb-install() {
   local arches=${arch}
   if [[ "${arch}" == "universal" ]]; then
     arches="${SBTC_ARCHES_ALL}"
-  fi
-  if [[ "${arch}" == "i686" ]]; then
-    arches+=" x86-32-nonsfi"
-  elif [[ "${arch}" == "armv7" ]]; then
-    arches+=" arm-nonsfi"
   fi
   translate-sb-tool ld "${arches}"
   install-sb-tool ld "${arches}"
