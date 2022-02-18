@@ -6,8 +6,6 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
-#include "native_client/src/shared/platform/nacl_log.h"
-
 char const  *NaClErrorString(NaClErrorCode errcode) {
   switch (errcode) {
     case LOAD_OK:
