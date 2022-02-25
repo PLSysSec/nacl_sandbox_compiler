@@ -50,7 +50,7 @@ class Environment(object):
     env = Environment(self.tracker, self.cond_obj)
     env.add_attributes = dict(self.add_attributes)
     env.del_attributes = dict(self.del_attributes)
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
       env.props[k] = v
     return env
 
@@ -62,12 +62,12 @@ class Environment(object):
 
   def Append(self, **kwargs):
     table = ParsePropertyTable(kwargs)
-    for k,v in table.iteritems():
+    for k,v in table.items():
       self.add_attributes[k] = self.add_attributes.get(k,[]) + v
 
   def FilterOut(self, **kwargs):
     table = ParsePropertyTable(kwargs)
-    for k,v in table.iteritems():
+    for k,v in table.items():
       self.del_attributes[k] = self.del_attributes.get(k,[]) + v
 
   def AddHeaderToSdk(self, nodes):
@@ -99,11 +99,11 @@ class Environment(object):
     add_props = { 'sources': sources }
 
     table = ParsePropertyTable(kwargs)
-    for k,v in table.iteritems():
+    for k,v in table.items():
       add_props[k] = add_props.get(k, []) + v
 
     # For all GN property:value pairs in the environment
-    for k,v in self.add_attributes.iteritems():
+    for k,v in self.add_attributes.items():
       add_props[k] = add_props.get(k, []) + v
 
     self.tracker.AddObject(name, objtype, add_props, self.del_attributes)

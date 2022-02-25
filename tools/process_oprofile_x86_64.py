@@ -337,7 +337,7 @@ def PrintTopFunctions(assembly_ranges, address_to_events, trusted_events):
   """ Prints the N functions with the top event counts """
   func_events = {}
   some_addrs_not_found = False
-  for (addr, count) in address_to_events.iteritems():
+  for (addr, count) in address_to_events.items():
     func = assembly_ranges.Lookup(addr)
     if (func):
       # Function labels are mostly unique, except when we have ASM labels
@@ -361,7 +361,7 @@ def PrintTopFunctions(assembly_ranges, address_to_events, trusted_events):
   # convert trusted functions (which are just functions and not ranges) into
   # the same format and mix them with untrusted. Just use 0s for the ranges
 
-  for (func, count) in trusted_events.iteritems():
+  for (func, count) in trusted_events.items():
     key = (func, 0, 0)
     func_events[key] = count
   flattened = func_events.items()

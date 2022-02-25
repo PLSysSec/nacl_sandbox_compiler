@@ -105,7 +105,7 @@ class Pattern(object):
       assert False
 
   def PrintSummary(self, graph_label, trace_label_extra):
-    for event, time in self.accumulatedTimes.iteritems():
+    for event, time in self.accumulatedTimes.items():
       sys.stdout.write('RESULT %s: %s_%s= %f ms\n' %
                        (graph_label, event, trace_label_extra, time))
 

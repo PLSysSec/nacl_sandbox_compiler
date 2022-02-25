@@ -69,13 +69,13 @@ def ParsePropertyTable(table):
   props = defaultdict(list)
 
   # Take a table of KEY=VALUE pairs
-  for key, value in table.iteritems():
+  for key, value in table.items():
     # Convert into a new table with GN style names.  Since a scons properties
     # like CFLAGS can convert into defines, included_dirs, etc...
     sub_table = ConvertSconsPropertyToSubTable(key, value)
     if not sub_table:
       continue
-    for k,v in sub_table.iteritems():
+    for k,v in sub_table.items():
       # Now we have a single property name and list of values.
       props[k].extend(v)
 

@@ -69,7 +69,7 @@ def TraverseTree(state, final_callback, prefix, anyfield=0x01):
     # (right now we want to keep immediates small to avoid problem with sign
     # extension).
   else:
-    for byte, t in state.forward_transitions.iteritems():
+    for byte, t in state.forward_transitions.items():
       TraverseTree(
           t.to_state,
           final_callback,

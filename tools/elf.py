@@ -243,7 +243,7 @@ ehdr_machine = {
 }
 
 def __rev_map(d):
-  return dict((post, pre) for (pre, post) in d.iteritems())
+  return dict((post, pre) for (pre, post) in d.items())
 
 ehdr_type_name = __rev_map(ehdr_type)
 ehdr_machine_name = __rev_map(ehdr_machine)

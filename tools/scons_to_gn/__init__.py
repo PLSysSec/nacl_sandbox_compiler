@@ -81,7 +81,7 @@ class ObjectTracker(object):
     obj = self.object_tree[name]
     obj.SetType(obj_type)
 
-    for prop_name, prop_values in add_props.iteritems():
+    for prop_name, prop_values in add_props.items():
       if not prop_values:
         continue
       prop_tree = obj[prop_name]
@@ -116,7 +116,7 @@ class ObjectTracker(object):
         cond.AddChild(node)
 
         # Now add properties to that object
-        for prop_name, prop_tree in raw_object.Properties().iteritems():
+        for prop_name, prop_tree in raw_object.Properties().items():
           merged_sub = MergeRawTree(prop_tree, use_a, use_b, use_b)
           for names, prop_a, prop_b in merged_sub:
             # Create a condition for this property set

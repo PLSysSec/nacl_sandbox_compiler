@@ -94,7 +94,7 @@ def MergeRawTree(original, seta, availa, availb):
   # For every item in the data table, generate key based on CPUs and NODES
   # matching a configuration, and build tables indexed by that key.
   for key_a in data:
-    for arches, hits in data[key_a].iteritems():
+    for arches, hits in data[key_a].items():
       keyval_hash = HashKeys(arches, hits)
       merge_A[keyval_hash].append(key_a)
       merge_arch[keyval_hash] = arches.split(' ')

@@ -61,8 +61,8 @@ def SameAsOriginal(table, hits):
 
 def CompareOriginalToTransformed(table, transformed, name):
   trans_hits = defaultdict(list)
-  for keya, hit_table in transformed.iteritems():
-    for hitsb, values in hit_table.iteritems():
+  for keya, hit_table in transformed.items():
+    for hitsb, values in hit_table.items():
       for value in values:
         trans_hits[value].extend([keya + '_' + b for b in hitsb.split(' ')])
 

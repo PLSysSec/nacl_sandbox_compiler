@@ -40,7 +40,7 @@ def is_local(t):
 
 
 def merge_symbols(sdict1, sdict2):
-  for sym_name, v2 in sdict2.iteritems():
+  for sym_name, v2 in sdict2.items():
     # Check for duplicate symbols.
     if sym_name in sdict1:
       v1 = sdict1[sym_name]
@@ -116,7 +116,7 @@ class TestTranslatorPruned(unittest.TestCase):
     # Check if a given sym_infos has symbols matching sym_regex, and
     # return the total size of all matching symbols.
     total = 0
-    for sym_name, sym_info in sym_infos.iteritems():
+    for sym_name, sym_info in sym_infos.items():
       if re.search(sym_regex, sym_info.sym_name):
         total += sym_info.size
     return total

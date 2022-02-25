@@ -35,7 +35,7 @@ def Main():
       else:
         value_list.append(value)
       accumulated_times[key] = (value_list, unit)
-  for ((graph, trace), (values, unit)) in accumulated_times.iteritems():
+  for ((graph, trace), (values, unit)) in accumulated_times.items():
     sys.stdout.write('RESULT %s: %s= %s %s\n' %
                      (graph, trace, ListToString(values), unit))
   return 0

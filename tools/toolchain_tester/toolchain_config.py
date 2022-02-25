@@ -17,7 +17,7 @@ import pynacl.platform
 TOOLCHAIN_CONFIGS = {}
 
 def AppendDictionary(d1, d2):
-  for tag, value in d2.iteritems():
+  for tag, value in d2.items():
     if tag in d1:
       d1[tag] = d1[tag] + ' ' + value
     else:
