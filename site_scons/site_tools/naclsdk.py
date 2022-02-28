@@ -482,7 +482,7 @@ or:
   return [lib for lib in found if lib is not None]
 
 # This is a modified copy of the class TempFileMunge in
-# third_party/scons-2.0.1/engine/SCons/Platform/__init__.py.
+# third_party/scons-3.1.2/engine/SCons/Platform/__init__.py.
 # It differs in using quote_for_at_file (below) in place of
 # SCons.Subst.quote_spaces.
 class NaClTempFileMunge(object):
@@ -493,17 +493,23 @@ class NaClTempFileMunge(object):
 
   Example usage:
   env["TEMPFILE"] = TempFileMunge
-  env["LINKCOM"] = "${TEMPFILE('$LINK $TARGET $SOURCES')}"
+  env["LINKCOM"] = "${TEMPFILE('$LINK $TARGET $SOURCES','$LINKCOMSTR')}"
 
   By default, the name of the temporary file used begins with a
-  prefix of '@'.  This may be configred for other tool chains by
-  setting '$TEMPFILEPREFIX'.
+  prefix of '@'.  This may be configured for other tool chains by
+  setting '$TEMPFILEPREFIX':
+      env["TEMPFILEPREFIX"] = '-@'        # diab compiler
+      env["TEMPFILEPREFIX"] = '-via'      # arm tool chain
+      env["TEMPFILEPREFIX"] = ''          # (the empty string) PC Lint
 
-  env["TEMPFILEPREFIX"] = '-@'        # diab compiler
-  env["TEMPFILEPREFIX"] = '-via'      # arm tool chain
+  You can configure the extension of the temporary file through the
+  TEMPFILESUFFIX variable, which defaults to '.lnk' (see comments
+  in the code below):
+      env["TEMPFILESUFFIX"] = '.lnt'   # PC Lint
   """
-  def __init__(self, cmd):
+  def __init__(self, cmd, cmdstr = None):
     self.cmd = cmd
+    self.cmdstr = cmdstr
 
   def __call__(self, target, source, env, for_signature):
     if for_signature:
@@ -527,21 +533,35 @@ class NaClTempFileMunge(object):
     length = 0
     for c in cmd:
       length += len(c)
+    length += len(cmd) - 1
     if length <= maxline:
       return self.cmd
 
+    # Check if we already created the temporary file for this target
+    # It should have been previously done by Action.strfunction() call
+    node = target[0] if SCons.Util.is_List(target) else target
+    cmdlist = getattr(node.attributes, 'tempfile_cmdlist', None) \
+                if node is not None else None
+    if cmdlist is not None:
+      return cmdlist
+
     # We do a normpath because mktemp() has what appears to be
     # a bug in Windows that will use a forward slash as a path
-    # delimiter.  Windows's link mistakes that for a command line
+    # delimiter.  Windows' link mistakes that for a command line
     # switch and barfs.
     #
-    # We use the .lnk suffix for the benefit of the Phar Lap
+    # Default to the .lnk suffix for the benefit of the Phar Lap
     # linkloc linker, which likes to append an .lnk suffix if
     # none is given.
-    (fd, tmp) = tempfile.mkstemp('.lnk', text=True)
+    if env.has_key('TEMPFILESUFFIX'):
+      suffix = env.subst('$TEMPFILESUFFIX')
+    else:
+      suffix = '.lnk'
+
+    fd, tmp = tempfile.mkstemp(suffix, text=True)
     native_tmp = SCons.Util.get_native_path(os.path.normpath(tmp))
 
-    if env['SHELL'] and env['SHELL'] == 'sh':
+    if env.get('SHELL', None) == 'sh':
       # The sh shell will try to escape the backslashes in the
       # path, so unescape them.
       native_tmp = native_tmp.replace('\\', r'\\\\')
@@ -577,12 +597,14 @@ class NaClTempFileMunge(object):
     def quote_for_at_file(s):
       s = str(s)
       if ' ' in s or '\t' in s:
-        return '"' + re.sub('([ \t"])', r'\\\1', s) + '"'
+        return '"' + re.sub(r'([ \t"])', r'\\\1', s) + '"'
       return s.replace('\\', '\\\\')
 
     args = list(map(quote_for_at_file, cmd[1:]))
-    os.write(fd, " ".join(args) + "\n")
+    join_char = env.get('TEMPFILEARGJOIN',' ')
+    os.write(fd, bytearray(join_char.join(args) + "\n",'utf-8'))
     os.close(fd)
+
     # XXX Using the SCons.Action.print_actions value directly
     # like this is bogus, but expedient.  This class should
     # really be rewritten as an Action that defines the
@@ -599,9 +621,41 @@ class NaClTempFileMunge(object):
     # purity get in the way of just being helpful, so we'll
     # reach into SCons.Action directly.
     if SCons.Action.print_actions:
-      print("Using tempfile " + native_tmp + " for command line:\n" +
+      cmdstr = env.subst(self.cmdstr, SCons.Subst.SUBST_RAW, target,
+                          source) if self.cmdstr is not None else ''
+      # Print our message only if XXXCOMSTR returns an empty string
+      if len(cmdstr) == 0 :
+        cmdstr = ("Using tempfile "+native_tmp+" for command line:\n"+
             str(cmd[0]) + " " + " ".join(args))
-    return [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
+        self._print_cmd_str(target, source, env, cmdstr)
+
+    # Store the temporary file command list into the target Node.attributes
+    # to avoid creating two temporary files one for print and one for execute.
+    cmdlist = [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
+    if node is not None:
+      try :
+        setattr(node.attributes, 'tempfile_cmdlist', cmdlist)
+      except AttributeError:
+        pass
+    return cmdlist
+
+  def _print_cmd_str(self, target, source, env, cmdstr):
+    # check if the user has specified a cmd line print function
+    print_func = None
+    try:
+      get = env.get
+    except AttributeError:
+      pass
+    else:
+      print_func = get('PRINT_CMD_LINE_FUNC')
+
+    # use the default action cmd line print if user did not supply one
+    if not print_func:
+      action = SCons.Action._ActionAction()
+      action.print_cmd_line(cmdstr, target, source, env)
+    else:
+      print_func(cmdstr, target, source, env)
+
 
 def generate(env):
   """SCons entry point for this tool.
