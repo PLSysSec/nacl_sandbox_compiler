@@ -19,6 +19,7 @@ import zipfile
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.file_tools
+import pynacl.http_download
 import pynacl.platform
 import pynacl.repo_tools
 
@@ -103,7 +104,7 @@ def SyncArchive(out_dir, name, url, create_out_dir=False):
             subprocess.check_call(
                 ['tar', '-xvf', download_target], cwd=work_dir)
         else:
-            with open(download_target) as f:
+            with open(download_target, 'rb') as f:
                 tarfile.open(fileobj=f).extractall(path=work_dir)
     except Exception as e:
         print('Error downloading/extracting %s: %s' % (url, e))

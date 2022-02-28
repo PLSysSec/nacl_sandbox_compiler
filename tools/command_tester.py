@@ -177,7 +177,10 @@ STATUS_INTEGER_DIVIDE_BY_ZERO = 0xc0000094
 # Python's wrapper for GetExitCodeProcess() treats the STATUS_* values
 # as negative, although the unsigned values are used in headers and
 # are more widely recognised.
+# This has been fixed in python3.
 def MungeWindowsErrorExit(num):
+  if sys.version_info[0] >= 3:
+    return num
   return num - 0x100000000
 
 # If a crash occurs in x86-32 untrusted code on Windows, the kernel

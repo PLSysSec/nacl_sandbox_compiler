@@ -201,7 +201,7 @@ def SetupEnvironment(options):
   # TODO(dschuff): This should come from toolchain_build or the upcoming common
   # python infrastructure.
   env['PNACL_BUILDBOT'] = os.environ.get('PNACL_BUILDBOT', 'false')
-  if sys.platform == 'linux2':
+  if sys.platform.startswith('linux'):
     env['BUILD_PLATFORM'] = 'linux'
     env['BUILD_ARCH'] = os.environ.get(
         'BUILD_ARCH',
