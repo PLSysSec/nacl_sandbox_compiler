@@ -92,7 +92,7 @@ mode-buildbot-arm() {
   else
     mode="opt"
   fi
-  buildbot/buildbot_pnacl.py --skip-run ${mode} arm pnacl
+  vpython buildbot/buildbot_pnacl.py --skip-run ${mode} arm pnacl
 }
 
 mode-buildbot-arm-hw() {
@@ -102,14 +102,15 @@ mode-buildbot-arm-hw() {
   else
     mode="opt"
   fi
-  buildbot/buildbot_pnacl.py --skip-build ${mode} arm pnacl
+  # Hardware bots don't have vpython.
+  python buildbot/buildbot_pnacl.py --skip-build ${mode} arm pnacl
 }
 
 mode-trybot-qemu() {
   clobber
   local arch=$1
 
-  buildbot/buildbot_pnacl.py opt $arch pnacl
+  vpython buildbot/buildbot_pnacl.py opt $arch pnacl
 }
 
 mode-buildbot-arm-dbg() {
@@ -150,7 +151,7 @@ mode-buildbot-arm-hw-try() {
 tc-tests-all() {
   # All the SCons tests (the same ones run by the main waterfall bot)
   for arch in arm 32 64; do
-    buildbot/buildbot_pnacl.py opt "${arch}" pnacl || handle-error
+    vpython buildbot/buildbot_pnacl.py opt "${arch}" pnacl || handle-error
   done
 
   # Run the GCC torture tests just for x86-32.  Testing a single
@@ -166,14 +167,14 @@ tc-tests-all() {
   ./scons --verbose platform=x86-32 -j8 sel_ldr irt_core
 
   echo "@@@BUILD_STEP torture_tests x86-32 @@@"
-  tools/toolchain_tester/torture_test.py pnacl x86-32 --verbose \
+  vpython tools/toolchain_tester/torture_test.py pnacl x86-32 --verbose \
       --concurrency=8 || handle-error
 }
 
 tc-tests-fast() {
   local arch="$1"
 
-  buildbot/buildbot_pnacl.py opt 32 pnacl
+  vpython buildbot/buildbot_pnacl.py opt 32 pnacl
 }
 
 mode-buildbot-tc-x8664-linux() {

@@ -332,9 +332,9 @@ def Main():
   # When running from cygwin, we sometimes want to use a native python.
   # The native python will use the depot_tools version by invoking python.bat.
   if pynacl.platform.IsWindows():
-    env['NATIVE_PYTHON'] = 'python.bat'
+    env['NATIVE_PYTHON'] = 'vpython.bat'
   else:
-    env['NATIVE_PYTHON'] = 'python'
+    env['NATIVE_PYTHON'] = 'vpython'
 
   if sys.platform == 'win32':
     # If the temp directory is not on the same drive as the working directory,

@@ -150,7 +150,7 @@ tc-test-bot() {
   clobber
 
   # Update Clang
-  python ${CLANG_UPDATE}
+  vpython ${CLANG_UPDATE}
 
   # Only build MIPS stuff on mips bots
   if [[ ${archset} == "mips" ]]; then
@@ -162,11 +162,11 @@ tc-test-bot() {
 
   # Build the un-sandboxed toolchain. The build script outputs its own buildbot
   # annotations.
-  ${TOOLCHAIN_BUILD} --verbose --sync --clobber --testsuite-sync \
+  vpython ${TOOLCHAIN_BUILD} --verbose --sync --clobber --testsuite-sync \
                      --packages-file ${TEMP_PACKAGES}
 
   # Extract the built packages using the packages script.
-  python ${PACKAGES_SCRIPT} extract --skip-missing --packages ${TEMP_PACKAGES}
+  vpython ${PACKAGES_SCRIPT} extract --skip-missing --packages ${TEMP_PACKAGES}
 
   # Linking the tests require additional sdk libraries like libnacl.
   # Do this once and for all early instead of attempting to do it within
@@ -174,7 +174,7 @@ tc-test-bot() {
   # steps building the prerequisites -- sometimes the early test steps
   # get skipped.
   echo "@@@BUILD_STEP install sdk libraries @@@"
-  ${PNACL_BUILD} sdk
+  vpython ${PNACL_BUILD} sdk
   for arch in ${archset}; do
     # Similarly, build the run prerequisites (sel_ldr and the irt) early.
     echo "@@@BUILD_STEP build run prerequisites [${arch}]@@@"
@@ -197,7 +197,7 @@ tc-test-bot() {
       CC=gcc nacltest-${arch} || handle-error
 
     echo "@@@BUILD_STEP torture_tests_clang $arch @@@"
-    ${TORTURE_TEST} clang ${arch} --verbose \
+    vpython ${TORTURE_TEST} clang ${arch} --verbose \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
 
     if [[ "${arch}" == "x86-32" ]]; then
@@ -206,7 +206,7 @@ tc-test-bot() {
       continue
     fi
     echo "@@@BUILD_STEP torture_tests_pnacl $arch @@@"
-    ${TORTURE_TEST} pnacl ${arch} --verbose \
+    vpython ${TORTURE_TEST} pnacl ${arch} --verbose \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 
@@ -229,14 +229,14 @@ tc-test-bot() {
     fi
     for opt in "${optset[@]}"; do
       echo "@@@BUILD_STEP llvm-test-suite ${arch} ${opt} @@@"
-      python ${LLVM_TEST} --testsuite-clean
-      LD_LIBRARY_PATH=${LIBRARY_ABSPATH} python ${LLVM_TEST} \
+      vpython ${LLVM_TEST} --testsuite-clean
+      LD_LIBRARY_PATH=${LIBRARY_ABSPATH} vpython ${LLVM_TEST} \
         --testsuite-configure --testsuite-run --testsuite-report \
         --arch ${arch} ${opt} -v -c || handle-error
     done
 
     echo "@@@BUILD_STEP libcxx-test ${arch} @@@"
-    LD_LIBRARY_PATH=${LIBRARY_ABSPATH} python ${LLVM_TEST} \
+    LD_LIBRARY_PATH=${LIBRARY_ABSPATH} vpython ${LLVM_TEST} \
       --libcxx-test --arch ${arch} -c || handle-error
 
     # Note: we do not build the sandboxed translator on this bot
