@@ -612,7 +612,7 @@ def ArgsTooLongForWindows(args):
 
 
 def ConvertArgsToFile(args):
-  fd, outfile = tempfile.mkstemp()
+  fd, outfile = tempfile.mkstemp(text=True)
   # Remember to delete this file afterwards.
   TempFiles.add(outfile)
   cmd = args[0]
