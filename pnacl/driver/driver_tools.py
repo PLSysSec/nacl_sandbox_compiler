@@ -617,7 +617,7 @@ def ConvertArgsToFile(args):
   TempFiles.add(outfile)
   cmd = args[0]
   other_args = args[1:]
-  os.write(fd, ' '.join(other_args))
+  os.write(fd, ' '.join(other_args).encode('utf-8'))
   os.close(fd)
   return [cmd, '@' + outfile]
 
