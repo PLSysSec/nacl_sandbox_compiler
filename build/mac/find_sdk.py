@@ -83,7 +83,7 @@ def main():
   if options.print_sdk_path:
     print(subprocess.check_output(
         ['xcodebuild', '-version', '-sdk', 'macosx' + best_sdk,
-         'Path']).strip())
+         'Path'], encoding='utf-8').strip())
 
   return best_sdk
 

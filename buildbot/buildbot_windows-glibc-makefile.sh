@@ -163,7 +163,7 @@ ${NATIVE_PYTHON} build/package_version/package_version.py \
 
 # Before we start testing, put in dummy mock archives so gyp can still untar
 # the entire package.
-python build/package_version/package_version.py fillemptytars \
+python3 build/package_version/package_version.py fillemptytars \
   --fill-package nacl_x86_glibc
 
 # sync_backports is obsolete and should probably be removed.

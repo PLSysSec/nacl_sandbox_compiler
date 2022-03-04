@@ -205,7 +205,7 @@ def MacSdkFlags():
       os.path.join(os.path.dirname(NACL_DIR), 'build', 'mac', 'find_sdk.py'),
       '--print_sdk_path',
       MAC_SDK_MIN,
-      ]).splitlines()
+      ], encoding='utf-8').splitlines()
   return ['-isysroot', mac_sdk_sysroot,
           '-mmacosx-version-min=' + MAC_DEPLOYMENT_TARGET]
 

@@ -290,9 +290,8 @@ def BuildScript(status, context):
     #   nacl_chrome_download_*
     #   browserprofile_*
     #   tmp*
-    file_name_re = re.compile(
-        r'[\\/\A]('
-        r'tmp_nacl[\\/].+|'
+    regex_body = (
+        r'(tmp_nacl[\\/].+|'
         r'tmp_nacl.+|'
         r'nacl.+|'
         r'[0-9a-fA-F]+\.tmp|'
@@ -305,7 +304,10 @@ def BuildScript(status, context):
         r'nacl_chrome_download_[^\\/]+|'
         r'browserprofile_[^\\/]+|'
         r'tmp[^\\/]+'
-        r')$')
+        r')$'
+    )
+    file_name_re = re.compile(
+        r'([\\/]' + regex_body + r')|(\A' + regex_body + r')')
     file_name_filter = lambda fn: file_name_re.search(fn) is not None
 
     # Clean nacl_tmp/* separately, so we get a list of leaks.

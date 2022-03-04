@@ -69,8 +69,9 @@ class TestTranslatorPruned(unittest.TestCase):
     results = {}
     nm_cmd = [nm_tool, '--size-sort', bin_name]
     print('Getting symbols and sizes by running:\n' + ' '.join(nm_cmd))
-    nm = subprocess.Popen(nm_cmd, stdout=subprocess.PIPE)
-    output = subprocess.check_output(cxxfilt_tool, stdin=nm.stdout)
+    nm = subprocess.Popen(nm_cmd, stdout=subprocess.PIPE, encoding='utf-8')
+    output = subprocess.check_output(cxxfilt_tool, stdin=nm.stdout,
+                                     encoding='utf-8')
     nm.wait()
     for line in iter(output.splitlines()):
       (hex_size, t, sym_name) = line.split(' ', 2)

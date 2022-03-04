@@ -156,14 +156,14 @@ hooks = [
     'name': 'sysroot_arm',
     'pattern': '.',
     'condition': 'checkout_linux',
-    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=arm'],
   },
   {
     'name': 'sysroot_arm64',
     'pattern': '.',
     'condition': 'checkout_linux',
-    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=arm64'],
   },
   {
@@ -174,14 +174,14 @@ hooks = [
     'name': 'sysroot_x64',
     'pattern': '.',
     'condition': 'checkout_linux',
-    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=x64'],
   },
   {
     'name': 'sysroot_x86',
     'pattern': '.',
     'condition': 'checkout_linux',
-    'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
+    'action': ['python3', 'build/linux/sysroot_scripts/install-sysroot.py',
                '--arch=x86'],
   },
   {
@@ -189,7 +189,7 @@ hooks = [
     'name': 'win_toolchain',
     'pattern': '.',
     'condition': 'checkout_win',
-    'action': ['python', 'build/vs_toolchain.py', 'update'],
+    'action': ['python3', 'build/vs_toolchain.py', 'update'],
   },
   {
     # Update the Mac toolchain if necessary.
@@ -203,13 +203,13 @@ hooks = [
     # Note: On Win, this should run after win_toolchain, as it may use it.
     'name': 'clang',
     'pattern': '.',
-    'action': ['python', 'tools/clang/scripts/update.py'],
+    'action': ['python3', 'tools/clang/scripts/update.py'],
   },
   {
     # Update LASTCHANGE.
     'name': 'lastchange',
     'pattern': '.',
-    'action': ['python', 'build/util/lastchange.py',
+    'action': ['python3', 'build/util/lastchange.py',
                '-o', 'build/util/LASTCHANGE'],
   },
   {
@@ -220,7 +220,7 @@ hooks = [
     'name': 'ensure_gn_version',
     'pattern': '.',
     'action': [
-      'python',
+      'python3',
       'buildtools/ensure_gn_version.py',
       Var('gn_version')
     ],
@@ -267,7 +267,7 @@ hooks = [
   # Pull NaCl Toolchain binaries.
   {
     "pattern": ".",
-    "action": ["python",
+    "action": ["python3",
                "native_client/build/package_version/package_version.py",
                "sync", "--extract",
     ],
@@ -275,7 +275,7 @@ hooks = [
   # Cleanup any stale package_version files.
   {
     "pattern": ".",
-    "action": ["python",
+    "action": ["python3",
                "native_client/build/package_version/package_version.py",
                "cleanup",
     ],

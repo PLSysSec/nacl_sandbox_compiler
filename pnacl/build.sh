@@ -455,7 +455,7 @@ translate-sb-tool() {
     for tarch in ${arches}; do
       local nexe="${toolname}.${tarch}.nexe"
       local llvm_host_glob="${LLVM_INSTALL_DIR}/lib/libLLVM*so"
-      python "${PNACL_ROOT}/prune_test.py" "${PNACL_NM}" \
+      python3 "${PNACL_ROOT}/prune_test.py" "${PNACL_NM}" \
         "${PNACL_CXXFILT}" "${llvm_host_glob}" "${nexe}"
     done
   fi

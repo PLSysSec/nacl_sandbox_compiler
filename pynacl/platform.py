@@ -158,7 +158,7 @@ def IsLinux64(platform=None, machine=None):
 # with Python APIs
 def CygPath(path):
   if IsCygWin():
-    return subprocess.check_output(['cygpath', path]).strip()
+    return subprocess.check_output(['cygpath', path], encoding='utf-8').strip()
   return path
 
 # Some of our tools utilize a unique platform string which is used to

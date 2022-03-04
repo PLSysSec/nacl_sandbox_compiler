@@ -23,5 +23,4 @@ fi
 
 readonly BASE_SCRIPT="${SCRIPT_DIR_ABS}/scons.py"
 
-python "${BASE_SCRIPT}" "$@"
-
+python3 "${BASE_SCRIPT}" "$@"

@@ -18,7 +18,8 @@ class Test(unittest.TestCase):
       # but not so well when followed by something else.
       c = '--%s--' % chr(ascii_value)
       escaped = run_test_via_ssh.ShellEscape(c)
-      result = subprocess.check_output('echo ' + escaped, shell=True)
+      result = subprocess.check_output('echo ' + escaped, shell=True,
+                                       encoding='utf-8')
       self.assertEquals(result, '%s\n' % c)
 
 

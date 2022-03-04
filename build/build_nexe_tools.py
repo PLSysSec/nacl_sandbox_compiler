@@ -133,6 +133,8 @@ class CommandRunner(object):
         result = runner(' '.join(cmd_line), shell=True, **kwargs)
       else:
         result = runner(cmd_line, **kwargs)
+      if get_output and result:
+        result = result.decode('utf-8')
     except Exception as err:
       raise Error('%s\nFAILED: %s' % (' '.join(cmd_line), str(err)))
     finally:

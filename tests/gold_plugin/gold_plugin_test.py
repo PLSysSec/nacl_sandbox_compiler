@@ -39,7 +39,8 @@ def RunTool(tooldir, tool, flags, cwd, fatal_errors=True):
     cmd = [toolcmd] + flags
     print('Running command:', cmd)
     # shell=True is required to work properly on Windows
-    return subprocess.check_output(' '.join(cmd), cwd=cwd, shell=True)
+    return subprocess.check_output(' '.join(cmd), cwd=cwd, shell=True,
+                                   encoding='utf-8')
   except subprocess.CalledProcessError as exc:
     print('Command failed with status', exc.returncode)
     print('Output was:')

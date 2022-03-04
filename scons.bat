@@ -23,6 +23,6 @@ set PRESCONS_PATH=%PATH%
 set CYGWIN=nodosfilewarning %CYGWIN%
 
 :: Run the included copy of scons.
-python "%~dp0\scons.py" %*
+python3 "%~dp0\scons.py" %*
 
 :end

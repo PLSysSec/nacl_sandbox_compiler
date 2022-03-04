@@ -2440,7 +2440,7 @@ def MakeMacEnv(platform=None):
         os.path.join(os.path.pardir, 'build', 'mac', 'find_sdk.py'),
         '--print_sdk_path',
         mac_sdk_min
-        ]).splitlines()
+        ], encoding='utf-8').splitlines()
   else:
     mac_sdk_sysroot = 'ThisIsNotAMac'
 

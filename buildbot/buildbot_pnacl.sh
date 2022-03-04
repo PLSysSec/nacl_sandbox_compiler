@@ -103,7 +103,7 @@ mode-buildbot-arm-hw() {
     mode="opt"
   fi
   # Hardware bots don't have vpython.
-  python buildbot/buildbot_pnacl.py --skip-build ${mode} arm pnacl
+  python3 buildbot/buildbot_pnacl.py --skip-build ${mode} arm pnacl
 }
 
 mode-trybot-qemu() {
