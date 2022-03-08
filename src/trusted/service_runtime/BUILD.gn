@@ -32,14 +32,6 @@ source_set("env_cleanser") {
   deps = [ "//build/config/nacl:nacl_base" ]
 }
 
-source_set("nacl_error_code") {
-  sources = [
-    "nacl_error_code.c",
-    "nacl_error_code.h",
-  ]
-  deps = [ "//build/config/nacl:nacl_base" ]
-}
-
 if (current_toolchain == nacl_asm_toolchain) {
   source_set("sel_asm") {
     if (current_cpu == "x86") {
@@ -282,13 +274,13 @@ source_set("sel") {
 
   deps = [
     ":env_cleanser",
-    ":nacl_error_code",
     ":sel_asm($nacl_asm_toolchain)",
     "//build/config/nacl:nacl_base",
     "//native_client/src/shared/gio:gio",
     "//native_client/src/shared/imc:imc",
     "//native_client/src/shared/platform:platform",
     "//native_client/src/trusted/desc:nrd_xfer",
+    "//native_client/src/trusted/error_code",
     "//native_client/src/trusted/fault_injection:nacl_fault_inject",
     "//native_client/src/trusted/interval_multiset:nacl_interval",
     "//native_client/src/trusted/nacl_base:nacl_base",
