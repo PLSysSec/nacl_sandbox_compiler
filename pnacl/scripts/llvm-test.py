@@ -311,7 +311,8 @@ def RunLitTest(testdir, testarg, lit_failures, env, options):
     maker = 'ninja' if os.path.isfile('./build.ninja') else 'make'
     cmd = [maker, testarg, '-v' if maker == 'ninja' else 'VERBOSE=1']
     print('Running lit test:', ' '.join(cmd))
-    make_pipe = subprocess.Popen(cmd, env=sub_env, stdout=subprocess.PIPE)
+    make_pipe = subprocess.Popen(cmd, env=sub_env, stdout=subprocess.PIPE,
+                                 encoding='utf-8')
 
     lines = []
     # When run by a buildbot, we need to incrementally tee the 'make'
