@@ -23,7 +23,7 @@ def optimize_rows(rows):
             rows_by_action[row.action] = [row]
 
     optimized_rows = []
-    for row_group in rows_by_action.itervalues():
+    for row_group in rows_by_action.values():
         optimized_rows.extend(_optimize_rows_for_single_action(row_group))
 
     _remove_unused_columns(optimized_rows)

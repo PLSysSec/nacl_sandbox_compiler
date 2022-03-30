@@ -374,8 +374,8 @@ def PrintTopFunctions(assembly_ranges, address_to_events, trusted_events):
       return 1
   flattened.sort(cmp=CompareCounts, reverse=True)
   top_30 = flattened[:30]
-  total_samples = (sum(address_to_events.itervalues())
-                   + sum(trusted_events.itervalues()))
+  total_samples = (sum(address_to_events.values())
+                   + sum(trusted_events.values()))
   print("============= Top 30 Functions ===============")
   print("EVENTS\t\tPCT\tCUM\tFUNC [LOW_VMA, UPPER_VMA]")
   cum_pct = 0.0

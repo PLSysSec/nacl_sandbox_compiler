@@ -275,7 +275,7 @@ def Report(options, filename=None, filecontents=None):
   # intersect them and check for unexpected fails/passes
   unexpected_failures = 0
   unexpected_passes = 0
-  for tests in alltests.itervalues():
+  for tests in alltests.values():
     for test in tests:
       if test in failures:
         if test not in EXCLUDES:
