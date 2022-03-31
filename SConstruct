@@ -817,6 +817,7 @@ tests_to_disable_qemu = set([
     'run_subprocess_test',
     'run_thread_suspension_test',
     'run_dynamic_modify_test',
+    'run_irt_ext_libc_test', # Flaky for saigo
 ])
 
 tests_to_disable = set()
