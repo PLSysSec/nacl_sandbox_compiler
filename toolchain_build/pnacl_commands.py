@@ -160,6 +160,17 @@ def InstallDriverScripts(logger, subst, srcdir, dstdir, host_windows=False,
     print('HOST_ARCH=x86_64' if host_64bit else 'HOST_ARCH=x86_32', file=f)
     for line in extra_config:
       print(subst.Substitute(line), file=f)
+  # Install a remote_toolchains_inputs file for reclient, so that resulting .pyc
+  # files are not picked up by accident.
+  logger.debug(' Installing remote_toolchain_inputs')
+  source = os.path.join(NACL_DIR, 'toolchain_build',
+                        'pnacl_remote_toolchain_inputs.txt')
+  destination = os.path.join(dstdir, 'remote_toolchain_inputs')
+  shutil.copy(source, destination)
+  os.chmod(destination,
+           stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR | stat.S_IRGRP |
+           stat.S_IWGRP | stat.S_IXGRP)
+
 
 
 def CheckoutGitBundleForTrybot(repo, destination):
