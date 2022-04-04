@@ -16,7 +16,7 @@
 # cause other problems.
 
 here = get_label_info(".", "dir")
-bootstrap_toolchain = here + "/toolchain:nacl_bootstrap_" + target_cpu
+bootstrap_toolchain = here + "/toolchain:nacl_bootstrap_" + current_cpu
 compiler = "g++"
 
 if (default_toolchain == "//build/toolchain/cros:target") {
