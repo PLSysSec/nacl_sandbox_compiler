@@ -12,4 +12,9 @@ executable("tls_edit") {
     "//native_client/src/shared/platform:platform",
     "//native_client/src/trusted/validator_ragel:rdfa_validator",
   ]
+
+  # TODO(fabiansommer): Remove with next build deps roll
+  if (is_linux && current_cpu == "x86") {
+    ldflags = [ "-static-libstdc++" ]
+  }
 }

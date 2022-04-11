@@ -7,7 +7,7 @@
 #
 # You can auto-update this file with ./pnacl/deps_update.py
 
-binutils=03d37f8de86d6f876979760502021c003523bdef
+binutils=47a96d057be116b4dc6289f54c873d086f320915
 #
 # Three lines avoid merge conflicts.
 #
