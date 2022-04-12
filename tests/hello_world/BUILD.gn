@@ -9,9 +9,4 @@ executable("hello_world") {
   deps = [
     "//build/config/nacl:nacl_base",
   ]
-
-  # TODO(fabiansommer): Remove with next build deps roll
-  if (is_linux && current_cpu == "x86") {
-    ldflags = [ "-static-libstdc++" ]
-  }
 }

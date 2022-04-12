@@ -18,25 +18,16 @@ test("small_tests") {
   deps = [
     ":test_utils",
   ]
-  if (is_linux && current_cpu == "x86") {
-    ldflags = [ "-static-libstdc++" ]
-  }
 }
 
 test("medium_tests") {
   deps = [
     ":test_utils",
   ]
-  if (is_linux && current_cpu == "x86") {
-    ldflags = [ "-static-libstdc++" ]
-  }
 }
 
 test("large_tests") {
   deps = [
     ":test_utils",
   ]
-  if (is_linux && current_cpu == "x86") {
-    ldflags = [ "-static-libstdc++" ]
-  }
 }

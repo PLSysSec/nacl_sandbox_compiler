@@ -8,10 +8,10 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 956026
-  "build_rev": "fe157b1f4f755b40dd335a77dee8ba8b3bb832a7", # from cr commit position 956026
-  "buildtools_revision": "075dd7e22837a69189003e4fa84499acf63188cf", # from cr commit position 942746
-  "clang_rev": "9c18fde73776aad8cb0d055d4c64965d05835290", # from cr commit position 946010
+  # chrome_rev: 814460
+  "build_rev": "d2be8d77672bfc63466d8927fbc380c07204b73b", # from cr commit position 826252
+  "buildtools_revision": "4be464e050b3d05060471788f926b34c641db9fd", # from cr commit position 811878
+  "clang_rev": "7e5979b1dd98e27570e58908e70a6e0c5978aa0e", # from cr commit position 814250
 
   # build_overrides/ is a separate, NaCl-specific repo *forked* from
   # chromium/src/build_overrides/. It may need to be updated if
@@ -26,7 +26,7 @@ vars = {
   "breakpad_rev": "54fa71efbe50fb2b58096d871575b59e12edba6d",
 
   # GN CIPD package version.
-  "gn_version": "git_revision:b79031308cc878488202beb99883ec1f2efd9a6d",
+  "gn_version": "git_revision:e002e68a48d1c82648eadde2f6aafa20d08c36f2",
 
   # Separately pinned repositories, update with roll-dep individually.
   "gtest_rev": "2d3543f81d6d4583332f8b60768ade18e0f96220",
@@ -212,13 +212,26 @@ hooks = [
     'action': ['python3', 'build/util/lastchange.py',
                '-o', 'build/util/LASTCHANGE'],
   },
+  {
+    # Verify that we have the right GN binary and force-install it if we
+    # don't, in order to work around crbug.com/944367.
+    # TODO(crbug.com/944667) Get rid of this when cipd is ensuring we
+    # have the right binary more carefully and we no longer need this.
+    'name': 'ensure_gn_version',
+    'pattern': '.',
+    'action': [
+      'python3',
+      'buildtools/ensure_gn_version.py',
+      Var('gn_version')
+    ],
+  },
   # Pull clang-format binaries using checked-in hashes.
   {
     'name': 'clang_format_win',
     'pattern': '.',
-    'condition': 'host_os == "win"',
     'action': [ 'download_from_google_storage',
                 '--no_resume',
+                '--platform=win32',
                 '--no_auth',
                 '--bucket', 'chromium-clang-format',
                 '-s', 'buildtools/win/clang-format.exe.sha1',
@@ -227,9 +240,9 @@ hooks = [
   {
     'name': 'clang_format_mac',
     'pattern': '.',
-    'condition': 'host_os == "mac"',
     'action': [ 'download_from_google_storage',
                 '--no_resume',
+                '--platform=darwin',
                 '--no_auth',
                 '--bucket', 'chromium-clang-format',
                 '-s', 'buildtools/mac/clang-format.sha1',
@@ -238,9 +251,9 @@ hooks = [
   {
     'name': 'clang_format_linux',
     'pattern': '.',
-    'condition': 'host_os == "linux"',
     'action': [ 'download_from_google_storage',
                 '--no_resume',
+                '--platform=linux*',
                 '--no_auth',
                 '--bucket', 'chromium-clang-format',
                 '-s', 'buildtools/linux64/clang-format.sha1',

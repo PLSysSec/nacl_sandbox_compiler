@@ -343,8 +343,4 @@ executable("sel_ldr") {
     ldflags = [ "-pie" ]
     data_deps = [ "linux:bootstrap" ]
   }
-  # TODO(fabiansommer): Remove with next build deps roll
-  if (is_linux) {
-    ldflags += [ "-static-libstdc++" ]
-  }
 }
