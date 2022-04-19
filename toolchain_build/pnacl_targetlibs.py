@@ -20,7 +20,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 CLANG_VER = '3.7.0'
-SAIGO_CLANG_VER = '14.0.0'
+SAIGO_CLANG_VER = '15.0.0'
 
 # Return the file name with the appropriate suffix for an executable file.
 def Exe(file):

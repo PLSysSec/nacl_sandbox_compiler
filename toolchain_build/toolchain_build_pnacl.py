@@ -1192,8 +1192,11 @@ def HostToolsSaigo(host, options):
 
   if TripleIsMSVC(host):
     PrepareVSEnv()
+    # TODO(crbug.com/1317557): Don't use FORCE_USE_OLD_TOOLCHAIN.
     llvm_host_arch_flags += ['-DLLVM_USE_CRT_RELEASE=MT',
-                             '-DLLVM_USE_CRT_DEBUG=MTd']
+                             '-DLLVM_USE_CRT_DEBUG=MTd',
+                             '-DLLVM_INCLUDE_BENCHMARKS=OFF',
+                             '-DLLVM_FORCE_USE_OLD_TOOLCHAIN=ON']
 
   build_dylib = 'OFF' if TripleIsWindows(host) else 'ON'
   rpath_origin = '@executable_path' if TripleIsMac(host) else '$ORIGIN'
