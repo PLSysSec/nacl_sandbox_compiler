@@ -154,7 +154,7 @@ def ParseXml(xml_file):
     # We mark the state as 'any_byte' if all transitions are present, lead to
     # the same state, are marked with the same actions, and 'any_byte' action
     # is among them.
-    transitions = state.forward_transitions.values()
+    transitions = list(state.forward_transitions.values())
     if (len(transitions) == 256 and
         len(set(t.to_state for t in transitions)) == 1 and
         len(set(tuple(t.actions) for t in transitions)) == 1 and
