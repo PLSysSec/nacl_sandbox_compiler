@@ -343,4 +343,12 @@ executable("sel_ldr") {
     ldflags = [ "-pie" ]
     data_deps = [ "linux:bootstrap" ]
   }
+  if (is_linux) {
+    ldflags += [
+      "-static-libstdc++",
+      # For the chromium build, -static-libstdc++ will be unused.
+      # This is intentional, so don't warn about it.
+      "-Wno-unused-command-line-argument",
+    ]
+  }
 }

@@ -818,6 +818,7 @@ tests_to_disable_qemu = set([
     'run_thread_suspension_test',
     'run_dynamic_modify_test',
     'run_irt_ext_libc_test', # Flaky for saigo
+    'run_nacl_desc_io_alloc_ctor_test',
 ])
 
 tests_to_disable = set()
@@ -2698,6 +2699,7 @@ def MakeGenericLinuxEnv(platform=None):
                     ['_LARGEFILE64_SOURCE', '1'],
                     ],
       LIBS = ['rt'],
+      LINKFLAGS=['-static-libstdc++'],
       )
 
   if linux_env.Bit('build_x86_32'):

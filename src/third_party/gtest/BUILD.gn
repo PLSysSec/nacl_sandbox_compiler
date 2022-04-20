@@ -29,8 +29,9 @@ config("gtest_config") {
   # Gtest headers need to be able to find themselves.
   include_dirs = [ "../../../../testing/gtest/include", "../../../../testing/gtest/" ]
 
+  cflags = [ "-Wno-deprecated-copy-with-user-provided-copy" ]
   if (is_win) {
-    cflags = [ "/wd4800" ]  # Unused variable warning.
+    cflags += [ "/wd4800" ]  # Unused variable warning.
   }
 }
 
@@ -106,4 +107,3 @@ source_set("gtest_main") {
     ":gtest",
   ]
 }
-

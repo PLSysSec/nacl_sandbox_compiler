@@ -424,7 +424,8 @@ def BuildScript(status, context):
                   sysroot_arch)
         configure_args += [cc + flags, cxx + flags]
         configure_args += ['CXXFLAGS=-I../..',  # For third_party/lss
-                           'LDFLAGS=-fuse-ld=lld']
+                           'LDFLAGS=-fuse-ld=lld -static-libstdc++']
+
       try:
         Command(
             context,

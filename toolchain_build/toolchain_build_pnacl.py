@@ -1174,8 +1174,8 @@ def PrepareVSEnv():
   subprocess.check_call(['vpython.bat',
                          os.path.join('..', 'build', 'toolchain', 'win',
                                       'setup_toolchain.py'),
-                         'foo', paths['win_sdk'], runtime_dirs, 'win', 'x64',
-                         'environment.x64'],
+                         paths['path'], paths['win_sdk'], runtime_dirs, 'win',
+                         'x64', 'environment.x64'],
                         cwd=outdir)
   return GetVSEnv(outdir)
 

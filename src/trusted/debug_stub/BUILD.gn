@@ -50,4 +50,9 @@ executable("gdb_rsp_unittest") {
     "//build/config/nacl:nacl_base",
     "//build/win:default_exe_manifest",
   ]
+
+  # TODO(fabiansommer): Remove with next build deps roll
+  if (is_linux && current_cpu == "x86") {
+    ldflags = [ "-static-libstdc++" ]
+  }
 }
