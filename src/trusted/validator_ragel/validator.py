@@ -5,17 +5,12 @@
 from __future__ import print_function
 
 import ctypes
+import io
 import os
 import re
 import subprocess
 import sys
 import tempfile
-
-if sys.version_info[0] >= 3:
-  from io import BytesIO as bytes_io
-else:
-  from cStringIO import StringIO as bytes_io
-
 
 import objdump_parser
 
@@ -44,7 +39,7 @@ NC_REG_R12 = 12
 NC_REG_R13 = 13
 NC_REG_R14 = 14
 NC_REG_R15 = 15
-ALL_REGISTERS = range(NC_REG_RAX, NC_REG_R15 + 1)
+ALL_REGISTERS = list(range(NC_REG_RAX, NC_REG_R15 + 1))
 NC_NO_REG = 0x19
 
 RESTRICTED_REGISTER_INITIAL_VALUE_MASK = 0x000000ff
@@ -248,7 +243,7 @@ class Validator(object):
 
     instructions = []
     total_bytes = 0
-    for line in bytes_io(result):
+    for line in io.StringIO(result):
       m = re.match(r'rejected at ([\da-f]+)', line)
       if m is not None:
         offset = int(m.group(1), 16)
@@ -291,7 +286,8 @@ class Validator(object):
            '--disassemble-all', '--disassemble-zeroes',
            '--insn-width=15',
            tmp.name],
-          stdout=subprocess.PIPE)
+          stdout=subprocess.PIPE,
+          encoding='utf-8')
 
       instructions = []
       total_bytes = 0

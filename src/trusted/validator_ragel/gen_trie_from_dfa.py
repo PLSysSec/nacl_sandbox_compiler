@@ -95,7 +95,7 @@ def ValidateInstructionAndGetRR(bitness, instruction, validator_inst):
   Raises:
     ValueError: If instruction generates multiple output restricted registers.
   """
-  bundle = ''.join(map(chr, PadToBundleSize(instruction)))
+  bundle = bytes(PadToBundleSize(instruction))
   if bitness == 32:
     result = validator_inst.ValidateChunk(bundle, bitness)
     return (result, '', '')
@@ -162,8 +162,9 @@ class WorkerState(object):
           trie.AcceptInfo(input_rr=input_rr, output_rr=output_rr))
 
 
-def Worker((dfa_prefix, dfa_state_index)):
+def Worker(dfa_prefix_and_state_index):
   """Traverse a portion of the DFA, and compute the associated subtrie."""
+  dfa_prefix, dfa_state_index = dfa_prefix_and_state_index
   worker_state = WorkerState(worker_validator)
 
   try:

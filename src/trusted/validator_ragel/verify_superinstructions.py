@@ -107,7 +107,8 @@ def ProcessSuperinstructionsFile(
 
     objdump_proc = subprocess.Popen(
         [objdump, '-d', object_file.name, '--insn-width=15'],
-        stdout=subprocess.PIPE)
+        stdout=subprocess.PIPE,
+        encoding='utf-8')
 
     objdump_iter = iter(objdump_parser.SkipHeader(objdump_proc.stdout))
 

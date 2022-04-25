@@ -42,14 +42,15 @@ def ParseLine(line):
   Returns
       Instruction tuple.
   """
-
-  address, bytes, disasm = line.strip().split('\t')
+  address, encoded_instruction, disasm = line.strip().split('\t')
   assert disasm.strip() != ''
 
   assert address.endswith(':')
   address = int(address[:-1], 16)
 
-  return Instruction(address, [int(byte, 16) for byte in bytes.split()], disasm)
+  return Instruction(address,
+                     [int(byte, 16) for byte in encoded_instruction.split()],
+                     disasm)
 
 
 def CanonicalizeInstruction(insn, simplify_condition_jumps=False):

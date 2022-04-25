@@ -236,7 +236,8 @@ class WorkerState(object):
     self.num_valid += ValidateInstruction(bytes, self.validator_inst)
 
 
-def Worker((prefix, state_index)):
+def Worker(prefix_and_state_index):
+  prefix, state_index = prefix_and_state_index
   worker_state = WorkerState(prefix, worker_validator)
 
   try:

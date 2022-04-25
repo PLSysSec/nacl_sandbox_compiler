@@ -40,6 +40,7 @@ class RdfaTestRunner(test_format.TestRunner):
            '--insn-width=15',
            tmp.name],
           stdout=subprocess.PIPE,
+          encoding='utf-8',
           # On Windows, builds of binutils based on Cygwin end lines with
           # \n while builds of binutils based on MinGW end lines with \r\n.
           # The 'universal_newlines' feature makes this work with either one.

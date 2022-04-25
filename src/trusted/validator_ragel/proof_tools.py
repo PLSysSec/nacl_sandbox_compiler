@@ -359,11 +359,11 @@ def Disassemble(options, byte_sequences_iter):
 
     objdump_proc = subprocess.Popen(
         [options.objdump, '-d', '--insn-width=15', object_file.name],
-        stdout=subprocess.PIPE)
-
-    for line, (accept_info1, accept_info2) in itertools.izip(
+        stdout=subprocess.PIPE,
+        encoding='utf-8')
+    for line, (accept_info1, accept_info2) in zip(
         objdump_parser.SkipHeader(objdump_proc.stdout),
-        iter(accepts)):
+        accepts):
       instruction = objdump_parser.CanonicalizeInstruction(
             objdump_parser.ParseLine(line),
             simplify_condition_jumps=True)

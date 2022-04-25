@@ -98,13 +98,15 @@ class WorkerState(object):
 
       objdump_proc = subprocess.Popen(
           [options.objdump, '-d', '--insn-width=15', object_file.name],
-          stdout=subprocess.PIPE)
+          stdout=subprocess.PIPE,
+          encoding='utf-8')
 
       decoder_proc = subprocess.Popen(
           [options.decoder, object_file.name],
-          stdout=subprocess.PIPE)
+          stdout=subprocess.PIPE,
+          encoding='utf-8')
 
-      for line1, line2 in itertools.izip_longest(
+      for line1, line2 in itertools.zip_longest(
           objdump_parser.SkipHeader(objdump_proc.stdout),
           decoder_proc.stdout,
           fillvalue=None):
@@ -129,7 +131,8 @@ class WorkerState(object):
     self._CheckFile()
 
 
-def Worker((prefix, state_index)):
+def Worker(prefix_and_state_index):
+  prefix, state_index = prefix_and_state_index
   worker_state = WorkerState(prefix)
 
   try:
