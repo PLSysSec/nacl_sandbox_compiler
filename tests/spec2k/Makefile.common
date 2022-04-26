@@ -170,14 +170,14 @@ $(IT).js: $(SRC) $(CPPSRC)
 		--em-config $(WASM_INSTALL_DIR)/emscripten_config_vanilla \
 		$(CFLAGS) -s TOTAL_MEMORY=268435456 \
 		-Wno-implicit-function-declaration -O2 \
-		$(shell python ../prepare_input.py --gen-emcc-embed --config \
+		$(shell python3 ../prepare_input.py --gen-emcc-embed --config \
 			$(SPEC_COMPONENT) train)
 	$(WASM_INSTALL_DIR)/bin/emscripten/emcc $^ -o $(IT).ref.js \
 		-s BINARYEN=1 -s 'BINARYEN_METHOD="native-wasm"' \
 		--em-config $(WASM_INSTALL_DIR)/emscripten_config_vanilla \
 		$(CFLAGS) -s TOTAL_MEMORY=268435456 \
 		-Wno-implicit-function-declaration -O2 \
-		$(shell python ../prepare_input.py --gen-emcc-embed --config \
+		$(shell python3 ../prepare_input.py --gen-emcc-embed --config \
 			$(SPEC_COMPONENT) ref)
 	touch $@
 
@@ -460,7 +460,7 @@ $(IT).pnacl_translator.x8632: $(IT).unopt.stripped.pexe
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 $(IT).pnacl_translator.opt.x8632: $(IT).opt.stripped.pexe
-	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32	
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 $(IT).pnacl_translator_fast.opt.x8632: $(IT).opt.stripped.pexe
