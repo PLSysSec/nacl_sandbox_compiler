@@ -1177,26 +1177,42 @@ def PrepareVSEnv():
                          paths['path'], paths['win_sdk'], runtime_dirs, 'win',
                          'x64', 'environment.x64'],
                         cwd=outdir)
-  return GetVSEnv(outdir)
+  env = GetVSEnv(outdir)
+
+  # This value matches the version of cl.exe currently used by the bots, but
+  # it needs to be made explicit in order to run on Goma
+  # (crbug.com/1292405). This will need to be updated when LLVM requires a newer
+  # MSVC version.
+  # Flags need to be injected via the env (rather than on the CMake command
+  # line) so they add to rather than overriding the default flags.
+  assert('CFLAGS' not in env)
+  assert('CXXFLAGS' not in env)
+  env['CXXFLAGS'] = env['CFLAGS'] = '-fmsc-version=1926'
+
+  return env
 
 def HostToolsSaigo(host, options):
   def H(component_name):
     return FlavoredName(component_name, host, options)
 
-  tools = {}
-  tool_flags, tool_deps = HostArchToolFlags(host, [], options)
-  llvm_cmake_config_env = {'LDFLAGS': ' '.join(tool_flags['LDFLAGS'])}
+  base_env = {}
   llvm_host_arch_flags, llvm_inputs, llvm_deps = \
       CmakeHostArchFlags(host, options)
-  llvm_deps = list(set(tool_deps + llvm_deps))
-
   if TripleIsMSVC(host):
-    PrepareVSEnv()
-    # TODO(crbug.com/1317557): Don't use FORCE_USE_OLD_TOOLCHAIN.
+    base_env = PrepareVSEnv()
     llvm_host_arch_flags += ['-DLLVM_USE_CRT_RELEASE=MT',
                              '-DLLVM_USE_CRT_DEBUG=MTd',
                              '-DLLVM_INCLUDE_BENCHMARKS=OFF',
-                             '-DLLVM_FORCE_USE_OLD_TOOLCHAIN=ON']
+                            ]
+
+  tools = {}
+  tool_flags, tool_deps = HostArchToolFlags(host, [], options)
+  llvm_deps = list(set(tool_deps + llvm_deps))
+
+  llvm_cmake_config_env = {'LDFLAGS': ' '.join(tool_flags['LDFLAGS'])}
+  llvm_cmake_config_env.update(base_env)
+  cc_env = AflFuzzEnvMap(host, options)
+  cc_env.update(base_env)
 
   build_dylib = 'OFF' if TripleIsWindows(host) else 'ON'
   rpath_origin = '@executable_path' if TripleIsMac(host) else '$ORIGIN'
@@ -1236,7 +1252,7 @@ def HostToolsSaigo(host, options):
                   path_dirs=GomaPathDirs(host, options))] +
               [command.Command(NinjaCommand(host, options) + ['-v'],
                                path_dirs=GomaPathDirs(host, options),
-                               env=AflFuzzEnvMap(host, options)),
+                               env=cc_env),
                command.Command(NinjaCommand(host, options) + ['install']),
                # The FileCheck binary is needed by some tests.
                command.Copy(os.path.join('bin', Exe('FileCheck', host)),
