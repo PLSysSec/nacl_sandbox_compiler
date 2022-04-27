@@ -96,7 +96,7 @@ class ExternalChecker(object):
     filename = props['name']
     try:
       retcode, stdout, stderr = RunCommand(self._commandline + [filename])
-    except Exception, err:
+    except Exception as err:
       print('Error processing %s:' % filename)
       print('  Cannot execute command %s. failed reason: %s ' % (str(
           self._commandline), str(err)))

@@ -12,6 +12,7 @@ import re
 
 import gclient_utils
 
+USE_PYTHON3 = True
 
 def CheckChange(input_api, message_constructor):
   """Checks for files with a modified contents.

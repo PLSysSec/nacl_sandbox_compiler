@@ -11,6 +11,8 @@ import os
 import subprocess
 import sys
 
+USE_PYTHON3 = True
+
 # List of directories to not apply presubmit project checks, relative
 # to the NaCl top directory
 EXCLUDE_PROJECT_CHECKS = [
