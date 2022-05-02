@@ -29,7 +29,7 @@ def AtomicWriteFile(data, filename):
       prefix='atomic_write', suffix='.tmp',
       dir=os.path.dirname(filename))
   fh = os.fdopen(handle, 'wb')
-  if sys.version_info[0] >= 3 and isinstance(data, str):
+  if isinstance(data, str):
     data = data.encode('utf-8')
   fh.write(data)
   fh.close()
@@ -50,7 +50,7 @@ def WriteFile(data, filename):
     filename: Filename to write.
   """
   fh = open(filename, 'wb')
-  if sys.version_info[0] >= 3 and isinstance(data, str):
+  if isinstance(data, str):
     data = data.encode('utf-8')
   fh.write(data)
   fh.close()

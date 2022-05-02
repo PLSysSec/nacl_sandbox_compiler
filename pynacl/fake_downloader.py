@@ -8,10 +8,7 @@
 import os
 import shutil
 import sys
-if sys.version_info[0] >= 3:
-  import urllib as urllib2
-else:
-  import urllib2
+import urllib
 
 class FakeDownloader(object):
   """Testing replacement for http_download that copies files."""
@@ -31,9 +28,9 @@ class FakeDownloader(object):
   def Download(self, url, target, username=None, verbose=True, password=None,
                logger=None):
     if url not in self._urls:
-      raise urllib2.HTTPError(url, 404,
-                              'Fake Downloader retrieved invalid URL',
-                              [], None)
+      raise urllib.HTTPError(url, 404,
+                             'Fake Downloader retrieved invalid URL',
+                             [], None)
     self._copy_func(self._urls[url], target)
     self._download_count += 1
 

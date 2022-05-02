@@ -106,8 +106,7 @@ def GetLocalPackageArchiveFile(tar_dir, archive_name, archive_hash):
   Returns:
     The standard location where local package archive file is found.
   """
-  if isinstance(archive_hash, int) or (sys.version_info.major < 3 and
-                                       isinstance(archive_hash, long)):
+  if isinstance(archive_hash, int):
     archive_hash = '%040x' % archive_hash
 
   archive_directory = GetLocalPackageArchiveDir(tar_dir, archive_name)

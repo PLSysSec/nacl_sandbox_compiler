@@ -174,34 +174,20 @@ STATUS_PRIVILEGED_INSTRUCTION = 0xc0000096
 STATUS_FLOAT_DIVIDE_BY_ZERO = 0xc000008e
 STATUS_INTEGER_DIVIDE_BY_ZERO = 0xc0000094
 
-# Python's wrapper for GetExitCodeProcess() treats the STATUS_* values
-# as negative, although the unsigned values are used in headers and
-# are more widely recognised.
-# This has been fixed in python3.
-def MungeWindowsErrorExit(num):
-  if sys.version_info[0] >= 3:
-    return num
-  return num - 0x100000000
-
 # If a crash occurs in x86-32 untrusted code on Windows, the kernel
 # apparently gets confused about the cause.  It fails to take %cs into
 # account when examining the faulting instruction, so it looks at the
 # wrong instruction, so we could get either of the errors below.
 # See http://code.google.com/p/nativeclient/issues/detail?id=1689
-win32_untrusted_crash_exit = [
-    MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION),
-    MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)]
+win32_untrusted_crash_exit = [STATUS_ACCESS_VIOLATION,
+                              STATUS_PRIVILEGED_INSTRUCTION]
 
-win32_sigfpe = [
-    MungeWindowsErrorExit(STATUS_FLOAT_DIVIDE_BY_ZERO),
-    MungeWindowsErrorExit(STATUS_INTEGER_DIVIDE_BY_ZERO),
-    ]
+win32_sigfpe = [STATUS_FLOAT_DIVIDE_BY_ZERO, STATUS_INTEGER_DIVIDE_BY_ZERO]
 
 # We patch Windows' KiUserExceptionDispatcher on x86-64 to terminate
 # the process safely when untrusted code crashes.  We get the exit
 # code associated with the HLT instruction.
-win64_exit_via_ntdll_patch = [
-    MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)]
+win64_exit_via_ntdll_patch = [STATUS_PRIVILEGED_INSTRUCTION]
 
 
 # Mach exception code for Mac OS X.
@@ -221,8 +207,8 @@ status_map = {
         'mac32': [-6], # SIGABRT
         'mac64': [-6], # SIGABRT
         # On Windows, NaClAbort() exits using the HLT instruction.
-        'win32': [MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)],
-        'win64': [MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)],
+        'win32': [STATUS_PRIVILEGED_INSTRUCTION],
+        'win64': [STATUS_PRIVILEGED_INSTRUCTION],
         },
     'naclabort_coverage' : {
         # This case is here because NaClAbort() behaves differently when
@@ -280,8 +266,8 @@ status_map = {
         'mac32': [-10], # SIGBUS
         'mac64': [-11], # SIGSEGV
         'mach_exception': EXC_BAD_ACCESS,
-        'win32':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
-        'win64':  [MungeWindowsErrorExit(STATUS_ACCESS_VIOLATION)],
+        'win32':  [STATUS_ACCESS_VIOLATION],
+        'win64':  [STATUS_ACCESS_VIOLATION],
         },
     'trusted_sigsegv_or_equivalent': {
         'linux': [-11], # SIGSEGV
@@ -316,8 +302,7 @@ status_map = {
         'linux': [-4, -5, -11],
         'mac32': [-4, -10, -11],
         'mac64': [-4, -10, -11],
-        'win32': win32_untrusted_crash_exit +
-                 [MungeWindowsErrorExit(STATUS_ILLEGAL_INSTRUCTION)],
+        'win32': win32_untrusted_crash_exit + [STATUS_ILLEGAL_INSTRUCTION],
         'win64': win64_exit_via_ntdll_patch,
         },
     }

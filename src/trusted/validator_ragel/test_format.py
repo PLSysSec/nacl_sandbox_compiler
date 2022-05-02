@@ -140,10 +140,7 @@ def ParseHex(hex_content):
 
     for byte in line.split():
       assert len(byte) == 2
-      if sys.version_info[0] >= 3:
-        actual_byte = bytes([int(byte, 16)])
-      else:
-        actual_byte = chr(int(byte, 16))
+      actual_byte = bytes([int(byte, 16)])
       byte_list.append(actual_byte)
 
     if not continuation:

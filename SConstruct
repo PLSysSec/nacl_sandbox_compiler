@@ -220,12 +220,7 @@ def StringValueToBoolean(value):
   if isinstance(value, bool):
     return value
 
-  is_string = True
-  if sys.version_info[0] >= 3:
-    is_string = isinstance(value, str)
-  else:
-    is_string = isinstance(value, basestring)
-  if not is_string:
+  if not isinstance(value, str):
     raise Exception("Expecting a string but got a %s" % repr(type(value)))
 
   if value.lower() in _TRUE_STRINGS:

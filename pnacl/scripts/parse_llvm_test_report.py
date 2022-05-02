@@ -13,14 +13,11 @@ pnacl/scripts/parse_llvm_test_report.py [options]+ reportfile
 from __future__ import print_function
 
 import csv
+import io
 import logging
 import optparse
 import os
 import sys
-if sys.version_info[0] >= 3:
-  from io import StringIO as string_io
-else:
-  from StringIO import StringIO as string_io
 
 # exclude these tests
 EXCLUDES = {}
@@ -69,7 +66,7 @@ def ParseTestsuiteCSV(filecontents):
   '''
   alltests = {}
   failures = {}
-  reader = csv.DictReader(string_io(filecontents))
+  reader = csv.DictReader(io.StringIO(filecontents))
 
   testcount = 0
   for row in reader:

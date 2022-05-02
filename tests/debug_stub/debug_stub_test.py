@@ -42,17 +42,12 @@ def AssertEquals(x, y):
 
 def DecodeHex(data):
   assert len(data) % 2 == 0, data
-  if sys.version_info[0] >= 3:
-    return bytes([int(data[index * 2 : (index + 1) * 2], 16)
-                  for index in range(len(data) // 2)])
-  return b''.join([chr(int(data[index * 2 : (index + 1) * 2], 16))
-                  for index in range(len(data) // 2)])
+  return bytes([int(data[index * 2 : (index + 1) * 2], 16)
+                for index in range(len(data) // 2)])
 
 
 def EncodeHex(data):
-  if sys.version_info[0] >= 3:
-    return b''.join(b'%02x' % byte for byte in data)
-  return b''.join('%02x' % ord(byte) for byte in data)
+  return b''.join(b'%02x' % byte for byte in data)
 
 
 def DecodeEscaping(data):
@@ -61,12 +56,10 @@ def DecodeEscaping(data):
   repeat = False
   escape = False
   for byte in data:
-    if sys.version_info[0] >= 3:
-      byte = bytes([byte])
+    byte = bytes([byte])
     if escape:
       last = chr(ord(byte) ^ 0x20)
-      if sys.version_info[0] >= 3:
-        last = last.encode('utf-8')
+      last = last.encode('utf-8')
       ret += last
       escape = False
     elif repeat:

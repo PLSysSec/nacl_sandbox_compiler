@@ -359,7 +359,7 @@ def Rename(src, dst, run_cond=None):
 def WriteData(data, dst, run_cond=None):
   """Convenience method to write a file with fixed contents."""
   def writedata(logger, subst, dst, data):
-    if sys.version_info[0] >= 3 and isinstance(data, str):
+    if isinstance(data, str):
       data = data.encode('utf-8')
     dst = subst.SubstituteAbsPaths(dst)
     logger.debug('Writing Data to File: %s', dst)

@@ -8,11 +8,7 @@ import os
 import posixpath
 import subprocess
 import sys
-
-if sys.version_info[0] >= 3:
-  from urllib import parse as urlparse
-else:
-  import urlparse
+import urllib.parse
 
 from pynacl import file_tools, log_tools, platform
 
@@ -266,12 +262,12 @@ def GetAuthenticatedGitURL(url):
   In Chromium, there is a special URL that is the "authenticated" version. The
   URLs are identical but the authenticated one has special privileges.
   """
-  urlsplit = urlparse.urlsplit(url)
+  urlsplit = urllib.parse.urlsplit(url)
   if urlsplit.scheme in ('https', 'http'):
     urldict = urlsplit._asdict()
     urldict['scheme'] = 'https'
     urldict['path'] = '/a' + urlsplit.path
-    urlsplit = urlparse.SplitResult(**urldict)
+    urlsplit = urllib.parse.SplitResult(**urldict)
 
   return urlsplit.geturl()
 

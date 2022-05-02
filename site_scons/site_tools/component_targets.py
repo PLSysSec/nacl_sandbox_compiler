@@ -7,11 +7,8 @@
 
 from __future__ import print_function
 
+import builtins
 import sys
-if sys.version_info[0] >= 3:
-  import builtins as __builtin__
-else:
-  import __builtin__
 import SCons.Script
 
 
@@ -236,11 +233,11 @@ def generate(env):
   """SCons entry point for this tool."""
   env = env     # Silence gpylint
 
-  __builtin__.AddTargetGroup = AddTargetGroup
-  __builtin__.AddTargetHelp = AddTargetHelp
-  __builtin__.GetTargetGroups = GetTargetGroups
-  __builtin__.GetTargetModes = GetTargetModes
-  __builtin__.GetTargets = GetTargets
+  builtins.AddTargetGroup = AddTargetGroup
+  builtins.AddTargetHelp = AddTargetHelp
+  builtins.GetTargetGroups = GetTargetGroups
+  builtins.GetTargetModes = GetTargetModes
+  builtins.GetTargets = GetTargets
 
   env.AddMethod(SetTargetDescription)
   env.AddMethod(SetTargetProperty)

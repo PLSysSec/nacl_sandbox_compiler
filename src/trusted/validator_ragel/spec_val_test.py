@@ -4,11 +4,7 @@
 # found in the LICENSE file.
 
 import sys
-if sys.version_info[0] >= 3:
-  from io import StringIO as string_io
-else:
-  from StringIO import StringIO as string_io
-
+import io
 import objdump_parser
 import spec
 import spec_val
@@ -25,7 +21,7 @@ class SpecValTestRunner(test_format.TestRunner):
         64: spec_val.Validator64}[options.bits]
 
     instructions = []
-    for line in string_io(sections['dis']):
+    for line in io.StringIO(sections['dis']):
       insn = objdump_parser.ParseLine(line)
       insn = objdump_parser.CanonicalizeInstruction(insn)
       instructions.append(insn)

@@ -13,17 +13,13 @@ for the target environment.
 
 from __future__ import print_function
 
+import builtins
 import sys
 import SCons
 import usage_log
 import time
 
-if sys.version_info[0] >= 3:
-  import builtins as __builtin__
-  timer = time.perf_counter
-else:
-  import __builtin__
-  timer = time.clock
+timer = time.perf_counter
 
 def CheckSConsLocation():
   """Check that the version of scons we are running lives in the native_client
@@ -275,7 +271,7 @@ def SiteInitMain():
 
   # Bail out if we've been here before. This is needed to handle the case where
   # this site_init.py has been dropped into a project directory.
-  if hasattr(__builtin__, 'BuildEnvironments'):
+  if hasattr(builtins, 'BuildEnvironments'):
     return
 
   CheckSConsLocation()
@@ -283,15 +279,15 @@ def SiteInitMain():
   usage_log.log.AddEntry('Software Construction Toolkit site init')
 
   # Let people use new global methods directly.
-  __builtin__.AddSiteDir = AddSiteDir
-  __builtin__.FilterEnvironments = FilterEnvironments
-  __builtin__.BuildEnvironments = BuildEnvironments
+  builtins.AddSiteDir = AddSiteDir
+  builtins.FilterEnvironments = FilterEnvironments
+  builtins.BuildEnvironments = BuildEnvironments
   # Legacy method names
   # TODO: Remove these once they're no longer used anywhere.
-  __builtin__.BuildComponents = BuildEnvironments
+  builtins.BuildComponents = BuildEnvironments
 
   # Set list of default tools for component_setup
-  __builtin__.component_setup_tools = [
+  builtins.component_setup_tools = [
       # Defer must be first so other tools can register environment
       # setup/cleanup functions.
       'defer',
@@ -356,7 +352,7 @@ def SiteInitMain():
   host_platform = SCons.Script.GetOption('host_platform')
   if not host_platform:
     host_platform = _HostPlatform()
-  __builtin__.HOST_PLATFORM = host_platform
+  builtins.HOST_PLATFORM = host_platform
 
   # Check for site path.  This is a list of site directories which each are
   # processed as if they were passed to --site-dir.

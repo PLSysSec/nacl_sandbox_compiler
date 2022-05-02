@@ -470,13 +470,9 @@ def Run(args, cwd=None, verbose=True, exit_on_failure=False,
     # not binaries, so it doesn't want to run on Windows without a shell.
     use_shell = True if pynacl.platform.IsWindows() else False
     p = subprocess.Popen(args, stdin=stdin_redir, stdout=stdout_redir,
-                         stderr=stderr_redir, cwd=cwd, shell=use_shell)
+                         stderr=stderr_redir, cwd=cwd, shell=use_shell,
+                         encoding='utf-8')
     (stdout_contents, stderr_contents) = p.communicate()
-    if sys.version_info[0] >= 3:
-      if stdout_contents is not None:
-        stdout_contents = stdout_contents.decode('utf-8')
-      if stderr_contents is not None:
-        stderr_contents = stderr_contents.decode('utf-8')
   except KeyboardInterrupt as e:
     if p:
       p.kill()

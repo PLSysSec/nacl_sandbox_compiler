@@ -9,11 +9,8 @@ This module is automatically included by the component_setup tool.
 """
 
 
+import builtins
 import sys
-if sys.version_info[0] >= 3:
-  import builtins as __builtin__
-else:
-  import __builtin__
 import types
 import SCons
 
@@ -222,7 +219,7 @@ def generate(env):
   """SCons entry point for this tool."""
 
   # Add methods to builtin
-  __builtin__.DeclareBit = DeclareBit
+  builtins.DeclareBit = DeclareBit
 
   # Add methods to environment
   env.AddMethod(AllBits)

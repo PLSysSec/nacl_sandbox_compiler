@@ -26,13 +26,10 @@ def EnsurePortIsAvailable(addr=SEL_LDR_RSP_SOCKET_ADDR):
 
 def RspChecksum(data):
   checksum = 0
-  if sys.version_info[0] >= 3 and isinstance(data, str):
+  if isinstance(data, str):
     data = data.encode('utf-8')
   for char in data:
-    if sys.version_info[0] >= 3:
-      checksum = (checksum + char) % 0x100
-    else:
-      checksum = (checksum + ord(char)) % 0x100
+    checksum = (checksum + char) % 0x100
   return checksum
 
 
