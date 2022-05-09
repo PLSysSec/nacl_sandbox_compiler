@@ -511,14 +511,14 @@ def TargetLibs(bias_arch, is_canonical):
       return GSDJoin(lib, arch)
   target_triple = TripleFromArch(bias_arch)
   newlib_triple = target_triple if not IsBCArch(bias_arch) else 'le32-nacl'
-  newlib_cpp_flags = ''
+  newlib_cflags = ' -std=gnu89'
   if IsBCArch(bias_arch):
     # This avoids putting the body of memcpy in libc for bitcode
-    newlib_cpp_flags = ' -DPNACL_BITCODE'
+    newlib_cflags += ' -DPNACL_BITCODE'
   elif bias_arch == 'arm':
     # This ensures that nacl gets the asm version of memcpy (gcc defines this
     # macro for armv7a but clang does not)
-    newlib_cpp_flags = ' -D__ARM_FEATURE_UNALIGNED'
+    newlib_cflags += ' -D__ARM_FEATURE_UNALIGNED'
 
   clang_libdir = os.path.join(
       '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', target_triple)
@@ -535,7 +535,7 @@ def TargetLibs(bias_arch, is_canonical):
                   TargetTools(bias_arch, saigo=False) +
                   ['CFLAGS_FOR_TARGET=' +
                       TargetLibCflags(bias_arch) +
-                      newlib_cpp_flags,
+                      newlib_cflags,
                   '--prefix=',
                   '--disable-newlib-supplied-syscalls',
                   '--disable-texinfo',
@@ -624,7 +624,7 @@ def TargetLibs(bias_arch, is_canonical):
                   TargetTools(bias_arch, saigo=True) +
                   ['CFLAGS_FOR_TARGET=' +
                       TargetLibCflags(bias_arch) +
-                      newlib_cpp_flags,
+                      newlib_cflags,
                   '--prefix=',
                   '--disable-newlib-supplied-syscalls',
                   '--disable-texinfo',
