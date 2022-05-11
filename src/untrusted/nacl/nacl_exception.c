@@ -46,7 +46,7 @@ int nacl_exception_set_stack(void *stack, size_t size) {
   return irt_exception_handling.exception_stack(stack, size);
 }
 
-int nacl_exception_clear_flag() {
+int nacl_exception_clear_flag(void) {
   if (irt_exception_handling.exception_clear_flag == NULL) {
     if (!set_up_irt_exception_handling())
       return ENOSYS;

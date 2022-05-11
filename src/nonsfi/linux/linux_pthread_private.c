@@ -107,7 +107,7 @@ static struct nc_combined_tdb *get_irt_tdb(void *thread_ptr) {
  * This is the real first entry point for new threads.
  * Based on code from src/untrusted/irt/irt_thread.c
  */
-static void irt_start_thread() {
+static void irt_start_thread(void) {
   struct nc_combined_tdb *tdb = get_irt_tdb(__nacl_read_tp());
 
   /*

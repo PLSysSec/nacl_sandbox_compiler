@@ -23,6 +23,6 @@ int nacl_exception_set_stack(void *stack, size_t size) {
   return -NACL_SYSCALL(exception_stack)(stack, size);
 }
 
-int nacl_exception_clear_flag() {
+int nacl_exception_clear_flag(void) {
   return -NACL_SYSCALL(exception_clear_flag)();
 }

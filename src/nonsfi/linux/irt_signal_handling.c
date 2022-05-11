@@ -362,7 +362,7 @@ static void signal_catch(int sig, linux_siginfo_t *info, void *uc) {
   restore_context(uc);
 }
 
-static void nonsfi_install_exception_handler_locked() {
+static void nonsfi_install_exception_handler_locked(void) {
   struct linux_sigaction sa;
   unsigned int a;
 
@@ -389,7 +389,7 @@ static void nonsfi_install_exception_handler_locked() {
   }
 }
 
-static void nonsfi_install_signal_handler_locked() {
+static void nonsfi_install_signal_handler_locked(void) {
   struct linux_sigaction sa;
 
   memset(&sa, 0, sizeof(sa));
@@ -411,7 +411,7 @@ static void nonsfi_install_signal_handler_locked() {
     abort();
 }
 
-static void nonsfi_initialize_signal_handler_locked() {
+static void nonsfi_initialize_signal_handler_locked(void) {
   if (g_signal_handler_initialized)
     return;
   pid_t tgid = getpid();
@@ -430,7 +430,7 @@ static void nonsfi_initialize_signal_handler_locked() {
 /*
  * Initialize signal handlers before entering sandbox.
  */
-void nonsfi_initialize_signal_handler() {
+void nonsfi_initialize_signal_handler(void) {
   if (pthread_mutex_lock(&g_mutex) != 0)
     abort();
   nonsfi_initialize_signal_handler_locked();

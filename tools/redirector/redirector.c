@@ -70,7 +70,7 @@ const wchar_t* find_last_slash_or_backslash_delimiter(const wchar_t *start) {
 }
 
 static
-wchar_t* find_program_arguments() {
+wchar_t* find_program_arguments(void) {
   wchar_t *arguments;
 
   arguments = GetCommandLineW();
@@ -157,7 +157,7 @@ void println_redirect(const redirect_t *redirect) {
   WriteFile(output, L"\n", 1, &tmp, NULL);
 }
 
-int main() {
+int main(int argc, char **argv) {
   wchar_t *newpath = NULL, *oldpath = NULL;
   const wchar_t *cmdline, *arguments, *selector;
   const char* error_message = "Can not find filename to execute!";

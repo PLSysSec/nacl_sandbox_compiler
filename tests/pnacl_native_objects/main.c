@@ -7,7 +7,7 @@
 extern void sym_a(void);
 extern void sym_b(void);
 
-int main() {
+int main(int argc, char **argv) {
   sym_a();
   sym_b();
   return 0;

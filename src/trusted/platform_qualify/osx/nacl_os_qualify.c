@@ -97,7 +97,7 @@ static int DarwinMajorVersion(void) {
 
 static int g_darwin_major_version = 0;
 
-static void InitializeDarwinMajorVersion() {
+static void InitializeDarwinMajorVersion(void) {
   g_darwin_major_version = DarwinMajorVersion();
 }
 

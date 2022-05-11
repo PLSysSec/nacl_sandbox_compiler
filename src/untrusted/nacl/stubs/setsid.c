@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-pid_t setsid() {
+pid_t setsid(void) {
   errno = ENOSYS;
   return (pid_t) -1;
 }

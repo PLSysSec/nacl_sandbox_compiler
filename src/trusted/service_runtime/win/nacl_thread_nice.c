@@ -11,7 +11,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_nice.h"
 
-void NaClThreadNiceInit() { }
+void NaClThreadNiceInit(void) { }
 
 int nacl_thread_nice(int nacl_nice) {
   BOOL rc;

@@ -1107,7 +1107,7 @@ DLMALLOC_EXPORT struct mallinfo dlmallinfo(void);
 
   struct Node { int item; struct Node* next; };
 
-  struct Node* build_list() {
+  struct Node* build_list(void) {
     struct Node** pool;
     int n = read_number_of_nodes_needed();
     if (n <= 0) return 0;
@@ -1981,7 +1981,7 @@ static MLOCK_T malloc_global_mutex;
 static volatile LONG malloc_global_mutex_status;
 
 /* Use spin loop to initialize global lock */
-static void init_malloc_global_mutex() {
+static void init_malloc_global_mutex(void) {
   for (;;) {
     long stat = malloc_global_mutex_status;
     if (stat > 0)
@@ -5367,7 +5367,7 @@ struct mallinfo dlmallinfo(void) {
 #endif /* NO_MALLINFO */
 
 #if !NO_MALLOC_STATS
-void dlmalloc_stats() {
+void dlmalloc_stats(void) {
   internal_malloc_stats(gm);
 }
 #endif /* NO_MALLOC_STATS */

@@ -7,14 +7,14 @@
 extern int module_a_var;
 extern int module_b_var;
 
-int get_module_a_var() {
+int get_module_a_var(void) {
   return module_a_var;
 }
 
-int get_module_b_var() {
+int get_module_b_var(void) {
   return module_b_var;
 }
 
-int get_module_c_var() {
+int get_module_c_var(void) {
   return module_a_var - module_b_var;
 }

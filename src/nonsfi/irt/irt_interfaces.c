@@ -654,7 +654,7 @@ static void irt_stub_func(const char *name) {
 }
 
 #define DEFINE_STUB(name) \
-    static void irt_stub_##name() { irt_stub_func(#name); }
+    static void irt_stub_##name(void) { irt_stub_func(#name); }
 #define USE_STUB(s, name) (__typeof__(s.name)) irt_stub_##name
 
 const struct nacl_irt_basic nacl_irt_basic = {
@@ -793,7 +793,7 @@ const struct nacl_irt_icache nacl_irt_icache = {
 
 static int g_allow_dev_interfaces = 0;
 
-void nacl_irt_nonsfi_allow_dev_interfaces() {
+void nacl_irt_nonsfi_allow_dev_interfaces(void) {
   g_allow_dev_interfaces = 1;
 }
 

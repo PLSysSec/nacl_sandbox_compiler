@@ -11,5 +11,5 @@
 #include <errno.h>
 #include <grp.h>
 
-void endgrent() {
+void endgrent(void) {
 }

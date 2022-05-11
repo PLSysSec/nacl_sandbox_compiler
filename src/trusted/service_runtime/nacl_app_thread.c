@@ -28,7 +28,7 @@
 #if NACL_OSX
 #include <sys/sysctl.h>
 
-static int IsTCSMAvailable() {
+static int IsTCSMAvailable(void) {
   /* Check availability of TCSM in the kernel */
   uint32_t current_val = 0;
   size_t current_val_size = sizeof(current_val);
@@ -37,7 +37,7 @@ static int IsTCSMAvailable() {
   return 0 <= rv && 0 != current_val;
 }
 
-static void EnableTCSM() {
+static void EnableTCSM(void) {
   /* Opt this thread into TCSM */
   uint32_t new_val = 1;
   int rv = sysctlbyname("kern.tcsm_enable",

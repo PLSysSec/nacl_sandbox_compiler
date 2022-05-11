@@ -97,7 +97,7 @@ __asm__(".pushsection .text, \"ax\", @progbits\n"
         ".set reorder\n"
         ".popsection\n");
 
-void error_exit() {
+void error_exit(void) {
   _exit(1);
 }
 

@@ -7,7 +7,7 @@
 extern __thread int tlsvar;
 extern int check_set_tls(int expected, int value);
 
-int main() {
+int main(int argc, char **argv) {
   tlsvar = 42;
   int errors = 0;
   int oldval = check_set_tls(42, -123);
