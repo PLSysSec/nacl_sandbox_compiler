@@ -610,6 +610,8 @@ def TargetLibs(bias_arch, is_canonical):
       },
   }
   if bias_arch == 'i686' or bias_arch == 'x86_64' or bias_arch == 'arm':
+    saigo_newlib_c_flags = \
+        ' -Wno-deprecated-non-prototype -Wno-implicit-function-declaration'
     libs.update({
       T('newlib_saigo'): {
           'type': TargetLibBuildType(is_canonical),
@@ -624,7 +626,8 @@ def TargetLibs(bias_arch, is_canonical):
                   TargetTools(bias_arch, saigo=True) +
                   ['CFLAGS_FOR_TARGET=' +
                       TargetLibCflags(bias_arch) +
-                      newlib_cflags,
+                      newlib_cflags +
+                      saigo_newlib_c_flags,
                   '--prefix=',
                   '--disable-newlib-supplied-syscalls',
                   '--disable-texinfo',
