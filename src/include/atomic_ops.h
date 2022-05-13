@@ -42,10 +42,8 @@
 #include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_base.h"
 
-#if defined(__native_client__) || NACL_LINUX
+#if defined(__native_client__) || NACL_LINUX || NACL_OSX
 #include "native_client/src/include/gcc/atomic_ops.h"
-#elif NACL_OSX
-#include "native_client/src/include/osx/atomic_ops_osx.h"
 #elif NACL_WINDOWS
 #include "native_client/src/include/win/atomic_ops_win32.h"
 #else
