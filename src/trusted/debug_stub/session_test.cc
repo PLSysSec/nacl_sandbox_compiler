@@ -149,7 +149,7 @@ class TestTransport : public DCSocketTransport {
       char *src = &rvector_->data[rvector_->rd];
       memcpy(ptr, src, max);
     }
-    rvector_->rd += max;
+    rvector_->rd = rvector_->rd + max;
     return true;
   }
 
@@ -158,7 +158,7 @@ class TestTransport : public DCSocketTransport {
 
     wvector_->data.resize(wvector_->wr + len);
     memcpy(&wvector_->data[wvector_->wr], ptr, len);
-    wvector_->wr += len;
+    wvector_->wr = wvector_->wr + len;
     return true;
   }
 
