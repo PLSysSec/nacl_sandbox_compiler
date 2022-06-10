@@ -79,7 +79,7 @@ void NaClSignalHandler(int signum, siginfo_t *info, void *other) {
   exit(0);
 }
 
-static char g_nacl_altstack[SIGSTKSZ + 4096];
+static char g_nacl_altstack[/* SIGSTKSZ */ 16384 + 4096];
 
 void NaClSetSignalHandler(void) {
   struct sigaction action;

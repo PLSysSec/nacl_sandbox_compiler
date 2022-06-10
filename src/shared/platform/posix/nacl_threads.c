@@ -29,9 +29,9 @@
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-#if !defined(__native_client__) && NACL_KERN_STACK_SIZE < PTHREAD_STACK_MIN
-# error "NaCl service runtime stack size is smaller than PTHREAD_STACK_MIN"
-#endif
+// #if !defined(__native_client__) && NACL_KERN_STACK_SIZE < PTHREAD_STACK_MIN
+// # error "NaCl service runtime stack size is smaller than PTHREAD_STACK_MIN"
+// #endif
 
 static int NaClThreadCreate(struct NaClThread  *ntp,
                             void               (*start_fn)(void *),
@@ -44,6 +44,12 @@ static int NaClThreadCreate(struct NaClThread  *ntp,
 
   rv = 0;
 
+  #if !defined(__native_client__)
+  if (NACL_KERN_STACK_SIZE < PTHREAD_STACK_MIN) {
+    NaClLog(LOG_ERROR, "NACL_KERN_STACK_SIZE < PTHREAD_STACK_MIN check failed\n");
+    abort();
+  }
+  #endif
   if (stack_size < PTHREAD_STACK_MIN) {
     stack_size = PTHREAD_STACK_MIN;
   }
