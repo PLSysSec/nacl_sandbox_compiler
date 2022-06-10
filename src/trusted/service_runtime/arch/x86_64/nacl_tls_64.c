@@ -21,6 +21,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 static struct NaClMutex gNaClTlsMu;
 
@@ -283,6 +284,16 @@ void NaClTlsFini(void) {
  */
 void NaClTlsSetCurrentThread(struct NaClAppThread *natp) {
   nacl_current_thread = &natp->user;
+}
+
+void NaClTlsSetCurrentThreadUser(void* userp) {
+  nacl_current_thread = userp;
+}
+
+void* NaClTlsExchangeCurrentThread(struct NaClAppThread *natp) {
+  struct NaClThreadContext * old = nacl_current_thread;
+  nacl_current_thread = &natp->user;
+  return old;
 }
 
 struct NaClAppThread *NaClTlsGetCurrentThread(void) {

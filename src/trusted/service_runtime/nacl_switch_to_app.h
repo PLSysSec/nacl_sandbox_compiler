@@ -45,6 +45,11 @@ extern NORETURN void NaClSwitch(struct NaClThreadContext *context);
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    nacl_reg_t           new_prog_ctr);
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+    NORETURN void NaClStartFuncInApp(struct NaClAppThread *natp,
+                                     nacl_reg_t           new_prog_ctr);
+#endif
+
 void NaClSwitchRemainingRegsSetup(struct NaClSwitchRemainingRegsState *state,
                                   struct NaClAppThread                *natp,
                                   const struct NaClSignalContext      *regs);

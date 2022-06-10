@@ -53,6 +53,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
+#include "native_client/src/trusted/dyn_ldr/datastructures/ds_stack.h"
 
 int32_t NaClSysNotImplementedDecoder(struct NaClAppThread *natp) {
   NaClCopyDropLock(natp->nap);
@@ -273,6 +274,154 @@ int32_t NaClSysTlsGet(struct NaClAppThread *natp) {
 int32_t NaClSysSecondTlsSet(struct NaClAppThread *natp,
                             uint32_t             new_value) {
   NaClTlsSetTlsValue2(natp, new_value);
+  return 0;
+}
+
+//NACL_sys_exit_sandbox
+int32_t NaClSysExitSandbox(struct NaClAppThread *natp, uint32_t exitLocation,
+  uint32_t register_ret_bottom, uint32_t register_ret_top,
+  uint32_t register_float_ret_bottom, uint32_t register_float_ret_top) {
+
+  jmp_buf* jump_buf_loc;
+
+  (void) exitLocation;
+  // NaClLog(LOG_INFO, "Entered NaClSysExitSandbox: %"PRIu32"\n", exitLocation);
+
+  #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+    natp->register_eax = register_ret_bottom;
+  #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+    uint64_t register_ret_bottom_wide = register_ret_bottom;
+    uint64_t register_ret_top_wide = register_ret_top;
+    natp->register_eax = (register_ret_top_wide << 32) | register_ret_bottom_wide;
+  #else
+    #error "Unsupported platform"
+  #endif
+
+  {
+    uint64_t register_float_ret_top_wide = register_float_ret_top;
+    uint64_t register_float_ret_bottom_wide = register_float_ret_bottom;
+    natp->register_xmm0 = (register_float_ret_top_wide << 32) | register_float_ret_bottom_wide;
+    jump_buf_loc = Stack_GetTopPtrForPop(natp->jumpBufferStack);
+  }
+
+  longjmp(*jump_buf_loc, 1);
+  return 0;
+}
+
+//NACL_sys_callback
+nacl_reg_t NaClSysCallback(struct NaClAppThread *natp, uint32_t callbackSlotNumber, uint32_t parameterRegisters, uint32_t floatRetAddr) {
+
+  // NaClLog(LOG_INFO, "Entered NaClSysCallback: %"PRIu32"\n", callbackSlotNumber);
+
+  #define CALLBACK_SLOTS_AVAILABLE (sizeof( ((struct NaClApp*) 0)->callbackSlot ) / sizeof(uintptr_t))
+
+  if(callbackSlotNumber < CALLBACK_SLOTS_AVAILABLE && natp->nap->callbackSlot[callbackSlotNumber] != 0)
+  {
+    typedef nacl_reg_t (*RegPtrPtrFunc)(uintptr_t, void*);
+
+    #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+      RegPtrPtrFunc func;
+      nacl_reg_t eaxCopy;
+
+      //We are here in the following situation.
+      //The app makes a function call into the sandbox (let's call this S1).
+      //The sandbox makes a callback (let's call this C) into main app
+      //Note we need to save register values and restore them after the C
+      //This is because, when we execute C below, C could
+      //make a different call into the sandbox(let's call this S2) at which point, the instruction pointer, stack pointer
+      //registers etc. would all have changed when the call S2 executes. Thus when S2 returns, C returns and
+      //we continue execution of S1, thes values would be destroyed. So we save this, and restore it before we return.
+      nacl_reg_t saved_ebx          = natp->user.ebx;
+      nacl_reg_t saved_esi          = natp->user.esi;
+      nacl_reg_t saved_edi          = natp->user.edi;
+      nacl_reg_t saved_prog_ctr     = natp->user.prog_ctr;
+      nacl_reg_t saved_frame_ptr    = natp->user.frame_ptr;
+      nacl_reg_t saved_stack_ptr    = natp->user.stack_ptr;
+      nacl_reg_t saved_new_prog_ctr = natp->user.new_prog_ctr;
+      nacl_reg_t saved_sysret       = natp->user.sysret;
+
+      // NaClLog(LOG_INFO, "Making NaClSysCallback: %"PRIu32"\n", callbackSlotNumber);
+      func = (RegPtrPtrFunc) (natp->nap->callbackSlot[callbackSlotNumber]);
+      eaxCopy = func(natp->nap->custom_app_state, natp->nap->callbackSlotState[callbackSlotNumber]);
+      if (floatRetAddr)
+      {
+        uint32_t* floatRetSysAddr = (uint32_t*) NaClUserToSys(natp->nap, (uintptr_t) floatRetAddr);
+        *floatRetSysAddr = eaxCopy;
+      }
+
+      // NaClLog(LOG_INFO, "Returned from NaClSysCallback with eax: %"PRIu32"\n", (uint32_t) eaxCopy);
+
+      natp->user.ebx          = saved_ebx;
+      natp->user.esi          = saved_esi;
+      natp->user.edi          = saved_edi;
+      natp->user.prog_ctr     = saved_prog_ctr;
+      natp->user.frame_ptr    = saved_frame_ptr;
+      natp->user.stack_ptr    = saved_stack_ptr;
+      natp->user.new_prog_ctr = saved_new_prog_ctr;
+      natp->user.sysret       = saved_sysret;
+
+      //Depending on the callback return type, the return value could be in the
+      //   eax register - simple integers or pointers
+      //   ST0 x87 for floating point
+      //Ideally, we can leave this registers untouched and the return value would
+      //just flow through. However NaCl Sys calls require a return type.Since
+      //this function returns a primitive value, we will return the contents of eax
+      //so as not to clobber the eax register
+      return eaxCopy;
+
+    #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+      RegPtrPtrFunc func;
+      nacl_reg_t raxCopy;
+
+      nacl_reg_t saved_rbx          = natp->user.rbx;
+      nacl_reg_t saved_r12          = natp->user.r12;
+      nacl_reg_t saved_r13          = natp->user.r13;
+      nacl_reg_t saved_r14          = natp->user.r14;
+      nacl_reg_t saved_r15          = natp->user.r15;
+      nacl_reg_t saved_prog_ctr     = natp->user.prog_ctr;
+      nacl_reg_t saved_rbp          = natp->user.rbp;
+      nacl_reg_t saved_rsp          = natp->user.rsp;
+      nacl_reg_t saved_new_prog_ctr = natp->user.new_prog_ctr;
+      nacl_reg_t saved_sysret       = natp->user.sysret;
+
+      //restore the callback parameters
+      nacl_reg_t* parameterRegistersSys = (nacl_reg_t*) NaClUserToSysAddr(natp->nap, (uintptr_t) parameterRegisters);
+      natp->user.rdi = parameterRegistersSys[0];
+      natp->user.rsi = parameterRegistersSys[1];
+      natp->user.rdx = parameterRegistersSys[2];
+      natp->user.rcx = parameterRegistersSys[3];
+      natp->user.r8  = parameterRegistersSys[4];
+      natp->user.r9  = parameterRegistersSys[5];
+
+      // NaClLog(LOG_INFO, "Making NaClSysCallback: %"PRIu32"\n", callbackSlotNumber);
+      func = (RegPtrPtrFunc) (natp->nap->callbackSlot[callbackSlotNumber]);
+      raxCopy = func(natp->nap->custom_app_state, natp->nap->callbackSlotState[callbackSlotNumber]);
+      (void) floatRetAddr;
+
+      // NaClLog(LOG_INFO, "Returned from NaClSysCallback with rax: %"PRIu64"\n", (uint64_t) raxCopy);
+
+      natp->user.rbx          = saved_rbx;
+      natp->user.r12          = saved_r12;
+      natp->user.r13          = saved_r13;
+      natp->user.r14          = saved_r14;
+      natp->user.r15          = saved_r15;
+      natp->user.prog_ctr     = saved_prog_ctr;
+      natp->user.rbp          = saved_rbp;
+      natp->user.rsp          = saved_rsp;
+      natp->user.new_prog_ctr = saved_new_prog_ctr;
+      natp->user.sysret       = saved_sysret;
+
+      return raxCopy;
+
+    #else
+      #error "Unsupported platform"
+    #endif
+  }
+  else
+  {
+      NaClLog(LOG_FATAL, "NaClSysCallback: Could not find callback: %u\n", (unsigned) callbackSlotNumber);
+  }
+
   return 0;
 }
 

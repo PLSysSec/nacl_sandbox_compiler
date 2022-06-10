@@ -2111,6 +2111,7 @@ def MakeBaseTrustedEnv(platform=None):
       'src/trusted/fault_injection/build.scons',
       'src/trusted/interval_multiset/build.scons',
       'src/trusted/nacl_base/build.scons',
+      'src/trusted/dyn_ldr/build.scons',
       'src/trusted/perf_counter/build.scons',
       'src/trusted/platform_qualify/build.scons',
       'src/trusted/seccomp_bpf/build.scons',
@@ -2734,7 +2735,7 @@ def MakeGenericLinuxEnv(platform=None):
   linux_env.Prepend(COMMON_LINKFLAGS=['-Wl,-z,relro',
                                       '-Wl,-z,now',
                                       '-Wl,-z,noexecstack'])
-  linux_env.Prepend(LINKFLAGS=['-pie'])
+  linux_env.Prepend(LINKFLAGS=['-fPIC'])
   # The ARM toolchain has a linker that doesn't handle the code its
   # compiler generates under -fPIE.
   if linux_env.Bit('build_arm') or linux_env.Bit('build_mips32'):
@@ -2743,7 +2744,7 @@ def MakeGenericLinuxEnv(platform=None):
     # it causes a libc dependency newer than the old bots have installed.
     linux_env.FilterOut(CPPDEFINES=[['-D_FORTIFY_SOURCE', '2']])
   else:
-    linux_env.Prepend(CCFLAGS=['-fPIE'])
+    linux_env.Prepend(CCFLAGS=['-fPIC'])
 
   # We always want to use the same flags for .S as for .c because
   # code-generation flags affect the predefines we might test there.
@@ -3156,6 +3157,7 @@ nacl_env.Append(
     'src/shared/gio/nacl.scons',
     'src/shared/imc/nacl.scons',
     'src/shared/platform/nacl.scons',
+    'src/trusted/dyn_ldr/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator/nacl.scons',
     'src/untrusted/irt/nacl_headers.scons',

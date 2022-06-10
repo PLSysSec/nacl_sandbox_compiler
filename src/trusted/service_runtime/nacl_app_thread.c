@@ -16,6 +16,7 @@
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
+#include "native_client/src/trusted/dyn_ldr/datastructures/ds_stack.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -234,6 +235,13 @@ struct NaClAppThread *NaClAppThreadMake(struct NaClApp *nap,
   if (!NaClCondVarCtor(&natp->futex_condvar)) {
     goto cleanup_suspend_mu;
   }
+
+  natp->jumpBufferStack = (DS_Stack *) malloc(sizeof(DS_Stack));
+  if(natp->jumpBufferStack == NULL) {
+    goto cleanup_suspend_mu;
+  }
+  Stack_Init(natp->jumpBufferStack);
+
   return natp;
 
  cleanup_suspend_mu:
@@ -265,6 +273,9 @@ int NaClAppThreadSpawn(struct NaClApp *nap,
    * NaClThreadCtor() will succeed.
    */
   natp->host_thread_is_defined = 1;
+
+  NaClLog(LOG_INFO, "NaCl launching app on new thread\n");
+
   if (!NaClThreadCtor(&natp->host_thread, NaClAppThreadLauncher, (void *) natp,
                       NACL_KERN_STACK_SIZE)) {
     /*
@@ -279,6 +290,35 @@ int NaClAppThreadSpawn(struct NaClApp *nap,
   return 1;
 }
 
+int NaClAppThreadSpawnOnCurrThread(struct NaClApp *nap,
+                       uintptr_t      usr_entry,
+                       uintptr_t      usr_stack_ptr,
+                       uint32_t       user_tls1,
+                       uint32_t       user_tls2) {
+  jmp_buf*              jmp_buf_loc;
+  struct NaClAppThread *natp = NaClAppThreadMake(nap, usr_entry, usr_stack_ptr,
+                                                 user_tls1, user_tls2);
+  if (natp == NULL) {
+    return 0;
+  }
+  /*
+   * We set host_thread_is_defined assuming, for now, that
+   * NaClThreadCtor() will succeed.
+   */
+  natp->host_thread_is_defined = 1;
+  natp->host_thread = NaClThreadIdCorrected();
+
+  NaClLog(LOG_INFO, "NaCl saving current context before launching app\n");
+
+  jmp_buf_loc = Stack_GetTopPtrForPush(natp->jumpBufferStack);
+  if(setjmp(*jmp_buf_loc) == 0)
+  {
+    NaClLog(LOG_INFO, "NaCl launching app on same thread\n");
+    NaClAppThreadLauncher((void *) natp);
+  }
+
+  return 1;
+}
 
 void NaClAppThreadDelete(struct NaClAppThread *natp) {
   /*
@@ -295,5 +335,6 @@ void NaClAppThreadDelete(struct NaClAppThread *natp) {
   NaClCondVarDtor(&natp->futex_condvar);
   NaClTlsFree(natp);
   NaClMutexDtor(&natp->mu);
+  free(natp->jumpBufferStack);
   NaClAlignedFree(natp);
 }

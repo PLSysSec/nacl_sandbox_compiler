@@ -12,6 +12,7 @@
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_APP_THREAD_H__ 1
 
 #include <stddef.h>
+#include <setjmp.h>
 
 #include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/include/build_config.h"
@@ -162,6 +163,24 @@ struct NaClAppThread {
    */
   uint32_t                  futex_wait_addr;
   struct NaClCondVar        futex_condvar;
+
+  /* A variable that is used by dyn_ldr to store the jump buffers,
+   * used to jump back and forth between NaCl'd and un-NaCl'd code
+   */
+  struct _DS_Stack *        jumpBufferStack;
+  /* A variable that stores the contents of the eax (rax in 64 bit) register in NaCl as the
+   * NaCl app switches to trusted code via the NaClExitSandbox syscall
+  */
+  nacl_reg_t                register_eax;
+  /* Creating a pointer slot that that the user of this lib can use
+   * to save any custom state. This state is available in NaCl sys calls
+   * and the NaCl runtime, but not the NaCl app.
+   */
+  uintptr_t custom_app_state;
+  /* A variable that stores the contents of the eax (rax in 64 bit) register in NaCl as the
+   * NaCl app switches to trusted code via the NaClExitSandbox syscall
+  */
+  uint64_t                register_xmm0;
 };
 
 void WINAPI NaClAppThreadLauncher(void *state);
@@ -188,6 +207,21 @@ struct NaClAppThread *NaClAppThreadMake(struct NaClApp *nap,
  * returns true on success, false on failure.
  */
 int NaClAppThreadSpawn(struct NaClApp *nap,
+                       uintptr_t      usr_entry,
+                       uintptr_t      usr_stack_ptr,
+                       uint32_t       user_tls1,
+                       uint32_t       user_tls2) NACL_WUR;
+
+/*
+ * Used to override the default behaviour of NaClAppThreadSpawn
+ * Instead of creating a new thread and launching the target function of
+ * the NaCl app, launch the target function of the NaCl app in the same
+ * thread. In this situation, the NaClAppThreadSpawn acts like a
+ * NORETURN until the app completes. If the NaClAppThreadSpawn is
+ * overridden this way, and jmp_buf_loc is not NULL,
+ * it saves the current context with a setjmp call in jmp_buf_loc
+ */
+int NaClAppThreadSpawnOnCurrThread(struct NaClApp *nap,
                        uintptr_t      usr_entry,
                        uintptr_t      usr_stack_ptr,
                        uint32_t       user_tls1,

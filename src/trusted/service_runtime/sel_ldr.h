@@ -397,6 +397,21 @@ struct NaClApp {
    */
   struct NaClListNode       futex_wait_list_head;
 #endif
+
+  /* Creating a pointer slot that that the user of this lib can use
+   * to save any custom state. This state is available in NaCl sys calls
+   * and the NaCl runtime, but not the NaCl app.
+   */
+  uintptr_t custom_app_state;
+
+  /* Creating a pointer slot that can used for callbacks from the 
+   * sandboxes app to jump to the outer loader */
+  uintptr_t callbackSlot[8];
+  void* callbackSlotState[8];
+
+  /* Structure that holds the symbol table mapping of (symbol->address)
+   */
+  struct SymbolTableMapping * symbolTableMapping;
 };
 
 
@@ -421,6 +436,8 @@ int NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
  * can be added explicitly using NACL_REGISTER_SYSCALL.
  */
 int NaClAppWithEmptySyscallTableCtor(struct NaClApp *nap) NACL_WUR;
+
+void NaClAppLoadSymbolTableMapping(int loadSymbolTableMapping);
 
 /*
  * Loads a NaCl ELF file into memory in preparation for running it.
@@ -532,7 +549,18 @@ uintptr_t NaClGetInitialStackTop(struct NaClApp *nap);
  * alternative design, NaClWaitForMainThreadToExit will become a
  * no-op.
  */
+int NaClCreateMainThread_helper(struct NaClApp     *nap,
+                         int                argc,
+                         char               **argv,
+                         char const *const  *envp,
+                         int skipThreadCreation) NACL_WUR;
+
 int NaClCreateMainThread(struct NaClApp     *nap,
+                         int                argc,
+                         char               **argv,
+                         char const *const  *envp) NACL_WUR;
+
+int NaClCreateMainThreadWithoutThreadCreate(struct NaClApp     *nap,
                          int                argc,
                          char               **argv,
                          char const *const  *envp) NACL_WUR;
@@ -545,6 +573,12 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap);
 int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uintptr_t      prog_ctr,
                                    uintptr_t      stack_ptr,
+                                   uint32_t       user_tls1,
+                                   uint32_t       user_tls2) NACL_WUR;
+
+int32_t NaClCreateAdditionalThreadOnCurrThread(struct NaClApp *nap,
+                                   uintptr_t      prog_ctr,
+                                   uintptr_t      sys_stack_ptr,
                                    uint32_t       user_tls1,
                                    uint32_t       user_tls2) NACL_WUR;
 
