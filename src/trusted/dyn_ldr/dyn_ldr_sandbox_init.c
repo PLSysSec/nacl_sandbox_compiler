@@ -25,64 +25,14 @@ void MakeNaClSysCall_exit_sandbox(uint32_t exitLocation,
 //Specifically not making this a new function as this may add a new stack frame
 #define MakeNaClSysCall_callback(slotNumber, parameterRegisters, floatRetPtr) ((SandboxCallbackType)NACL_SYSCALL_ADDR(NACL_sys_callback))(slotNumber, parameterRegisters, floatRetPtr)
 
-void exitFunctionWrapper(void)
-{
-	// Note : On 32 bit platforms Windows, Linux/Unix NaCl always builds ELF32 following the cdecl  (not sure if other calling conventions are supported in NaCl 86. PNaCl only supports x86) 
-	//        On 64 bit platforms Windows, Linux/Unix NaCl always builds ELF64 and the System V AMD64 ABI calling convention
-	// This function needs to read return values from different registers based on the calling convension of the architecture
-	// In 32 bit 
-	// 		If the sandboxed function being called has the cdecl calling convention (not sure if other calling conventions are supported in NaCl 86. PNaCl only supports x86)
-	//			- If the return value is 32 bits or smaller and is not a float or double or struct, the return value is stored in the eax register
-	//			- If the return value is > 32 bits and <= 64 bits and is not a float or double or struct, the return value is split into the eax (lower bits) and edx(higher bits) register
-	//			- If the return value is a struct, it is stored in space created the caller in the callers stack frame, the pointer to the space is the first arg to the callee, the returned value is the pointer to the free space and is returned to eax
-	//			- If the return value is a float or double, the returned value is in x87 ST0 register
-	//		If the sandboxed function being called has the C++ ABI, since the 2 supported NaCl compilers are gcc and clang, these use basically the same ABI (independent of platform - windows/linux/unix)
-	//			- This is very similar to the C ABI, with classes treated as structs
-	// In 64 bit
-	// 		The sandboxed function being called has to have the System V AMD64 ABI calling convention
-	//			- If the return value is 64 bits or smaller and is not a float or double, the return value is stored in the rax register
-	//			- If the return value is > 64 bits and <= 128 bits and is not a float or double, the return value is split into the rax (lower bits) and edx(higher bits) register
-	//			- If the return value is a struct > 128 bits, it is stored in space created the caller in the callers stack frame, the pointer to the space is the first arg to the callee, the returned value is the pointer to the free space and is returned to rax
-	//			- If the return value is a float or double, the returned value is in XMM0 register
-	//			- If the return value is a float256 bit and float512 bit, the returned value is in YMM0 and ZMM0
-	//		If the sandboxed function being called has the C++ ABI, since the 2 supported NaCl compilers are gcc and clang, these use basically the same ABI (independent of platform - windows/linux/unix)
-	//			- This is very similar to the C ABI, with classes treated as structs, except for classes < 128 bits with non trivial constructors or destructors - these go on the stack
 
-	// Building a very small part of the full functionality here. For now we will just support the most common case
-	// Return eax/rax as most api's just want to return raw integer values or pointers
+//Add this to make sure the final application includes the asm file also
+void exitFunctionWrapper(void);
 
-	#if defined(_M_IX86) || defined(__i386__)
-
-		uint64_t return_reg;
-		uint64_t float_return_reg;
-		asm("movl %%eax, %0;\n"
-			"fstl %1;"
-			:"=r"(return_reg), "=g"(float_return_reg)        /* output */
-		);
-
-
-	#elif defined(_M_X64) || defined(__x86_64__)
-
-		uint64_t return_reg;
-		uint64_t float_return_reg;
-		asm("movq %%rax, %0;\n"
-			"movq %%xmm0, %1;"
-			:"=r"(return_reg), "=r"(float_return_reg)        /* output */
-		);
-
-	#elif defined(__ARMEL__) || defined(__MIPSEL__)
-		#error Unsupported platform!
-	#else 
-		#error Unknown platform!
-	#endif
-
-	uint32_t return_reg_bottom = return_reg;
-	uint32_t return_reg_top = return_reg >> 32;
-	uint32_t float_return_reg_bottom = float_return_reg;
-	uint32_t float_return_reg_top = float_return_reg >> 32;
-
-	MakeNaClSysCall_exit_sandbox(EXIT_FROM_CALL, return_reg_bottom, return_reg_top, float_return_reg_bottom, float_return_reg_top);
+void exitFunctionWrapperRef(void) {
+	exitFunctionWrapper();
 }
+
 
 #if defined(_M_IX86) || defined(__i386__)
 	//for 32 bit the parameters are on the stack
