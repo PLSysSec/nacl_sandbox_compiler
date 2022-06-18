@@ -2735,7 +2735,7 @@ def MakeGenericLinuxEnv(platform=None):
   linux_env.Prepend(COMMON_LINKFLAGS=['-Wl,-z,relro',
                                       '-Wl,-z,now',
                                       '-Wl,-z,noexecstack'])
-  linux_env.Prepend(LINKFLAGS=['-fPIC'])
+  linux_env.Prepend(LINKFLAGS=['-pie'])
   # The ARM toolchain has a linker that doesn't handle the code its
   # compiler generates under -fPIE.
   if linux_env.Bit('build_arm') or linux_env.Bit('build_mips32'):
@@ -2744,7 +2744,7 @@ def MakeGenericLinuxEnv(platform=None):
     # it causes a libc dependency newer than the old bots have installed.
     linux_env.FilterOut(CPPDEFINES=[['-D_FORTIFY_SOURCE', '2']])
   else:
-    linux_env.Prepend(CCFLAGS=['-fPIC'])
+    linux_env.Prepend(CCFLAGS=['-fPIE'])
 
   # We always want to use the same flags for .S as for .c because
   # code-generation flags affect the predefines we might test there.
