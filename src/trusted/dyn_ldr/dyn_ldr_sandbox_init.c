@@ -14,8 +14,8 @@ typedef int32_t (*SandboxExitType)(uint32_t, uint32_t, uint32_t, uint32_t, uint3
 
 typedef int32_t (*SandboxCallbackType)(uint32_t, nacl_reg_t*, uintptr_t);
 
-void MakeNaClSysCall_exit_sandbox(uint32_t exitLocation, 
-  uint32_t register_ret_bottom, uint32_t register_ret_top, 
+void MakeNaClSysCall_exit_sandbox(uint32_t exitLocation,
+  uint32_t register_ret_bottom, uint32_t register_ret_top,
   uint32_t register_float_ret_bottom, uint32_t register_float_ret_top
 )
 {
@@ -47,7 +47,7 @@ void exitFunctionWrapperRef(void) {
 	//for 64 bit the parameters are in registers, which will get overwritten, so we need to save it
 	//nacl does not allow 64 bit parameters to trusted code calls, so we just save the values in an array and pass it out as a 64 bit pointer
 	#define generateCallbackFunc(num) \
-	void callbackFunctionWrapper##num(unsigned long p0, unsigned long p1, unsigned long p2, unsigned long p3, unsigned long p4, unsigned long p5) \
+	void callbackFunctionWrapper##num(unsigned long long p0, unsigned long long p1, unsigned long long p2, unsigned long long p3, unsigned long long p4, unsigned long long p5) \
 	{ \
 			nacl_reg_t parameterRegisters[6];\
 			parameterRegisters[0] = p0;\
@@ -59,7 +59,7 @@ void exitFunctionWrapperRef(void) {
 			MakeNaClSysCall_callback(num, parameterRegisters, 0);\
 	}
 	#define generateCallbackFuncFloat(num)                                                                                                              \
-	float callbackFunctionWrapper##num(unsigned long p0, unsigned long p1, unsigned long p2, unsigned long p3, unsigned long p4, unsigned long p5)      \
+	float callbackFunctionWrapper##num(unsigned long long p0, unsigned long long p1, unsigned long long p2, unsigned long long p3, unsigned long long p4, unsigned long long p5)      \
 	{                                                                                                                                                   \
 			float ret = 0;                                                                                                                              \
 			nacl_reg_t parameterRegisters[6];                                                                                                           \
@@ -79,12 +79,12 @@ void exitFunctionWrapperRef(void) {
 #endif
 
 generateCallbackFunc(0)
-generateCallbackFunc(1) 
-generateCallbackFunc(2) 
-generateCallbackFunc(3) 
-generateCallbackFunc(4) 
-generateCallbackFunc(5) 
-generateCallbackFunc(6) 
+generateCallbackFunc(1)
+generateCallbackFunc(2)
+generateCallbackFunc(3)
+generateCallbackFunc(4)
+generateCallbackFunc(5)
+generateCallbackFunc(6)
 generateCallbackFuncFloat(7)
 
 unsigned test_localMath(unsigned a, unsigned  b, unsigned c)
@@ -108,7 +108,7 @@ int test_checkStructSizes
 	int size_LongLongSize
 )
 {
-	int isEqual = 
+	int isEqual =
 		size_DoubleAlign == sizeof(struct TestStructDoubleAlign) &&
 		size_PointerSize == sizeof(struct TestStructPointerSize) &&
 		size_IntSize == sizeof(struct TestStructIntSize) &&
@@ -127,7 +127,7 @@ void identifyCallbackOffsetHelper(IdentifyCallbackHelperType callback)
 
 int threadMain(void)
 {
-	MakeNaClSysCall_exit_sandbox(EXIT_FROM_MAIN, 
+	MakeNaClSysCall_exit_sandbox(EXIT_FROM_MAIN,
 		0, 0, 0, 0 /* return values not used here */);
 	return 0;
 }
@@ -140,7 +140,7 @@ void* fcloseCopy = (void *) fclose;
 
 int main(int argc, char** argv)
 {
-	MakeNaClSysCall_exit_sandbox(EXIT_FROM_MAIN, 
+	MakeNaClSysCall_exit_sandbox(EXIT_FROM_MAIN,
 		0, 0, 0, 0 /* return values not used here */);
 	return 0;
 }

@@ -131,7 +131,8 @@ do { \
 
 	#define PUSH_VAL_TO_STACK_SKIP_REGS(threadData, type, value) do { \
 		*(type *) (threadData->stack_ptr_forParameters) = (type) value; \
-		threadData->stack_ptr_forParameters = ADJUST_STACK_PTR(threadData->stack_ptr_forParameters, sizeof(type)); \
+		size_t minSize =  sizeof(type) < 8? 8 : sizeof(type); \
+		threadData->stack_ptr_forParameters = ADJUST_STACK_PTR(threadData->stack_ptr_forParameters, minSize); \
 	} while (0)
 
 	#define PUSH_VAL_TO_STACK(threadData, type, value) do { \
