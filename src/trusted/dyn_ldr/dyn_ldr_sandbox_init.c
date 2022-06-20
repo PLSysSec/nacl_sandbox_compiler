@@ -36,26 +36,19 @@ void exitFunctionWrapperRef(void) {
 
 #if defined(_M_IX86) || defined(__i386__)
 	//for 32 bit the parameters are on the stack
-	#define generateCallbackFunc(num)                           \
-	uint64_t callbackFunctionWrapper##num(void) {               \
+	#define generateCallbackFunc(num, outType)                  \
+	outType callbackFunctionWrapper##num(void) {                \
 		uint64_t retBuff = 0;                                   \
 		MakeNaClSysCall_callback(num, 0, (uintptr_t) &retBuff); \
-		return retBuff;                                         \
-	}
-
-	#define generateCallbackFuncFloat(num)                      \
-	float callbackFunctionWrapper##num(void) {                  \
-		uint64_t retBuff = 0;                                   \
-		MakeNaClSysCall_callback(num, 0, (uintptr_t) &retBuff); \
-		float ret = 0;                                          \
-		memcpy(&ret, &retBuff, sizeof(float));                  \
+		outType ret = 0;                                        \
+		memcpy(&ret, &retBuff, sizeof(outType));                \
 		return ret;                                             \
 	}
 #elif defined(_M_X64) || defined(__x86_64__)
 	//for 64 bit the parameters are in registers, which will get overwritten, so we need to save it
 	//nacl does not allow 64 bit parameters to trusted code calls, so we just save the values in an array and pass it out as a 64 bit pointer
-	#define generateCallbackFunc(num)                                   \
-	uint64_t callbackFunctionWrapper##num(unsigned long long p0, unsigned long long p1, unsigned long long p2, unsigned long long p3, unsigned long long p4, unsigned long long p5) \
+	#define generateCallbackFunc(num, outType)                     \
+	outType callbackFunctionWrapper##num(unsigned long long p0, unsigned long long p1, unsigned long long p2, unsigned long long p3, unsigned long long p4, unsigned long long p5) \
 	{                                                                   \
 			uint64_t retBuff = 0;                                       \
 			nacl_reg_t parameterRegisters[6];                           \
@@ -66,23 +59,8 @@ void exitFunctionWrapperRef(void) {
 			parameterRegisters[4] = p4;                                 \
 			parameterRegisters[5] = p5;                                 \
 			MakeNaClSysCall_callback(num, parameterRegisters, &retBuff);\
-			return retBuff;                                             \
-	}
-
-	#define generateCallbackFuncFloat(num)                              \
-	uint64_t callbackFunctionWrapper##num(unsigned long long p0, unsigned long long p1, unsigned long long p2, unsigned long long p3, unsigned long long p4, unsigned long long p5) \
-	{                                                                   \
-			uint64_t retBuff = 0;                                       \
-			nacl_reg_t parameterRegisters[6];                           \
-			parameterRegisters[0] = p0;                                 \
-			parameterRegisters[1] = p1;                                 \
-			parameterRegisters[2] = p2;                                 \
-			parameterRegisters[3] = p3;                                 \
-			parameterRegisters[4] = p4;                                 \
-			parameterRegisters[5] = p5;                                 \
-			MakeNaClSysCall_callback(num, parameterRegisters, &retBuff);\
-			float ret = 0;                                              \
-			memcpy(&ret, &retBuff, sizeof(float));                      \
+			outType ret = 0;                                            \
+			memcpy(&ret, &retBuff, sizeof(outType));                    \
 			return ret;                                                 \
 	}
 
@@ -92,14 +70,14 @@ void exitFunctionWrapperRef(void) {
 	#error Unknown platform!
 #endif
 
-generateCallbackFunc(0)
-generateCallbackFunc(1)
-generateCallbackFunc(2)
-generateCallbackFunc(3)
-generateCallbackFunc(4)
-generateCallbackFunc(5)
-generateCallbackFunc(6)
-generateCallbackFuncFloat(7)
+generateCallbackFunc(0, uint64_t)
+generateCallbackFunc(1, uint64_t)
+generateCallbackFunc(2, uint64_t)
+generateCallbackFunc(3, uint64_t)
+generateCallbackFunc(4, uint64_t)
+generateCallbackFunc(5, uint64_t)
+generateCallbackFunc(6, uint64_t)
+generateCallbackFunc(7, float)
 
 unsigned test_localMath(unsigned a, unsigned  b, unsigned c)
 {
