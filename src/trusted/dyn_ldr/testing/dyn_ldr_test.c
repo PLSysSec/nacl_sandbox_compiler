@@ -84,7 +84,7 @@ int invokeSimpleCallbackTest_callback(unsigned a, char* b , unsigned c[1])
 	return a + strlen(b);
 }
 
-SANDBOX_CALLBACK unsigned invokeSimpleCallbackTest_callbackStub(uintptr_t sandboxPtr)
+SANDBOX_CALLBACK void invokeSimpleCallbackTest_callbackStub(uintptr_t sandboxPtr, void* callbackSlotState, uint64_t* returnBuffer)
 {
 	int a;
 	char* b;
@@ -112,12 +112,14 @@ SANDBOX_CALLBACK unsigned invokeSimpleCallbackTest_callbackStub(uintptr_t sandbo
 		void* ptr = mallocInSandbox(sandbox, sizeof(int));
 		ret = invokeSimpleCallbackTest_callback(a, b, c);
 		freeInSandbox(sandbox, ptr);
-		return ret;
+		*returnBuffer = ret;
+		return;
 	}
 	else
 	{
 		//Validation failed
-		return 0;
+		*returnBuffer = 0;
+		return;
 	}
 }
 

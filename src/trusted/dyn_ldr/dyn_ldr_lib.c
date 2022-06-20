@@ -528,6 +528,7 @@ NaClSandbox_Thread* constructNaClSandboxThread(NaClSandbox* sandbox)
     threadData->registerParameterNumber = 0;
     threadData->callbackParameterNumber = 0;
     threadData->floatRegisterParameterNumber = 0;
+    threadData->callbackFloatParameterNumber = 0;
   #endif
 
   return threadData;
@@ -997,6 +998,7 @@ NaClSandbox_Thread* callbackParamsBegin(NaClSandbox* sandbox)
   threadData->callbackParamsAlreadyRead = 0;
   #if defined(_M_X64) || defined(__x86_64__)
     threadData->callbackParameterNumber = 0;
+    threadData->callbackFloatParameterNumber = 0;
   #endif
   return threadData;
 }
@@ -1075,7 +1077,7 @@ SANDBOX_CALLBACK void identifyCallbackParamOffset(uintptr_t sandboxPtr)
   #undef ParamType
 }
 
-uintptr_t getCallbackParam(NaClSandbox_Thread* threadData, size_t size)
+uintptr_t getCallbackParam(NaClSandbox_Thread* threadData, size_t size, int isFloatingPoint)
 {
   #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
 
@@ -1086,47 +1088,54 @@ uintptr_t getCallbackParam(NaClSandbox_Thread* threadData, size_t size)
     return paramPointer;
 
   #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-    //Similar to x86 version except the first 6 parameters are in registers
-    //Parameter 7 onwards is on the stack
-    if(threadData->callbackParameterNumber < 6 && size <= 64)
-    {
-      uint64_t* regPtr = getParamRegister(threadData, threadData->callbackParameterNumber);
-      threadData->callbackParameterNumber++;
-      return (uintptr_t) regPtr;
+    if (isFloatingPoint) {
+      if(threadData->callbackFloatParameterNumber < 8) {
+        uint64_t* regPtr = getFloatParamRegister(threadData, threadData->callbackFloatParameterNumber);
+        threadData->callbackFloatParameterNumber++;
+        return (uintptr_t) regPtr;
+      }
+    } else {
+      //Similar to x86 version except the first 6 parameters are in registers
+      //Parameter 7 onwards is on the stack
+      if(threadData->callbackParameterNumber < 6 && size <= 8)
+      {
+        uint64_t* regPtr = getParamRegister(threadData, threadData->callbackParameterNumber);
+        threadData->callbackParameterNumber++;
+        return (uintptr_t) regPtr;
+      }
+      else if(threadData->callbackParameterNumber < 5 && size <= 16)
+      {
+        //This is a wierd case where the struct is split across the registers, but we need send back a pointer to the object
+        //We can't just return a pointer to the NACL's copy of the registers like the previous case
+        //as NACL doesn't store the parameter register contents in adjascent locations in memeory (See native_client/src/trusted/service_runtime/arch/x86_64/sel_rt_64.h)
+        //So we need to copy the values into a new memory location.
+        //This makes this function wierd in that there is now one case where it allocates memory which the caller has to de-allocate later
+        //We will ignore this for now - but this will obviously cause a memory leak in the program till it is fixed
+        uint64_t* regPtr1;
+        uint64_t* regPtr2;
+
+        uint64_t* valCasted = (uint64_t *) malloc(128);
+
+        regPtr1 = getParamRegister(threadData, threadData->callbackParameterNumber);
+        threadData->callbackParameterNumber++;
+
+        regPtr2 = getParamRegister(threadData, threadData->callbackParameterNumber);
+        threadData->callbackParameterNumber++;
+
+        valCasted[0] = *regPtr1;
+        valCasted[1] = *regPtr2;
+
+        return (uintptr_t) valCasted;
+      }
     }
-    else if(threadData->callbackParameterNumber < 5 && size <= 128)
-    {
-      //This is a wierd case where the struct is split across the registers, but we need send back a pointer to the object
-      //We can't just return a pointer to the NACL's copy of the registers like the previous case
-      //as NACL doesn't store the parameter register contents in adjascent locations in memeory (See native_client/src/trusted/service_runtime/arch/x86_64/sel_rt_64.h)
-      //So we need to copy the values into a new memory location.
-      //This makes this function wierd in that there is now one case where it allocates memory which the caller has to de-allocate later
-      //We will ignore this for now - but this will obviously cause a memory leak in the program till it is fixed
-      uint64_t* regPtr1;
-      uint64_t* regPtr2;
 
-      uint64_t* valCasted = (uint64_t *) malloc(128);
+    //See x86 section above for explanation
+    uintptr_t paramPointer = getUnsandboxedAddress(threadData->sandbox,
+      GetSandboxedStackPointer(threadData->sandbox, threadData->thread->user) + threadData->sandbox->callbackParameterStartOffset + threadData->callbackParamsAlreadyRead);
 
-      regPtr1 = getParamRegister(threadData, threadData->callbackParameterNumber);
-      threadData->callbackParameterNumber++;
+    threadData->callbackParamsAlreadyRead += size;
+    return paramPointer;
 
-      regPtr2 = getParamRegister(threadData, threadData->callbackParameterNumber);
-      threadData->callbackParameterNumber++;
-
-      valCasted[0] = *regPtr1;
-      valCasted[1] = *regPtr2;
-
-      return (uintptr_t) valCasted;
-    }
-    else
-    {
-      //See x86 section above for explanation
-      uintptr_t paramPointer = getUnsandboxedAddress(threadData->sandbox,
-        GetSandboxedStackPointer(threadData->sandbox, threadData->thread->user) + threadData->sandbox->callbackParameterStartOffset + threadData->callbackParamsAlreadyRead);
-
-      threadData->callbackParamsAlreadyRead += size;
-      return paramPointer;
-    }
   #else
     #error Unsupported architecture
   #endif

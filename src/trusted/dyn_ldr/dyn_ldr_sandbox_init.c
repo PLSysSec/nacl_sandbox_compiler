@@ -23,7 +23,7 @@ void MakeNaClSysCall_exit_sandbox(uint32_t exitLocation,
 }
 
 //Specifically not making this a new function as this may add a new stack frame
-#define MakeNaClSysCall_callback(slotNumber, parameterRegisters, floatRetPtr) ((SandboxCallbackType)NACL_SYSCALL_ADDR(NACL_sys_callback))(slotNumber, parameterRegisters, floatRetPtr)
+#define MakeNaClSysCall_callback(slotNumber, parameterRegisters, retPtr) ((SandboxCallbackType)NACL_SYSCALL_ADDR(NACL_sys_callback))(slotNumber, parameterRegisters, retPtr)
 
 
 //Add this to make sure the final application includes the asm file also
@@ -36,42 +36,56 @@ void exitFunctionWrapperRef(void) {
 
 #if defined(_M_IX86) || defined(__i386__)
 	//for 32 bit the parameters are on the stack
-	#define generateCallbackFunc(num) void callbackFunctionWrapper##num(void) { MakeNaClSysCall_callback(num, 0, 0); }
-	#define generateCallbackFuncFloat(num)                                               \
-	float callbackFunctionWrapper##num(void) {                                           \
-		float ret = 0;                                                                   \
-		MakeNaClSysCall_callback(num, 0, (uintptr_t) &ret);                              \
-		return ret;                                                                      \
+	#define generateCallbackFunc(num)                           \
+	uint64_t callbackFunctionWrapper##num(void) {               \
+		uint64_t retBuff = 0;                                   \
+		MakeNaClSysCall_callback(num, 0, (uintptr_t) &retBuff); \
+		return retBuff;                                         \
+	}
+
+	#define generateCallbackFuncFloat(num)                      \
+	float callbackFunctionWrapper##num(void) {                  \
+		uint64_t retBuff = 0;                                   \
+		MakeNaClSysCall_callback(num, 0, (uintptr_t) &retBuff); \
+		float ret = 0;                                          \
+		memcpy(&ret, &retBuff, sizeof(float));                  \
+		return ret;                                             \
 	}
 #elif defined(_M_X64) || defined(__x86_64__)
 	//for 64 bit the parameters are in registers, which will get overwritten, so we need to save it
 	//nacl does not allow 64 bit parameters to trusted code calls, so we just save the values in an array and pass it out as a 64 bit pointer
-	#define generateCallbackFunc(num) \
-	void callbackFunctionWrapper##num(unsigned long long p0, unsigned long long p1, unsigned long long p2, unsigned long long p3, unsigned long long p4, unsigned long long p5) \
-	{ \
-			nacl_reg_t parameterRegisters[6];\
-			parameterRegisters[0] = p0;\
-			parameterRegisters[1] = p1;\
-			parameterRegisters[2] = p2;\
-			parameterRegisters[3] = p3;\
-			parameterRegisters[4] = p4;\
-			parameterRegisters[5] = p5;\
-			MakeNaClSysCall_callback(num, parameterRegisters, 0);\
+	#define generateCallbackFunc(num)                                   \
+	uint64_t callbackFunctionWrapper##num(unsigned long long p0, unsigned long long p1, unsigned long long p2, unsigned long long p3, unsigned long long p4, unsigned long long p5) \
+	{                                                                   \
+			uint64_t retBuff = 0;                                       \
+			nacl_reg_t parameterRegisters[6];                           \
+			parameterRegisters[0] = p0;                                 \
+			parameterRegisters[1] = p1;                                 \
+			parameterRegisters[2] = p2;                                 \
+			parameterRegisters[3] = p3;                                 \
+			parameterRegisters[4] = p4;                                 \
+			parameterRegisters[5] = p5;                                 \
+			MakeNaClSysCall_callback(num, parameterRegisters, &retBuff);\
+			return retBuff;                                             \
 	}
-	#define generateCallbackFuncFloat(num)                                                                                                              \
-	float callbackFunctionWrapper##num(unsigned long long p0, unsigned long long p1, unsigned long long p2, unsigned long long p3, unsigned long long p4, unsigned long long p5)      \
-	{                                                                                                                                                   \
-			float ret = 0;                                                                                                                              \
-			nacl_reg_t parameterRegisters[6];                                                                                                           \
-			parameterRegisters[0] = p0;                                                                                                                 \
-			parameterRegisters[1] = p1;                                                                                                                 \
-			parameterRegisters[2] = p2;                                                                                                                 \
-			parameterRegisters[3] = p3;                                                                                                                 \
-			parameterRegisters[4] = p4;                                                                                                                 \
-			parameterRegisters[5] = p5;                                                                                                                 \
-			MakeNaClSysCall_callback(num, parameterRegisters, &ret);                                                                                    \
-			return ret;                                                                                                                                 \
+
+	#define generateCallbackFuncFloat(num)                              \
+	uint64_t callbackFunctionWrapper##num(unsigned long long p0, unsigned long long p1, unsigned long long p2, unsigned long long p3, unsigned long long p4, unsigned long long p5) \
+	{                                                                   \
+			uint64_t retBuff = 0;                                       \
+			nacl_reg_t parameterRegisters[6];                           \
+			parameterRegisters[0] = p0;                                 \
+			parameterRegisters[1] = p1;                                 \
+			parameterRegisters[2] = p2;                                 \
+			parameterRegisters[3] = p3;                                 \
+			parameterRegisters[4] = p4;                                 \
+			parameterRegisters[5] = p5;                                 \
+			MakeNaClSysCall_callback(num, parameterRegisters, &retBuff);\
+			float ret = 0;                                              \
+			memcpy(&ret, &retBuff, sizeof(float));                      \
+			return ret;                                                 \
 	}
+
 #elif defined(__ARMEL__) || defined(__MIPSEL__)
 	#error Unsupported platform!
 #else

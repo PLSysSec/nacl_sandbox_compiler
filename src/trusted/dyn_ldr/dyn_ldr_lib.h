@@ -27,6 +27,8 @@ struct _NaClSandbox_Thread
 		//On 64 bit systems, different parameters go into different locations
 		//After param 8, we put it onto the stack, so we stop counting after this
 		unsigned floatRegisterParameterNumber;
+		//Indicates how many callback parameters have been extracted
+		unsigned callbackFloatParameterNumber;
 	#endif
 };
 
@@ -194,11 +196,13 @@ uintptr_t registerSandboxFloatCallbackWithState(NaClSandbox* sandbox, unsigned s
 int unregisterSandboxCallback(NaClSandbox* sandbox, unsigned slotNumber);
 int getFreeSandboxCallbackSlot(NaClSandbox* sandbox, unsigned* slot);
 NaClSandbox_Thread* callbackParamsBegin(NaClSandbox* sandbox);
-uintptr_t getCallbackParam(NaClSandbox_Thread* threadData, size_t size);
+uintptr_t getCallbackParam(NaClSandbox_Thread* threadData, size_t size, int isFloatingPoint);
 
-#define COMPLETELY_UNTRUSTED_CALLBACK_PTR_TO_STACK_PARAM(threadData, type) ((type *) getCallbackParam(threadData, sizeof(type)))
+#define COMPLETELY_UNTRUSTED_CALLBACK_PTR_TO_STACK_PARAM(threadData, type) ((type *) getCallbackParam(threadData, sizeof(type), 0))
 #define COMPLETELY_UNTRUSTED_CALLBACK_STACK_PARAM(threadData, type) (* COMPLETELY_UNTRUSTED_CALLBACK_PTR_TO_STACK_PARAM(threadData, type))
 #define COMPLETELY_UNTRUSTED_CALLBACK_PTR_PARAM(threadData, type) ((type) getUnsandboxedAddress(threadData->sandbox, COMPLETELY_UNTRUSTED_CALLBACK_STACK_PARAM(threadData, uintptr_t)))
+#define COMPLETELY_UNTRUSTED_CALLBACK_PTR_TO_STACK_FLOATPARAM(threadData, type) ((type *) getCallbackParam(threadData, sizeof(type), 1))
+#define COMPLETELY_UNTRUSTED_CALLBACK_STACK_FLOATPARAM(threadData, type) (* COMPLETELY_UNTRUSTED_CALLBACK_PTR_TO_STACK_FLOATPARAM(threadData, type))
 #define CALLBACK_RETURN_PTR(threadData, type, value) ((type) getSandboxedAddress(threadData->sandbox, value))
 
 long functionCallReturnRawPrimitiveInt(NaClSandbox_Thread* threadData);
