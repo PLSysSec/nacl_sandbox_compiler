@@ -76,7 +76,7 @@ generateCallbackFunc(2, uint64_t)
 generateCallbackFunc(3, uint64_t)
 generateCallbackFunc(4, uint64_t)
 generateCallbackFunc(5, uint64_t)
-generateCallbackFunc(6, uint64_t)
+generateCallbackFunc(6, double)
 generateCallbackFunc(7, float)
 
 unsigned test_localMath(unsigned a, unsigned  b, unsigned c)

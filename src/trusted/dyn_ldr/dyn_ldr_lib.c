@@ -962,6 +962,34 @@ uintptr_t registerSandboxFloatCallbackWithState(NaClSandbox* sandbox, unsigned s
   }
 }
 
+uintptr_t registerSandboxDoubleCallbackWithState(NaClSandbox* sandbox, unsigned slotNumber, uintptr_t callback, void* state)
+{
+  if(callback == 0)
+  {
+    return 0;
+  }
+  else
+  {
+    unsigned callbackSlots = (unsigned) CALLBACK_SLOTS_AVAILABLE;
+
+    if(slotNumber != callbackSlots - 2) {
+      NaClLog(LOG_ERROR, "Only second last slot (%u) should be used for callbacks with double returns\n", callbackSlots - 2);
+      abort();
+    }
+
+    if(slotNumber >= callbackSlots)
+    {
+      //NaClLog(LOG_ERROR, "Only %u slots exists i.e. slots 0 to %u. slotNumber %u does not exist \n",
+        // callbackSlots, callbackSlots - 1, slotNumber);
+      return 0;
+    }
+
+    sandbox->nap->callbackSlot[slotNumber] = callback;
+    sandbox->nap->callbackSlotState[slotNumber] = state;
+    return (uintptr_t) sandbox->callbackFunctionWrapper[slotNumber];
+  }
+}
+
 int unregisterSandboxCallback(NaClSandbox* sandbox, unsigned slotNumber)
 {
   unsigned callbackSlots = (unsigned) CALLBACK_SLOTS_AVAILABLE;
