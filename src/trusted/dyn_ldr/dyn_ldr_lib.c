@@ -1,6 +1,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/public/nacl_desc.h"
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -204,7 +205,13 @@ static int getRunnableLdDirPathFromNaClLibPath(const char* naclLibraryPath, char
     return 0;
   }
 
+# if defined(NACL_LINUX) && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  const char* runnableLdDirRelativeToCoreLibDir = "/../../../toolchain/linux_x86/nacl_x86_glibc/x86_64-nacl/lib32/";
+# elif defined(NACL_LINUX) && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
   const char* runnableLdDirRelativeToCoreLibDir = "/../../../toolchain/linux_x86/nacl_x86_glibc/x86_64-nacl/lib/";
+#else
+#  error "Runnable LD paths not implemented for other platforms"
+#endif
 
   //size check
   size_t naclLibraryPathLen = strlen(naclLibraryPath);
