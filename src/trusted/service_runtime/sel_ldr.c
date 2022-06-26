@@ -200,6 +200,11 @@ int NaClAppWithEmptySyscallTableCtor(struct NaClApp *nap) {
     NaClLog(LOG_INFO, "DANGER: ENABLED FILE ACCESS\n");
   }
 
+  if (!NaClInitSwitchToApp()) {
+    NaClLog(LOG_ERROR, "NaClInitSwitchToApp() failed\n");
+    goto cleanup_cv;
+  }
+
   nap->enable_list_mappings = 0;
   if (IsEnvironmentVariableSet("NACL_DANGEROUS_ENABLE_LIST_MAPPINGS")) {
     /*

@@ -562,6 +562,11 @@ int NaClSelLdrMain(int argc, char **argv) {
     NaClInsecurelyBypassAllAclChecks();
   }
 
+  if (!NaClInitSwitchToApp()) {
+    NaClLog(LOG_ERROR, "NaClInitSwitchToApp() failed\n");
+    return -1;
+  }
+
   nap->ignore_validator_result = (options->debug_mode_ignore_validator > 0);
   nap->skip_validator = (options->debug_mode_ignore_validator > 1);
   nap->enable_exception_handling = options->enable_exception_handling;

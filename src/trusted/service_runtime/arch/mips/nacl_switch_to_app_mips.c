@@ -15,11 +15,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-void NaClInitSwitchToApp(struct NaClApp *nap) {
- /*
-  * We don't need anything here.
-  */
-  UNREFERENCED_PARAMETER(nap);
+int NaClInitSwitchToApp() {
+  return 1;
 }
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,

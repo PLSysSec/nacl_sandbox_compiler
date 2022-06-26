@@ -15,12 +15,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 
-void NaClInitSwitchToApp(struct NaClApp *nap) {
-  /*
-   * We don't need anything here.  We might need it in future if e.g.
-   * we start letting untrusted code use NEON extensions.
-   */
-  UNREFERENCED_PARAMETER(nap);
+int NaClInitSwitchToApp() {
+  return 1;
 }
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,

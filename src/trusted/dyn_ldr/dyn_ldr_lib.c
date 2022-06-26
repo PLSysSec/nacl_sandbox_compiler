@@ -122,6 +122,10 @@ int initializeDlSandboxCreator(int enableLogging)
 
   NaClInsecurelyBypassAllAclChecks();
 
+  if (!NaClInitSwitchToApp()) {
+    return FALSE;
+  }
+
   // pq_error = NaClRunSelQualificationTests();
   // if (LOAD_OK != pq_error) {
   //   //NaClLog(LOG_ERROR, "Error while running platform checks: %s\n", NaClErrorString(pq_error));

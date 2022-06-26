@@ -398,8 +398,8 @@ NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
     goto done;
   }
 
-  NaClLog(2, "Initializing arch switcher\n");
-  NaClInitSwitchToApp(nap);
+  // NaClLog(2, "Initializing arch switcher\n");
+  // NaClInitSwitchToApp(nap);
 
   NaClLog(2, "Installing trampoline\n");
   NaClLoadTrampoline(nap, aslr_mode);

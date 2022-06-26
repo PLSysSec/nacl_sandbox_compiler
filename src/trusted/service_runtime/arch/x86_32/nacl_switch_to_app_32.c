@@ -16,9 +16,17 @@
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
-void NaClInitSwitchToApp(struct NaClApp *nap) {
+int NaClInitSwitchToApp() {
+  const struct NaClValidatorInterface *validator = NaClCreateValidator();
+  /* Get the set of features that the CPU we're running on supports. */
+  NaClCPUFeatures* cpu_features = (NaClCPUFeatures *) malloc(validator->CPUFeatureSize);
+  if (NULL == cpu_features) {
+    return 0;
+  }
+  validator->GetCurrentCPUFeatures(cpu_features);
+
   /* TODO(jfb) Use a safe cast here. */
-  NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) nap->cpu_features;
+  NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) cpu_features;
   if (NaClGetCPUFeatureX86(features, NaClCPUFeatureX86_AVX)) {
     NaClSwitch = NaClSwitchAVX;
   } else if (NaClGetCPUFeatureX86(features, NaClCPUFeatureX86_SSE)) {
@@ -26,6 +34,9 @@ void NaClInitSwitchToApp(struct NaClApp *nap) {
   } else {
     NaClSwitch = NaClSwitchNoSSE;
   }
+
+  free(cpu_features);
+  return 1;
 }
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,

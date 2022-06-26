@@ -27,17 +27,19 @@ extern NORETURN void NaClSwitchSSECopyParams(struct NaClThreadContext *context);
 NORETURN_PTR void (*NaClSwitch)(struct NaClThreadContext *context);
 NORETURN_PTR void (*NaClSwitchCopyParams)(struct NaClThreadContext *context);
 
-int g_NaClInitSwitchToAppDone = 0;
-
-void NaClInitSwitchToApp(struct NaClApp *nap) {
+int NaClInitSwitchToApp() {
   /* TODO(jfb) Use a safe cast here. */
   NaClCPUFeaturesX86 *features;
 
-  if(g_NaClInitSwitchToAppDone) {
-    return;
+  const struct NaClValidatorInterface *validator = NaClCreateValidator();
+  /* Get the set of features that the CPU we're running on supports. */
+  NaClCPUFeatures* cpu_features = (NaClCPUFeatures *) malloc(validator->CPUFeatureSize);
+  if (NULL == cpu_features) {
+    return 0;
   }
+  validator->GetCurrentCPUFeatures(cpu_features);
 
-  features = (NaClCPUFeaturesX86 *) nap->cpu_features;
+  features = (NaClCPUFeaturesX86 *) cpu_features;
   if (NaClGetCPUFeatureX86(features, NaClCPUFeatureX86_AVX)) {
     NaClSwitch = NaClSwitchAVX;
     NaClSwitchCopyParams = NaClSwitchAVXCopyParams;
@@ -46,7 +48,8 @@ void NaClInitSwitchToApp(struct NaClApp *nap) {
     NaClSwitchCopyParams = NaClSwitchSSECopyParams;
   }
 
-  g_NaClInitSwitchToAppDone = 1;
+  free(cpu_features);
+  return 1;
 }
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
