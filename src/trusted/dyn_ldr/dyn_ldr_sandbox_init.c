@@ -124,11 +124,18 @@ int threadMain(void)
 	return 0;
 }
 
-//fopen and fclose aren't used in this file
-//so they are not included in the symbol table
-//Small hack to ensure fopen and fclose remain in the symbol table
-void* fopenCopy = (void *) fopen;
-void* fcloseCopy = (void *) fclose;
+void* malloc_wrapped (size_t size) {
+	return malloc(size);
+}
+void free_wrapped (void* ptr) {
+	free(ptr);
+}
+FILE* fopen_wrapped(const char* filename, const char* mode) {
+	return fopen(filename, mode);
+}
+int fclose_wrapped(FILE* stream) {
+	return fclose(stream);
+}
 
 int main(int argc, char** argv)
 {

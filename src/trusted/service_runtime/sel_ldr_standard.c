@@ -42,14 +42,6 @@
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 
-
-int g_NaClAppLoadSymbolTableMapping = 0;
-
-void NaClAppLoadSymbolTableMapping(int loadSymbolTableMapping)
-{
-  g_NaClAppLoadSymbolTableMapping = loadSymbolTableMapping;
-}
-
 /*
  * Fill from static_text_end to end of that page with halt
  * instruction, which is at least NACL_HALT_LEN in size when no
@@ -304,10 +296,6 @@ NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
   nap->bundle_size = NACL_INSTR_BLOCK_SIZE;
 
   nap->initial_entry_pt = NaClElfImageGetEntryPoint(image);
-
-  if(g_NaClAppLoadSymbolTableMapping) {
-    nap->symbolTableMapping = NaClElfGetSymbolTableMapping(image, ndp);
-  }
 
   NaClLogAddressSpaceLayout(nap);
 

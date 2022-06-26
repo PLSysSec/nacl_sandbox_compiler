@@ -11,6 +11,7 @@
 #include "native_client/src/trusted/dyn_ldr/dyn_ldr_lib.h"
 #include "native_client/src/trusted/dyn_ldr/dyn_ldr_test_structs.h"
 #include "native_client/src/trusted/service_runtime/elf_symboltable_mapping.h"
+#include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -118,6 +119,8 @@ int initializeDlSandboxCreator(int enableLogging)
 
   SetNaClAppLoadFileFromFilenameKeep(1);
 
+  NaClInsecurelyBypassAllAclChecks();
+
   // pq_error = NaClRunSelQualificationTests();
   // if (LOAD_OK != pq_error) {
   //   //NaClLog(LOG_ERROR, "Error while running platform checks: %s\n", NaClErrorString(pq_error));
@@ -159,6 +162,65 @@ int invokeCheckStructSizesTest
   int size_LongLongSize
 );
 
+static struct NaClApp* createAndInitNaClApp() {
+  struct NaClApp*         nap = NULL;
+  nap = NaClAppCreate();
+  if (nap == NULL) {
+    return nap;
+  }
+
+  nap->ignore_validator_result = TRUE;//(options->debug_mode_ignore_validator > 0);
+  nap->skip_validator = TRUE;//(options->debug_mode_ignore_validator > 1);
+  nap->enable_exception_handling = FALSE;//options->enable_exception_handling;
+
+  // #if NACL_WINDOWS
+  //   nap->attach_debug_exception_handler_func = NaClDebugExceptionHandlerStandaloneAttach;
+  // #endif
+
+  NaClAppInitialDescriptorHookup(nap);
+  return nap;
+}
+
+static int stringEndsWith(const char *str, const char *suffix)
+{
+  if (!str || !suffix) {
+    return 0;
+  }
+  size_t lenstr = strlen(str);
+  size_t lensuffix = strlen(suffix);
+  if (lensuffix >  lenstr)
+      return 0;
+  return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
+static int getRunnableLdDirPathFromNaClLibPath(const char* naclLibraryPath, char* outLdDirPath, size_t outLdDirPathLen) {
+  // naclLibraryPath is something like "/root/native_client/scons-out/nacl_irt-x86-64/staging/irt_core.nexe"
+  // We need to get the runnableLdDirPath which will be "/root/native_client/toolchain/linux_x86/nacl_x86_glibc/x86_64-nacl/lib/"
+  // The runnable-ld.so file is inside this path
+
+  const char* naclLibrarySuffix = "/irt_core.nexe";
+
+  if (!stringEndsWith(naclLibraryPath, naclLibrarySuffix)) {
+    return 0;
+  }
+
+  const char* runnableLdDirRelativeToCoreLibDir = "/../../../toolchain/linux_x86/nacl_x86_glibc/x86_64-nacl/lib/";
+
+  //size check
+  size_t naclLibraryPathLen = strlen(naclLibraryPath);
+  size_t just_in_case_padding = 30;
+  if (naclLibraryPathLen >= outLdDirPathLen - strlen(runnableLdDirRelativeToCoreLibDir) - just_in_case_padding) {
+    return 0;
+  }
+
+  size_t naclLibraryDirChars = naclLibraryPathLen - strlen(naclLibrarySuffix);
+  memcpy(outLdDirPath, naclLibraryPath, naclLibraryDirChars);
+  outLdDirPath[naclLibraryDirChars] = '\0';
+  strcat(outLdDirPath, runnableLdDirRelativeToCoreLibDir);
+
+  return 1;
+}
+
 //Adapted from ./native_client/src/trusted/service_runtime/sel_main.c NaClSelLdrMain
 NaClSandbox* createDlSandbox(const char* naclLibraryPath, const char* naclInitAppFullPath)
 {
@@ -172,41 +234,84 @@ NaClSandbox* createDlSandbox(const char* naclLibraryPath, const char* naclInitAp
   // int                     testResult2 = 0;
   // int                     testResult3 = 0;
   struct NaClDesc*        blob_file = NULL;
+  char*                   nacl_load_args[5] = {0};
+  int                     nacl_load_args_count = 0;
+  char                    runnableLdDirPath[1024];
 
-  nap = NaClAppCreate();
+  nap = createAndInitNaClApp();
   if (nap == NULL) {
     printf("NaCl Error createDlSandbox - NaClAppCreate() failed\n");
     goto error;
   }
 
-  NaClInsecurelyBypassAllAclChecks();
+  pq_error = NaClAppLoadFileFromFilename(nap, naclInitAppFullPath);
 
-  nap->ignore_validator_result = TRUE;//(options->debug_mode_ignore_validator > 0);
-  nap->skip_validator = TRUE;//(options->debug_mode_ignore_validator > 1);
-  nap->enable_exception_handling = FALSE;//options->enable_exception_handling;
+  if (LOAD_SEGMENT_BAD_LOC == pq_error) {
+    // Loading a dynamic NaCl nexe gives this error
+    // Try loading it as a dynamic file
 
-  // #if NACL_WINDOWS
-  //   nap->attach_debug_exception_handler_func = NaClDebugExceptionHandlerStandaloneAttach;
-  // #endif
+    free(nap);
+    nap = createAndInitNaClApp();
+    if (nap == NULL) {
+      printf("NaCl Error createDlSandbox - NaClAppCreate() failed\n");
+      goto error;
+    }
+
+    if (!getRunnableLdDirPathFromNaClLibPath(naclLibraryPath, runnableLdDirPath, sizeof(runnableLdDirPath))) {
+      printf("NaCl Error createDlSandbox - allocRunnableLdDirPathFromNaClLibPath() failed\n");
+      goto error;
+    }
+
+    nacl_load_args[0] = "NaClMain";
+    nacl_load_args[1] = "--library-path";
+    nacl_load_args[2] = runnableLdDirPath;
+    nacl_load_args[3] = naclInitAppFullPath;
+    nacl_load_args_count = 4;
+
+    const char runnableLdPath[1124];
+    strcpy(runnableLdPath, runnableLdDirPath);
+    strcat(runnableLdPath, "runnable-ld.so");
+
+    pq_error = NaClAppLoadFileFromFilename(nap, runnableLdPath);
+  }
+
+  if (LOAD_OK != pq_error) {
+    printf("NaCl Error createDlSandbox - Error while loading from naclInitAppFullPath: %s\n", NaClErrorString(pq_error));
+    goto error;
+  }
+
+  {
+    struct NaClElfImageInfo info;
+    struct NaClDesc *ndp = (struct NaClDesc *) NaClDescIoDescOpen(naclInitAppFullPath, NACL_ABI_O_RDONLY, 0666);
+    if (NULL == ndp) {
+      printf("NaCl Error createDlSandbox - NaClDescIoDescOpen() failed\n");
+      goto error;
+    }
+    struct NaClElfImage *image = (struct NaClElfImage *) NaClElfImageNew(ndp, &pq_error);
+    if (NULL == image || LOAD_OK != pq_error) {
+      printf("NaCl Error createDlSandbox - NaClElfImageNew() failed\n");
+      goto error;
+    }
+    // Note we explicitly don't check the error code here
+    // NaClElfImageValidateProgramHeaders computes some location values for headers AND checks position of the start entry
+    // The location values for headers is needed for out symbol table lookup
+    // When loading a nexe compiled by nacl-gcc, the nexe start position is "wrong" when compared to a nexe compiled by nacl-clang
+    // This is because the nacl-gcc nexe is position independent and must be loaded with runnable-so
+    // Thus checking program headers on the headers fails
+    NaClElfImageValidateProgramHeaders(image, nap->addr_bits, &info);
+    // if (LOAD_OK != pq_error) {
+    //   printf("NaCl Error createDlSandbox - NaClElfImageValidateProgramHeaders() failed\n");
+    //   goto error;
+    // }
+    nap->symbolTableMapping = NaClElfGetSymbolTableMapping(image, ndp);
+    NaClElfImageDelete(image);
+    NaClDescUnref(ndp);
+  }
 
   blob_file = (struct NaClDesc *) NaClDescIoDescOpen(naclLibraryPath, NACL_ABI_O_RDONLY, 0);
 
   if (NULL == blob_file) {
     printf("NaCl Error createDlSandbox - Cannot open \"%s\".\n", naclLibraryPath);
-    goto error;
-  }
-
-  NaClAppInitialDescriptorHookup(nap);
-
-  //Normally the symbol table in the file is basically ignored
-  // This basically turns on the some code that has been added for the purpose of this library
-  // that loads the symbol table in the struct NaClApp
-  NaClAppLoadSymbolTableMapping(TRUE);
-
-  pq_error = NaClAppLoadFileFromFilename(nap, naclInitAppFullPath);
-
-  if (LOAD_OK != pq_error) {
-    printf("NaCl Error createDlSandbox - Error while loading from naclInitAppFullPath: %s\n", NaClErrorString(pq_error));
     goto error;
   }
 
@@ -228,8 +333,8 @@ NaClSandbox* createDlSandbox(const char* naclLibraryPath, const char* naclInitAp
   NaClDescUnref(blob_file);
 
   if (!NaClCreateMainThreadWithoutThreadCreate(nap,
-                            0, //argc,
-                            NULL, //argv,
+                            nacl_load_args_count,
+                            nacl_load_args,
                             NaClGetEnviron())) {
     printf("NaCl Error createDlSandbox - Error creating main thread failed\n");
     goto error;
@@ -335,6 +440,9 @@ NaClSandbox* createDlSandbox(const char* naclLibraryPath, const char* naclInitAp
   return sandbox;
 
 error:
+  if (nap) {
+    free(nap);
+  }
   printf("NaCl Error createDlSandbox - Failed in creating sandbox\n");
 
   return NULL;
@@ -1231,6 +1339,16 @@ uintptr_t functionCallReturnSandboxPtr(NaClSandbox_Thread* threadData)
 
 void* symbolTableLookupInSandbox(NaClSandbox* sandbox, const char *symbol)
 {
+  if (strcmp(symbol, "malloc") == 0) {
+    symbol = "malloc_wrapped";
+  } else if (strcmp(symbol, "free") == 0) {
+    symbol = "free_wrapped";
+  } else if (strcmp(symbol, "fopen") == 0) {
+    symbol = "fopen_wrapped";
+  } else if (strcmp(symbol, "fclose") == 0) {
+    symbol = "fclose_wrapped";
+  }
+
   //interface 2 has to resolve functions by looking at the symbolTable
   for(uint32_t i = 0, symbolCount = sandbox->nap->symbolTableMapping->symbolCount; i < symbolCount; i++)
   {
